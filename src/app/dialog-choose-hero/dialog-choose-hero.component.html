@@ -1,11 +1,17 @@
 <div class="dialog">
-    <h1 mat-dialog-title>Choose a Hero</h1>
+    <h1 mat-dialog-title>Spieleinstellungen</h1>
     <div mat-dialog-content>
-      Choose one Hero of this List:
+      Spieleranzahl
     </div>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Anzahl der Spieler</mat-label>
+      <input id="playerNumber" type="number" matInput placeholder="Gib hier eine Zahl zwischen 1 und 5 ein." [formControl]="playerValidation" required>
+      <mat-error *ngIf="playerValidation.invalid">Gib eine Zahl ein.</mat-error>
+    </mat-form-field>
+
     <div mat-dialog-actions>
-      <button mat-button mat-dialog-close>No</button>
-      <button mat-button mat-dialog-close cdkFocusInitial>Ok</button>
+      <button mat-button mat-dialog-close cdkFocusInitial (click)="getPlayerNumber()">Ok</button>
     </div>
 </div>
 

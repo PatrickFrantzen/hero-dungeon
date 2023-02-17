@@ -9,13 +9,13 @@ import { DialogChooseHeroComponent } from './dialog-choose-hero/dialog-choose-he
 })
 export class AppComponent implements OnInit{
   title = 'hero-dungeon';
-  numberOfPlayer = 0;
+  numberOfPlayers = 0;
 
   constructor(
     public dialog: MatDialog) {}
 
   ngOnInit(): void {
-    if(this.numberOfPlayer == 0) {
+    if(this.numberOfPlayers == 0) {
       this.openDialog();
     }
   }
