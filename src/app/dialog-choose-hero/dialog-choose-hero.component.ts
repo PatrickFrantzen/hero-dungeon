@@ -1,5 +1,13 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Output, EventEmitter } from '@angular/core';
+import { Inject } from '@angular/core';
+import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+
+interface Difficulty {
+  value: string;
+  viewValue: string;
+}
 
 @Component({
   selector: 'app-dialog-choose-hero',
@@ -8,12 +16,20 @@ import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angu
 })
 export class DialogChooseHeroComponent {
   playerValidation = new FormControl('', [Validators.required, Validators.min(1), Validators.max(5)]);
-  numberOfPlayers!: number;
+  numberOfPlayer!:number;
+  selectedValue!:string;
+  difficulties: Difficulty[] = [
+    {value: 'easy', viewValue: 'easy'},
+    {value: 'medium', viewValue: 'medium'},
+    {value: 'hard', viewValue: 'hard'},
+  ];
 
-  constructor() {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogChooseHeroComponent>) {}
 
-  getPlayerNumber() {
-    this.numberOfPlayers = (document.getElementById('playerNumber') as HTMLInputElement).valueAsNumber;
-    console.log(this.numberOfPlayers);
+  getGameSettings(numberOfPlayer:number, difficulty: string) {
+    this.dialogRef.close({data: {
+      numberOfPlayer: numberOfPlayer,
+      difficulty: difficulty
+    }})
   }
 }

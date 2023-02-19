@@ -1,0 +1,15 @@
+.mainfield {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('^assets/img/backgroundimage/background.jpg');
+    background-size: cover;
+    height: 100vh;
+    width: 100vw;
+    background-repeat: no-repeat;
+}
+
+.start-label-box {
+    position: absolute;
+}
+

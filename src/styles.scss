@@ -5,12 +5,8 @@ body {
 }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-.cdk-overlay-container {
-    display: flex;
-    height: 250px;
-    position: absolute;
-    top: calc((100vh / 2 - 125px)) ;
-    left: calc(100vw / 2 - 125px);
 
-    width: 250px;
+
+.cdk-overlay-container {
+    position: unset !important;
 }

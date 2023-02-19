@@ -6,12 +6,21 @@
 
     <mat-form-field appearance="fill">
       <mat-label>Anzahl der Spieler</mat-label>
-      <input id="playerNumber" type="number" matInput placeholder="Gib hier eine Zahl zwischen 1 und 5 ein." [formControl]="playerValidation" required>
-      <mat-error *ngIf="playerValidation.invalid">Gib eine Zahl ein.</mat-error>
+      <input id="playerNumber" type="number" #playerNumber matInput placeholder="Gib hier eine Zahl zwischen 1 und 5 ein." [formControl]="playerValidation" required>
+      <mat-error *ngIf="playerValidation.invalid">Gib eine Zahl zwischen 2 und 5 ein.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Schwierigkeitsgrad</mat-label>
+      <mat-select [(ngModel)]="selectedValue" name="difficulty">
+        <mat-option *ngFor="let difficulty of difficulties" [value]="difficulty.value">
+          {{difficulty.viewValue}}
+        </mat-option>
+      </mat-select>
     </mat-form-field>
 
     <div mat-dialog-actions>
-      <button mat-button mat-dialog-close cdkFocusInitial (click)="getPlayerNumber()">Ok</button>
+      <button mat-button mat-dialog-close cdkFocusInitial (click)="getGameSettings(playerNumber.valueAsNumber, selectedValue)">Ok</button>
     </div>
 </div>
 

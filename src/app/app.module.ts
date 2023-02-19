@@ -10,14 +10,21 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DialogChooseHeroComponent } from './dialog-choose-hero/dialog-choose-hero.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
 import { GameComponent } from './game/game.component';
+import { StartscreenComponent } from './startscreen/startscreen.component';
+
+import { AngularFireModule } from '@angular/fire/compat';
+import { environment } from '../environments/environment';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     DialogChooseHeroComponent,
-    GameComponent
+    GameComponent,
+    StartscreenComponent
   ],
   imports: [
     BrowserModule,
@@ -28,6 +35,9 @@ import { GameComponent } from './game/game.component';
     MatInputModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule,
+    MatSelectModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
