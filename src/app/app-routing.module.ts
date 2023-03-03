@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { GameComponent } from './game/game.component';
-import { StartscreenComponent } from './startscreen/startscreen.component';
+import { GameComponent } from './components/game/game.component';
+import { StartscreenComponent } from './components/startscreen/startscreen.component';
 
 const routes: Routes = [
   {path: '', component: StartscreenComponent},

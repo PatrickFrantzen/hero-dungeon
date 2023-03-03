@@ -1,6 +1,8 @@
 import { Component, OnChanges, SimpleChanges } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
+import { Hero } from 'src/models/hero.class';
+import { Barbar } from 'src/models/barbar.class';
 import { DialogChooseHeroComponent } from '../dialog-choose-hero/dialog-choose-hero.component';
 
 @Component({
@@ -12,8 +14,11 @@ export class StartscreenComponent implements OnChanges{
   numberOfPlayers:number = 0;
   playerNumber!:number;
   difficulty!:string;
-  game!: Game;
+  game: Game = new Game();
   GameSetting:any;
+  hero: Hero = new Hero;
+  warrior:Barbar = new Barbar;
+  choosenHeros: any = [];
 
 
   constructor(
@@ -35,6 +40,7 @@ export class StartscreenComponent implements OnChanges{
 
   sendGameToServer() {
     this.game = new Game;
+    this.hero = new Hero;
     this.game.numberOfPlayers = this.numberOfPlayers;
 
   }
@@ -59,7 +65,9 @@ export class StartscreenComponent implements OnChanges{
   }
 
   setGameSettings(data:any) {
-    this.numberOfPlayers = data.numberOfPlayer;
-    this.difficulty = data.difficulty;
+    this.game.numberOfPlayers = data.numberOfPlayer;
+    this.game.difficulty = data.difficulty;
+    this.game.choosenHeros = [this.warrior];
+    console.log('test', this.game, this.warrior);
   }
 }
