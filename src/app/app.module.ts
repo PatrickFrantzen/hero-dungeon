@@ -17,6 +17,8 @@ import { StartscreenComponent } from './components/startscreen/startscreen.compo
 import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from '../environments/environment';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { SignupComponent } from './components/signup/signup.component';
+import {MatCardModule} from '@angular/material/card';
 
 
 @NgModule({
@@ -24,7 +26,8 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     AppComponent,
     DialogChooseHeroComponent,
     GameComponent,
-    StartscreenComponent
+    StartscreenComponent,
+    SignupComponent
   ],
   imports: [
     BrowserModule,
@@ -38,6 +41,7 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     MatSelectModule,
+    MatCardModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

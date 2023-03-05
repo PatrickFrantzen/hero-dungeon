@@ -1,1 +1,2 @@
-<router-outlet></router-outlet>
+<app-signup *ngIf="!signedIn"></app-signup>
+<router-outlet *ngIf="signedIn"></router-outlet>

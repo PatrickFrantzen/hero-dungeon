@@ -1,0 +1,24 @@
+.signUp {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('^assets/img/backgroundimage/background.jpg');
+    background-size: cover;
+}
+
+.signUp-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.input-area {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    width: 150px;
+}
