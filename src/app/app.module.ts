@@ -19,6 +19,10 @@ import { environment } from '../environments/environment';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { SignupComponent } from './components/signup/signup.component';
 import {MatCardModule} from '@angular/material/card';
+import { provideAuth,getAuth } from '@angular/fire/auth';
+import {MatButtonModule} from '@angular/material/button';
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+
 
 
 @NgModule({
@@ -39,9 +43,12 @@ import {MatCardModule} from '@angular/material/card';
     BrowserAnimationsModule,
     ReactiveFormsModule,
     AngularFireModule.initializeApp(environment.firebase),
+    provideAuth(() => getAuth()),
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
     AngularFirestoreModule,
     MatSelectModule,
     MatCardModule,
+    MatButtonModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
