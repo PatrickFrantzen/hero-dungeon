@@ -1,0 +1,33 @@
+.logIn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('^assets/img/backgroundimage/background.jpg');
+    background-size: cover;
+}
+
+.logIn-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.input-area {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    width: 150px;
+}
+
+.footer {
+    padding-bottom: 16px;
+
+    button {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+}

@@ -22,6 +22,7 @@ import {MatCardModule} from '@angular/material/card';
 import { provideAuth,getAuth } from '@angular/fire/auth';
 import {MatButtonModule} from '@angular/material/button';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { SigninComponent } from './components/signin/signin.component';
 
 
 
@@ -31,7 +32,8 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
     DialogChooseHeroComponent,
     GameComponent,
     StartscreenComponent,
-    SignupComponent
+    SignupComponent,
+    SigninComponent
   ],
   imports: [
     BrowserModule,
