@@ -8,8 +8,6 @@ import { Router } from '@angular/router';
 })
 export class AppComponent implements OnInit{
   title = 'hero-dungeon';
-  loggedIn = false;
-  signedUp = false;
 
   constructor(
     public router: Router,

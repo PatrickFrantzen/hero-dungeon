@@ -1,9 +1,11 @@
 import { Component, OnChanges, SimpleChanges } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
-import { Hero } from 'src/models/hero.class';
-import { Barbar } from 'src/models/barbar.class';
+import { Hero } from 'src/models/helden/hero.class';
+import { Barbar } from 'src/models/helden/barbar.class';
 import { DialogChooseHeroComponent } from '../dialog-choose-hero/dialog-choose-hero.component';
+import { Auth, signOut } from '@angular/fire/auth';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-startscreen',
@@ -23,8 +25,16 @@ export class StartscreenComponent implements OnChanges{
 
   constructor(
     public dialog:MatDialog,
+    public auth: Auth,
+    private route: Router,
   ) {}
 
+  logout() {
+    signOut(this.auth)
+    .then (()=> {
+      this.route.navigate(['signIn'])
+    })
+  }
 
 
   ngOnChanges(changes: SimpleChanges): void {

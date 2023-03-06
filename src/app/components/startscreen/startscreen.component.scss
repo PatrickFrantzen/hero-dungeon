@@ -11,5 +11,12 @@
 
 .start-label-box {
     position: absolute;
+    display: flex;
+    flex-direction: column;
+
+    button {
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
 }
 

@@ -19,10 +19,17 @@
                     <input type="password" matInput placeholder="your Password" formControlName="password" required>
                     <mat-error *ngIf="this.signUpForm.controls['password'].invalid">{{getPasswordErrorMessage()}}</mat-error>
                 </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                    <mat-label>Choose a nickname</mat-label>
+                    <input type="text" matInput placeholder="your Nickname" formControlName="nickname" required>
+                    <mat-error *ngIf="this.signUpForm.controls['nickname'].invalid">{{getNicknameErrorMessage()}}</mat-error>
+                </mat-form-field>
             </mat-card-content>
 
             <mat-card-footer class="footer">
                 <button mat-raised-button type="submit" title="Sign Up">Sign Up</button>
+                <button mat-raised-button type="button" title="Back to Sign In" (click)="backToSignIn()">Back to Sign In</button>
             </mat-card-footer>
         </mat-card>
     </div>

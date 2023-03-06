@@ -32,7 +32,8 @@ export class SigninComponent implements OnInit{
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
-      console.log(user)
+      console.log(user);
+      this.route.navigate(['startscreen'])
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -42,6 +43,5 @@ export class SigninComponent implements OnInit{
 
   redirectToSignUp() {
     this.route.navigate(['signUp']);
-
   }
 }
