@@ -6,6 +6,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 })
 export class CurrentUserService {
 
+  currentUser:string = '';
 
   constructor(
   ) { }
@@ -15,9 +16,9 @@ export class CurrentUserService {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         const uid = user.uid;
-        console.log('currentUser', user)
+        
       } else {
-        console.log('error')
+        this.currentUser = 'Gast'
       }
 
     })
