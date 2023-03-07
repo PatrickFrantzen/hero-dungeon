@@ -1,5 +1,5 @@
 import { Component, OnInit} from '@angular/core';
-import { Auth, signInWithEmailAndPassword, user } from '@angular/fire/auth';
+import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 

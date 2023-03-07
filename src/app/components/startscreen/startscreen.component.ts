@@ -1,4 +1,4 @@
-import { Component, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
 import { Hero } from 'src/models/helden/hero.class';
@@ -6,13 +6,14 @@ import { Barbar } from 'src/models/helden/barbar.class';
 import { DialogChooseHeroComponent } from '../dialog-choose-hero/dialog-choose-hero.component';
 import { Auth, signOut } from '@angular/fire/auth';
 import { Router } from '@angular/router';
+import { CurrentUserService } from 'src/app/services/current-user.service';
 
 @Component({
   selector: 'app-startscreen',
   templateUrl: './startscreen.component.html',
   styleUrls: ['./startscreen.component.scss']
 })
-export class StartscreenComponent implements OnChanges{
+export class StartscreenComponent implements OnChanges, OnInit{
   numberOfPlayers:number = 0;
   playerNumber!:number;
   difficulty!:string;
@@ -27,6 +28,7 @@ export class StartscreenComponent implements OnChanges{
     public dialog:MatDialog,
     public auth: Auth,
     private route: Router,
+    public currentUser: CurrentUserService,
   ) {}
 
   logout() {
@@ -36,6 +38,9 @@ export class StartscreenComponent implements OnChanges{
     })
   }
 
+  ngOnInit(): void {
+    this.currentUser.getCurrentUser();
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     this.createGame(changes);
