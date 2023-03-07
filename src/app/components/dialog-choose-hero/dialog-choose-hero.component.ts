@@ -16,6 +16,8 @@ interface Difficulty {
 })
 export class DialogChooseHeroComponent {
   playerValidation = new FormControl('', [Validators.required, Validators.min(1), Validators.max(5)]);
+  idValidation = new FormControl('', Validators.required);
+
   numberOfPlayer!:number;
   selectedValue!:string;
   difficulties: Difficulty[] = [
@@ -26,10 +28,11 @@ export class DialogChooseHeroComponent {
 
   constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogChooseHeroComponent>) {}
 
-  getGameSettings(numberOfPlayer:number, difficulty: string) {
+  getGameSettings(numberOfPlayer:number, difficulty: string, gameId: string) {
     this.dialogRef.close({data: {
       numberOfPlayer: numberOfPlayer,
-      difficulty: difficulty
+      difficulty: difficulty,
+      gameId: gameId,
     }})
   }
 }

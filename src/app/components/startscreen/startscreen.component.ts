@@ -5,6 +5,7 @@ import { Hero } from 'src/models/helden/hero.class';
 import { Barbar } from 'src/models/helden/barbar.class';
 import { DialogChooseHeroComponent } from '../dialog-choose-hero/dialog-choose-hero.component';
 import { Auth, signOut } from '@angular/fire/auth';
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { Router } from '@angular/router';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 
@@ -17,18 +18,20 @@ export class StartscreenComponent implements OnChanges, OnInit{
   numberOfPlayers:number = 0;
   playerNumber!:number;
   difficulty!:string;
+  gameId!:string;
   game: Game = new Game();
   GameSetting:any;
   hero: Hero = new Hero;
-  warrior:Barbar = new Barbar;
+  barbar:Barbar = new Barbar;
   choosenHeros: any = [];
+  db = getFirestore();
 
 
   constructor(
     public dialog:MatDialog,
     public auth: Auth,
     private route: Router,
-    public currentUser: CurrentUserService,
+    public currentUserService: CurrentUserService,
   ) {}
 
   logout() {
@@ -39,7 +42,7 @@ export class StartscreenComponent implements OnChanges, OnInit{
   }
 
   ngOnInit(): void {
-    this.currentUser.getCurrentUser();
+    this.currentUserService.getCurrentUser();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -69,20 +72,26 @@ export class StartscreenComponent implements OnChanges, OnInit{
   openDialog() {
     let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
       data: {numberOfPlayer: this.numberOfPlayers,
-              difficulty: this.difficulty
+              difficulty: this.difficulty,
+              gameId: this.gameId,
             }
     })
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log('data',result.data)
-      this.setGameSettings(result.data)
-    })
+      this.setGameSettings(result.data);
+      console.log('gameSettings', result.data);
+      const docRef = doc(this.db, 'games', result.data.gameId);
+      setDoc(docRef, this.game.toJSON());
+    }
+    )
   }
 
   setGameSettings(data:any) {
     this.game.numberOfPlayers = data.numberOfPlayer;
     this.game.difficulty = data.difficulty;
-    this.game.choosenHeros = [this.warrior];
-    console.log('test', this.game, this.warrior);
+    this.game.gameId = data.gameId;
+    this.game.choosenHeros = [this.barbar]; //Fehlermeldung erscheint: ERROR FirebaseError: 
+    //Function setDoc() called with invalid data. Unsupported field value: a custom Barbar object (found in document games/test)
+    console.log('game', this.game)
   }
 }

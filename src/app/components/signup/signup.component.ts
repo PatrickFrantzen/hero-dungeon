@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from '@angular/fire/auth';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { User } from 'src/models/user.class';
 
 @Component({
@@ -15,7 +15,8 @@ export class SignupComponent implements OnInit {
   public signUpForm!: FormGroup;
   user = new User;
   db = getFirestore();
-  dbRef = collection(this.db, 'users');
+  // dbRef = collection(this.db, 'users');
+  
 
   constructor(
     public auth: Auth,
@@ -35,12 +36,11 @@ export class SignupComponent implements OnInit {
   register() {
     createUserWithEmailAndPassword(this.auth, this.signUpForm.value.email, this.signUpForm.value.password)
     .then((response) => {
-      console.log('response', response)
       this.user.userEmail = this.signUpForm.value.email;
       this.user.userId = response.user.uid;
       this.user.userNickname = this.signUpForm.value.nickname;
-      console.log(this.user);
-      addDoc(this.dbRef, this.user.toJSON());
+      const docRef = doc(this.db, 'users', response.user.uid);
+      setDoc(docRef, this.user.toJSON());
     })
     .then(() => {
       this.route.navigate(['startscreen'])
@@ -75,3 +75,5 @@ export class SignupComponent implements OnInit {
   }
 
 }
+
+
