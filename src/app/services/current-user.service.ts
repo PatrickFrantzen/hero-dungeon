@@ -18,7 +18,6 @@ export class CurrentUserService {
   ) { }
 
   public getCurrentUser() {
-    //const app = initializeApp(environment);
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
       if (user) {

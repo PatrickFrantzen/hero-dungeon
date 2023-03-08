@@ -90,4 +90,9 @@ export class StartscreenComponent implements OnInit{
       this.route.navigate(['signIn'])
     })
   }
+
+  joinGame() {
+    let inputValue = (<HTMLInputElement>document.getElementById('joinGame')).value;
+    this.route.navigate(['/game/'+ inputValue]);
+  }
 }

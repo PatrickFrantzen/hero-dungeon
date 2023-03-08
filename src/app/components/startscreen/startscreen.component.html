@@ -1,8 +1,16 @@
 <div class="mainfield">
     <h1>Willkommen {{this.currentUserService.currentUser}}</h1>
     <div class="start-label-box">
-        <button (click)="newGame()">Neues Spiel</button>
-        <button (click)="addHero()">Held hinzufügen</button>
-        <button (click)="logout()">Logout</button>
+        
+            <button (click)="newGame()">Neues Spiel</button>
+            <button (click)="addHero()">Held hinzufügen</button>
+        
+
+        
+            <input type="text" id="joinGame">
+            <button (click)="joinGame()">Join Game</button>
+            <button (click)="logout()">Logout</button>
+        
+
     </div>
-  </div>
+</div>

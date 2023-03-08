@@ -3,6 +3,11 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { AngularFireModule } from '@angular/fire/compat';
+import { environment } from '../environments/environment';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { provideAuth,getAuth } from '@angular/fire/auth';
 
 import { MatDialogModule } from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -14,14 +19,9 @@ import {MatSelectModule} from '@angular/material/select';
 import { GameComponent } from './components/game/game.component';
 import { StartscreenComponent } from './components/startscreen/startscreen.component';
 
-import { AngularFireModule } from '@angular/fire/compat';
-import { environment } from '../environments/environment';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { SignupComponent } from './components/signup/signup.component';
 import {MatCardModule} from '@angular/material/card';
-import { provideAuth,getAuth } from '@angular/fire/auth';
 import {MatButtonModule} from '@angular/material/button';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { SigninComponent } from './components/signin/signin.component';
 
 
@@ -38,15 +38,15 @@ import { SigninComponent } from './components/signin/signin.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    provideAuth(() => getAuth()),
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
     MatDialogModule,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
-    AngularFireModule.initializeApp(environment.firebase),
-    provideAuth(() => getAuth()),
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
     AngularFirestoreModule,
     MatSelectModule,
     MatCardModule,

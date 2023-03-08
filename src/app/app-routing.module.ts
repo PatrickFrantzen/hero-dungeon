@@ -4,7 +4,7 @@ import { GameComponent } from './components/game/game.component';
 import { SigninComponent } from './components/signin/signin.component';
 import { SignupComponent } from './components/signup/signup.component';
 import { StartscreenComponent } from './components/startscreen/startscreen.component';
-import { AuthGuard, redirectLoggedInTo, canActivate, redirectUnauthorizedTo} from '@angular/fire/auth-guard'
+import { redirectLoggedInTo, canActivate, redirectUnauthorizedTo} from '@angular/fire/auth-guard'
 
 const routes: Routes = [
   {path: '', redirectTo: 'startscreen', pathMatch:'full'},
