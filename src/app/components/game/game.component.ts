@@ -1,4 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { CurrentUserService } from 'src/app/services/current-user.service';
 import { Game } from 'src/models/game';
 
 @Component({
@@ -8,15 +10,22 @@ import { Game } from 'src/models/game';
 })
 export class GameComponent implements OnInit {
 
-  game = new Game()
+  game = new Game();
+  gameId:string = '';
 
   @Input() numberOfPlayers!: number;
 
-  constructor() { }
+  constructor(
+    public currentUserService: CurrentUserService,
+    private route: ActivatedRoute,
+  ) { }
 
   ngOnInit(): void {
-    console.log(this.game);
-
+    this.currentUserService.getCurrentUser();
+    this.route.params.subscribe((params) => {
+      this.gameId = params['id'];
+      console.log(this.gameId)
+    })
   }
 
 }

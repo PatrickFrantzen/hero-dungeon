@@ -2,8 +2,7 @@
     <h1>Willkommen {{this.currentUserService.currentUser}}</h1>
     <div class="start-label-box">
         <button (click)="newGame()">Neues Spiel</button>
+        <button (click)="addHero()">Held hinzufügen</button>
         <button (click)="logout()">Logout</button>
     </div>
-
-    <!--<app-dialog-choose-hero (numberOfPlayersEvent) = 'setNumberOfPlayers($event)'></app-dialog-choose-hero>-->
   </div>
