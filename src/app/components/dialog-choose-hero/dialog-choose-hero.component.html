@@ -1,32 +1,22 @@
 <div class="dialog">
-    <h1 mat-dialog-title>Spieleinstellungen</h1>
+    <h1 mat-dialog-title>Wähle einen Helden</h1>
     <div mat-dialog-content class="settings">
 
-      <mat-form-field appearance="fill">
-        <mat-label>Anzahl der Spieler</mat-label>
-        <input id="playerNumber" type="number" #playerNumber matInput placeholder="Gib hier eine Zahl zwischen 1 und 5 ein." [formControl]="playerValidation" required>
-        <mat-error *ngIf="playerValidation.invalid">Gib eine Zahl zwischen 2 und 5 ein.</mat-error>
-      </mat-form-field>
+
   
       <mat-form-field appearance="fill">
-        <mat-label>Schwierigkeitsgrad</mat-label>
-        <mat-select [(ngModel)]="selectedValue" name="difficulty">
-          <mat-option *ngFor="let difficulty of difficulties" [value]="difficulty.value">
-            {{difficulty.viewValue}}
+        <mat-label>Helden</mat-label>
+        <mat-select [(ngModel)]="selectedValue" name="hero">
+          <mat-option *ngFor="let hero of heros" [value]="hero">
+            {{hero.viewValue}}
           </mat-option>
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="fill">
-        <mat-label>Spiele-ID</mat-label>
-        <input id="gameId" type="text" #gameId matInput placeholder="Gib dem Spiel einen Namen" [formControl]="idValidation" required>
-        <mat-error *ngIf="idValidation.invalid">Gib dem Spiel einen eindeutigen Namen.</mat-error>
-      </mat-form-field>
 
     </div>
 
     <div mat-dialog-actions>
-      <button mat-button mat-dialog-close cdkFocusInitial (click)="getGameSettings(playerNumber.valueAsNumber, selectedValue, gameId.value)">Ok</button>
+      <button mat-button mat-dialog-close cdkFocusInitial (click)="getChoosenHero(selectedValue)">Ok</button>
     </div>
 </div>
-

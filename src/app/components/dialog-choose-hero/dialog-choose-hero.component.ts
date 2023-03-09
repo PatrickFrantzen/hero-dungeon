@@ -1,11 +1,19 @@
 import { Component } from '@angular/core';
-import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Output, EventEmitter } from '@angular/core';
-import { Inject } from '@angular/core';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { Inject } from '@angular/core';
+import { Barbar } from 'src/models/helden/barbar.class';
+import { Dieb } from 'src/models/helden/dieb.class';
+import { Gladiator } from 'src/models/helden/gladiator.class';
+import { Jägerin } from 'src/models/helden/jägerin.class';
+import { Magier } from 'src/models/helden/magier.class';
+import { Ninja } from 'src/models/helden/ninja.class';
+import { Paladin } from 'src/models/helden/paladin.class';
+import { Waldläufer } from 'src/models/helden/waldläufer.class';
+import { Walküre } from 'src/models/helden/walküre.class';
+import { Zauberin } from 'src/models/helden/zauberin.class';
 
-interface Difficulty {
-  value: string;
+interface Heros {
+  value: Object;
   viewValue: string;
 }
 
@@ -15,24 +23,43 @@ interface Difficulty {
   styleUrls: ['./dialog-choose-hero.component.scss']
 })
 export class DialogChooseHeroComponent {
-  playerValidation = new FormControl('', [Validators.required, Validators.min(1), Validators.max(5)]);
-  idValidation = new FormControl('', Validators.required);
 
   numberOfPlayer!:number;
   selectedValue!:string;
-  difficulties: Difficulty[] = [
-    {value: 'easy', viewValue: 'easy'},
-    {value: 'medium', viewValue: 'medium'},
-    {value: 'hard', viewValue: 'hard'},
+
+  barbar:Barbar = new Barbar;
+  dieb: Dieb = new Dieb;
+  gladiator: Gladiator = new Gladiator;
+  jägerin: Jägerin = new Jägerin;
+  magier: Magier = new Magier;
+  ninja: Ninja = new Ninja;
+  paladin: Paladin = new Paladin;
+  waldläufer: Waldläufer = new Waldläufer;
+  walküre: Walküre = new Walküre;
+  zauberin: Zauberin = new Zauberin;
+
+
+  heros: Heros[] = [
+    {value: this.barbar.toJSON(), viewValue: 'Barbar'},
+    {value: this.dieb.toJSON(), viewValue: 'Dieb'},
+    {value: this.gladiator.toJSON(), viewValue: 'Gladiator'},
+    {value: this.jägerin.toJSON(), viewValue: 'Jägerin'},
+    {value: this.magier.toJSON(), viewValue: 'Magier'},
+    {value: this.ninja.toJSON(), viewValue: 'Ninja'},
+    {value: this.paladin.toJSON(), viewValue: 'Paladin'},
+    {value: this.waldläufer.toJSON(), viewValue: 'Waldläufer'},
+    {value: this.walküre.toJSON(), viewValue: 'Walküre'},
+    {value: this.zauberin.toJSON(), viewValue: 'Zauberin'},
   ];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogChooseHeroComponent>) {}
 
-  getGameSettings(numberOfPlayer:number, difficulty: string, gameId: string) {
+  getChoosenHero(choosenHero:any) {
+    console.log(choosenHero)
     this.dialogRef.close({data: {
-      numberOfPlayer: numberOfPlayer,
-      difficulty: difficulty,
-      gameId: gameId,
+      numberOfPlayer: this.numberOfPlayer,
+      choosenHero: choosenHero,
     }})
   }
+
 }

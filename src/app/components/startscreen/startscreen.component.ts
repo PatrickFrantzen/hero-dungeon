@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
 import { Hero } from 'src/models/helden/hero.class';
 import { Barbar } from 'src/models/helden/barbar.class';
-import { DialogChooseHeroComponent } from '../dialog-choose-hero/dialog-choose-hero.component';
+import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
 import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
 import { Router } from '@angular/router';
@@ -46,7 +46,7 @@ export class StartscreenComponent implements OnInit{
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
+    let dialogRef = this.dialog.open(DialogGameSettings, {
       data: {numberOfPlayer: this.numberOfPlayers,
               difficulty: this.difficulty,
               gameId: this.gameId,
@@ -66,9 +66,11 @@ export class StartscreenComponent implements OnInit{
   }
 
   setGameSettings(data:any) {
-    this.game.numberOfPlayers = data.numberOfPlayer;
-    this.game.difficulty = data.difficulty;
-    this.game.gameId = data.gameId;
+    if (data) {
+      this.game.numberOfPlayers = data.numberOfPlayer;
+      this.game.difficulty = data.difficulty;
+      this.game.gameId = data.gameId;
+    }
   }
 
 

@@ -7,3 +7,12 @@
     width: 100vw;
     background-repeat: no-repeat;
 }
+
+.card-stack {
+    position: relative;
+    right: 30%;
+    img {
+        position: absolute;
+        bottom: 15px;
+    }
+}

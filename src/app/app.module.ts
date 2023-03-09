@@ -12,7 +12,7 @@ import { provideAuth,getAuth } from '@angular/fire/auth';
 import { MatDialogModule } from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialog-choose-hero.component';
+import { DialogGameSettings } from './components/dialog-game-settings/dialog-game-settings.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
@@ -23,17 +23,18 @@ import { SignupComponent } from './components/signup/signup.component';
 import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
 import { SigninComponent } from './components/signin/signin.component';
-
+import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialog-choose-hero.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    DialogChooseHeroComponent,
+    DialogGameSettings,
     GameComponent,
     StartscreenComponent,
     SignupComponent,
-    SigninComponent
+    SigninComponent,
+    DialogChooseHeroComponent
   ],
   imports: [
     BrowserModule,

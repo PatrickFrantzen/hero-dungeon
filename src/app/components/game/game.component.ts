@@ -1,7 +1,12 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
+import { isEmpty } from '@firebase/util';
+import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { CurrentUserService } from 'src/app/services/current-user.service';
+import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
 import { Game } from 'src/models/game';
+import { User } from 'src/models/user.class';
 
 @Component({
   selector: 'app-game',
@@ -11,21 +16,56 @@ import { Game } from 'src/models/game';
 export class GameComponent implements OnInit {
 
   game = new Game();
+  user = new User();
   gameId:string = '';
+  currentPlayer:string = '';
+  currentPlayerId!: string;
+  currentHero:Object = {};
+  db = getFirestore();
+
 
   @Input() numberOfPlayers!: number;
 
   constructor(
     public currentUserService: CurrentUserService,
     private route: ActivatedRoute,
+    public dialog:MatDialog,
   ) { }
 
   ngOnInit(): void {
-    this.currentUserService.getCurrentUser();
+    
     this.route.params.subscribe((params) => {
       this.gameId = params['id'];
-      console.log(this.gameId)
+      this.currentUserService.getCurrentUser();
+      this.currentHero = this.currentUserService.currentUserHero;
+      this.currentPlayer = this.currentUserService.currentUser;
+      this.currentPlayerId = this.currentUserService.currentUserId;
+      if (isEmpty(this.currentHero)) {
+        this.openDialog()
+        console.log(this.currentPlayerId)
+      }
+    });
+  }
+
+  openDialog() {
+    let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
+      data: {numberOfPlayer: this.numberOfPlayers,
+             choosenHero: this.currentHero 
+            }
     })
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.setHeroToUser(result.data);
+      const docRef = doc(this.db, 'users', this.currentPlayerId);
+      setDoc(docRef, this.user.toJSON());
+    }
+    )
+  }
+
+  setHeroToUser(data:any) {
+    if (data) {
+      this.user.choosenHero = data.choosenHero;
+    }
   }
 
 }
