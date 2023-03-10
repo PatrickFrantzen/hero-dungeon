@@ -1,12 +1,15 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute } from '@angular/router';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
+import { initializeApp } from '@angular/fire/app';
+import { environment } from 'src/environments/environment';
+import { getAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-game',
@@ -21,18 +24,28 @@ export class GameComponent implements OnInit {
   currentPlayer:string = '';
   currentPlayerId!: string;
   currentHero:Object = {};
-  db = getFirestore();
-
-
+  mySubscription;
+   
 
   constructor(
     public currentUserService: CurrentUserService,
     private route: ActivatedRoute,
     public dialog:MatDialog,
-  ) { }
+    private router: Router
+  ) { 
+    
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+    this.mySubscription = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+  // Trick the Router into believing it's last link wasn't previously loaded
+      this.router.navigated = false;
+      }
+    }); 
+  }
 
   ngOnInit(): void {
-    
+    const firebaseApp = initializeApp(environment.firebase);
+    // const auth = getAuth(firebaseApp);
     this.route.params.subscribe((params) => {
       this.gameId = params['id'];
       // this.currentUserService.getCurrentUser(); // testen ob die Funktion hier aufgerufen werden muss oder ob die nachfolgenden Zeilen auch so ausgeführt werden
@@ -54,11 +67,13 @@ export class GameComponent implements OnInit {
     })
 
     dialogRef.afterClosed().subscribe(result => {
+      
+      const db = getFirestore();
       this.setHeroToUser(result.data);
       const updateData = {
         choosenHero: this.user.choosenHero,
       }
-      const docRef = doc(this.db, 'users', this.currentPlayerId);
+      const docRef = doc(db, 'users', this.currentPlayerId);
       updateDoc(docRef, updateData);
     }
     )

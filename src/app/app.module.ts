@@ -39,9 +39,9 @@ import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialo
   imports: [
     BrowserModule,
     AppRoutingModule,
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
     AngularFireModule.initializeApp(environment.firebase),
     provideAuth(() => getAuth()),
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
     MatDialogModule,
     FormsModule,
     MatFormFieldModule,
@@ -53,7 +53,7 @@ import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialo
     MatCardModule,
     MatButtonModule,
   ],
-  providers: [],
+  providers: [ ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
