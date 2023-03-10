@@ -55,7 +55,7 @@ export class StartscreenComponent implements OnInit{
 
     dialogRef.afterClosed().subscribe(result => {
       this.setGameSettings(result.data);
-      this.currentGameId = result.data.gameId; //wird nur für addHero() gebraucht und kann nach auslagerung raus
+      this.currentGameId = result.data.gameId;
       const docRef = doc(this.db, 'games', result.data.gameId);
       setDoc(docRef, this.game.toJSON())
       .then(()=> {
@@ -73,18 +73,6 @@ export class StartscreenComponent implements OnInit{
     }
   }
 
-
-  //Code um einen einzelnen Helden dem Spiel hinzuzufügen
-  //Die ID des Spiels muss bekannt sein. 
-  addHero() {
-    this.game.choosenHeros = [this.barbar.toJSON()];
-    const docRef = doc(this.db, 'games', this.currentGameId);
-    console.log(this.currentGameId);
-    const updateData = {
-      choosenHeros: this.game.choosenHeros,
-    }
-    updateDoc(docRef, updateData )
-  }
 
   logout() {
     signOut(this.auth)

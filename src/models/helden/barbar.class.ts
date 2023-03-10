@@ -3,7 +3,7 @@ import { Hero, shuffle } from "./hero.class";
 export class Barbar extends Hero {
     public override heroName: string = 'Barbar';
     public override heroStack: string[] = [];
-    public heroPower: string = 'Schlagkräftige Argumente';
+    public override heroPower: string = 'Schlagkräftige Argumente';
 
     constructor() {
         super();

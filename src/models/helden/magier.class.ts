@@ -3,7 +3,7 @@ import { Hero, shuffle } from "./hero.class";
 export class Magier extends Hero {
     public override heroName: string = 'Magier';
     public override heroStack: string[] = [];
-    public heroPower: string = 'Zeit einfrieren';
+    public override heroPower: string = 'Zeit einfrieren';
 
     constructor() {
         super();

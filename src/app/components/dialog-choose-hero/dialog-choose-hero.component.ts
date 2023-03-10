@@ -57,7 +57,6 @@ export class DialogChooseHeroComponent {
   getChoosenHero(choosenHero:any) {
     console.log(choosenHero)
     this.dialogRef.close({data: {
-      numberOfPlayer: this.numberOfPlayer,
       choosenHero: choosenHero,
     }})
   }

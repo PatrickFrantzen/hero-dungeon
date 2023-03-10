@@ -1,22 +1,15 @@
 export class Hero {
     public heroName: string = '';
     public heroStack: string[] = [];
+    public heroPower: string = '';
 
-    constructor() {
-        // for (let i = 0; i < 8; i++) {
-        //     this.heroStack.push('red');
-        //     this.heroStack.push('blue');
-        //     this.heroStack.push('green');
-        //     this.heroStack.push('yellow');
-        //     this.heroStack.push('purple');
-        // }
-        // shuffle(this.heroStack)
-    }
+    constructor() {}
 
     public toJSON() {
         return {
             heroName: this.heroName,
-            heroStack: this.heroStack
+            heroStack: this.heroStack,
+            heroPower: this.heroPower,
         }
         
     }

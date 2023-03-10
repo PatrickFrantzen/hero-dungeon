@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
-import { initializeApp } from '@angular/fire/app';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'

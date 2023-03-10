@@ -3,7 +3,7 @@ import { Hero, shuffle } from "./hero.class";
 export class Walküre extends Hero {
     public override heroName: string = 'Walküre';
     public override heroStack: string[] = [];
-    public heroPower: string = 'Verleiht Flügel';
+    public override heroPower: string = 'Verleiht Flügel';
 
     constructor() {
         super();

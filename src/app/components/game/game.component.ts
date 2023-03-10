@@ -24,7 +24,6 @@ export class GameComponent implements OnInit {
   db = getFirestore();
 
 
-  @Input() numberOfPlayers!: number;
 
   constructor(
     public currentUserService: CurrentUserService,
@@ -36,7 +35,7 @@ export class GameComponent implements OnInit {
     
     this.route.params.subscribe((params) => {
       this.gameId = params['id'];
-      this.currentUserService.getCurrentUser();
+      // this.currentUserService.getCurrentUser(); // testen ob die Funktion hier aufgerufen werden muss oder ob die nachfolgenden Zeilen auch so ausgeführt werden
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
@@ -49,15 +48,18 @@ export class GameComponent implements OnInit {
 
   openDialog() {
     let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
-      data: {numberOfPlayer: this.numberOfPlayers,
+      data: {
              choosenHero: this.currentHero 
             }
     })
 
     dialogRef.afterClosed().subscribe(result => {
       this.setHeroToUser(result.data);
+      const updateData = {
+        choosenHero: this.user.choosenHero,
+      }
       const docRef = doc(this.db, 'users', this.currentPlayerId);
-      setDoc(docRef, this.user.toJSON());
+      updateDoc(docRef, updateData);
     }
     )
   }
