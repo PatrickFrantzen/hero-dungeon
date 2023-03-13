@@ -1,7 +1,7 @@
 export class Monster {
     public monsterStack: Array<object> = [];
 
-    constructor(difficulty: string) {
+    constructor(difficulty: string, numberOfPlayer: number) {
 
         if (difficulty == 'easy') {
             for (let i = 0; i < 3; i++) {

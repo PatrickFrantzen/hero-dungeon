@@ -4,6 +4,7 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { CurrentUserService } from 'src/app/services/current-user.service';
+import { CurrentGameService } from 'src/app/services/current-game.service';
 import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
@@ -11,6 +12,7 @@ import { initializeApp } from '@angular/fire/app';
 import { environment } from 'src/environments/environment';
 import { getAuth } from '@angular/fire/auth';
 import { Monster } from 'src/models/monster/monster.class';
+
 
 @Component({
   selector: 'app-game',
@@ -25,12 +27,17 @@ export class GameComponent implements OnInit {
   currentPlayer:string = '';
   currentPlayerId!: string;
   currentHero:Object = {};
+  numberOfPlayers: number = 0;
+  gameDifficulty: string = '';
+  gameIsLost: boolean = false;
+  enemy: string = '';
   mySubscription;
   monster!:Monster;
-   
+  db = getFirestore();
 
   constructor(
     public currentUserService: CurrentUserService,
+    public currentGameService: CurrentGameService,
     private route: ActivatedRoute,
     public dialog:MatDialog,
     private router: Router
@@ -47,19 +54,25 @@ export class GameComponent implements OnInit {
 
   ngOnInit(): void {
     const firebaseApp = initializeApp(environment.firebase);
-    // const auth = getAuth(firebaseApp);
     this.route.params.subscribe((params) => {
       this.gameId = params['id'];
-      // this.currentUserService.getCurrentUser(); // testen ob die Funktion hier aufgerufen werden muss oder ob die nachfolgenden Zeilen auch so ausgeführt werden
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
-      this.monster = new Monster('easy');
+      this.currentGameService.getCurrentGame(this.gameId).then((response) => {
+        this.numberOfPlayers = response!['numberOfPlayers'];
+        this.gameDifficulty = response!['difficulty'];
+        this.gameIsLost = response!['isLost'];
+        this.enemy = response!['currentEnemy'];
+      }
+      );
+      this.monster = new Monster(this.gameDifficulty, this.numberOfPlayers);
       if (isEmpty(this.currentHero)) {
         this.openDialog()
         console.log(this.currentPlayerId)
       } 
-      console.log(this.monster)
+      console.log(this.monster, this.numberOfPlayers)
+
     });
   }
 
@@ -71,13 +84,11 @@ export class GameComponent implements OnInit {
     })
 
     dialogRef.afterClosed().subscribe(result => {
-      
-      const db = getFirestore();
       this.setHeroToUser(result.data);
       const updateData = {
         choosenHero: this.user.choosenHero,
       }
-      const docRef = doc(db, 'users', this.currentPlayerId);
+      const docRef = doc(this.db, 'users', this.currentPlayerId);
       updateDoc(docRef, updateData);
     }
     )
