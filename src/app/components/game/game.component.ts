@@ -10,6 +10,7 @@ import { User } from 'src/models/user.class';
 import { initializeApp } from '@angular/fire/app';
 import { environment } from 'src/environments/environment';
 import { getAuth } from '@angular/fire/auth';
+import { Monster } from 'src/models/monster/monster.class';
 
 @Component({
   selector: 'app-game',
@@ -25,6 +26,7 @@ export class GameComponent implements OnInit {
   currentPlayerId!: string;
   currentHero:Object = {};
   mySubscription;
+  monster!:Monster;
    
 
   constructor(
@@ -52,10 +54,12 @@ export class GameComponent implements OnInit {
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
+      this.monster = new Monster('easy');
       if (isEmpty(this.currentHero)) {
         this.openDialog()
         console.log(this.currentPlayerId)
-      }
+      } 
+      console.log(this.monster)
     });
   }
 
