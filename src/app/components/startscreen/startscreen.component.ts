@@ -8,6 +8,7 @@ import { Auth, signOut } from '@angular/fire/auth';
 import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
 import { Router } from '@angular/router';
 import { CurrentUserService } from 'src/app/services/current-user.service';
+import { Monster } from 'src/models/monster/monster.class';
 
 @Component({
   selector: 'app-startscreen',
@@ -19,13 +20,14 @@ export class StartscreenComponent implements OnInit{
   playerNumber!:number;
   difficulty!:string;
   gameId!:string;
-
+  monsterSetting!:string;
   currentGameId: string = '';
   game: Game = new Game();
   GameSetting:any;
   hero: Hero = new Hero;
   barbar:Barbar = new Barbar;
   choosenHeros: any = [];
+  monster!: Monster;
   db = getFirestore();
 
 
@@ -70,6 +72,15 @@ export class StartscreenComponent implements OnInit{
       this.game.numberOfPlayers = data.numberOfPlayer;
       this.game.difficulty = data.difficulty;
       this.game.gameId = data.gameId;
+      this.monsterSetting = `${data.difficulty}+${data.numberOfPlayer}`;
+      this.game.monsterStack = new Monster(this.monsterSetting).monsterStack;
+      this.game.allBosses = new Monster(this.monsterSetting).bossCollection;
+      this.game.currentBoss = this.game.allBosses[0];
+
+      //monsterSettings aus dem constructor rausholen, damit man auch ohne die Variable auf newMonster.bossCollection zugreifen kann.
+      //dann eine function in monster.class schreiben um den monsterStack zu holen
+      //damit kann dann der currentBoss mit in die monsterSetting rein um den SwitchCase näher zu beschreiben
+      //oder eine if/else Abfrage des currentBoss und darin dann spezifische SwitchCase damit die Switch nicht zu groß wird für alle Bosse/Schwierigkeitsgrad/Spieler
     }
   }
 

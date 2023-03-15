@@ -5,31 +5,122 @@ export class Monster {
 
         switch (setting) {
             case 'easy+2':
-                this.loadMonster(10)
+                this.loadMonster(10);
+                this.loadQuests(4);
+                this.shuffle(this.monsterStack);
                 break;
             case 'easy+3':
-                this.loadMonster(12)
+                this.loadMonster(12);
+                this.loadQuests(6);
+                this.shuffle(this.monsterStack);
                 break;
             case 'easy+4':
-                this.loadMonster(14)
+                this.loadMonster(14);
+                this.loadQuests(8);
+                this.shuffle(this.monsterStack);
                 break;
                 case 'easy+5':
-                    this.loadMonster(16)
+                    this.loadMonster(16);
+                    this.loadQuests(10);
+                    this.shuffle(this.monsterStack);
                     break;
             default:
                 break;
         }
-
-
     }
+
+
 
     loadMonster(numberOfMonsterCards: number) {
         for (let i = 0; i < numberOfMonsterCards; i++) {
-            const test = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
-            this.monsterStack.push(test);
+            const monsterStack = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
+            this.monsterStack.push(monsterStack);
         }
         console.log('monsterCollection', this.monsterStack)
     }
+
+    loadQuests(numberOfQuestCards: number) {
+        for (let i = 0; i < numberOfQuestCards; i++) {
+            const questStack = this.questCollection[Math.floor(Math.random() * this.questCollection.length)]
+            this.monsterStack.push(questStack);
+        }
+    }
+
+    questCollection: Array<object> = [
+        {
+            "questname": "Feindselige Riesenkrabbe",
+            "description": "Mini-Boss",
+            "token": ['green', 'green', 'green', 'yellow', 'yellow', 'yellow']
+        },
+        {
+            "questname": "Ein Bonsai-T-Rex",
+            "description": "Mini-Boss",
+            "token": ['yellow', 'yellow', 'green', 'green', 'red', 'red']
+        },
+        {
+            "questname": "Der Sammler",
+            "description": "Mini-Boss",
+            "token": ['yellow', 'green', 'red', 'blue', 'purple']
+        },
+        {
+            "questname": "Plötzliche Krankheit",
+            "description": "Jeder legt alle Handkarten auf den eigenen Ablagestapel.",
+            "token": ['']
+        },
+        {
+            "questname": "Chaos",
+            "description": "Jeder gibt seine Handkarten einem Mitspieler.",
+            "token": ['']
+        },
+        {
+            "questname": "Ein Wehweh",
+            "description": "Jeder legt 1 Karte auf den eigenen Ablagestapel.",
+            "token": ['']
+        },
+        {
+            "questname": "Hinterhalt",
+            "description": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
+            "token": ['']
+        },
+        {
+            "questname": "Falltür",
+            "description": "Jeder legt 3 Karten auf den eigenen Ablagestapel.",
+            "token": ['']
+        },
+        {
+            "questname": "Der Rattenkönig",
+            "description": "Mini-Boss",
+            "token": ['purple', 'purple', 'purple', 'red', 'red', 'red']
+        },
+        {
+            "questname": "Ein Zauberer mit schlechtem Ruf",
+            "description": "Mini-Boss",
+            "token": ['blue', 'blue', 'blue', 'blue', 'purple', 'purple']
+        },
+    ];
+
+    bossCollection: Array<object> = [
+        {
+            "bossname": "Baby-Barbar",
+            "tokens": ['red', 'red', 'green', 'green', 'purple', 'purple', 'purple']
+        },
+        {
+            "bossname": "Der Flecken-Schrecken",
+            "tokens": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'yellow', 'yellow', 'yellow' ]
+        },
+        {
+            "bossname": "Zola, die Gorgone",
+            "tokens": ['red', 'red', 'red', 'red', 'yellow', 'yellow', 'yellow', 'purple', 'purple', 'purple']
+        },
+        {
+            "bossname": "Verdammt, ein Drache!!!",
+            "tokens": ['red', 'yellow', 'purple', 'purple', 'purple', 'purple', 'green', 'green', 'green', 'green', 'green', 'green']
+        },
+        {
+            "bossname": "Der Dungeon-Overlord",
+            "tokens": ['red', 'red', 'red', 'green', 'green', 'green', 'yellow', 'yellow', 'yellow', 'blue', 'blue', 'blue']
+        },
+    ];
 
     monsterCollection: Array<object> = [
         {
@@ -232,12 +323,30 @@ export class Monster {
             "tokens": ['green', 'yellow', 'green'],
             "type": "Person"
         }
-    ]
+    ];
+
+    shuffle(array:object[]) {
+        let currentIndex = array.length, randomIndex;
+    
+        // While there remain elements to shuffle.
+        while (currentIndex != 0) {
+    
+            // Pick a remaining element.
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+    
+            // And swap it with the current element.
+            [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]];
+        }
+    
+        return array;
+    };
 
     public toJSON() {
         return {
             monsterStack: this.monsterStack
         }
 
-    }
+    };
 }

@@ -11,7 +11,10 @@ export class CurrentGameService {
   currentNumberOfPlayers: number = 0;
   currentGameDifficulty: string = '';
   currentGameIsLost: boolean = false;
-  currentEnemy: string = '';
+  currentEnemy: object[] = [];
+  currentMonsterStack: string[] = [];
+  currentBoss: {} = {};
+  allBosses: object[] = [];
   db = getFirestore();
 
   constructor() { }
