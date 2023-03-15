@@ -1,21 +1,35 @@
 export class Monster {
     public monsterStack: Array<object> = [];
 
-    constructor(difficulty: string, numberOfPlayer: number) {
+    constructor(setting: string) {
 
-        if (difficulty == 'easy' && numberOfPlayer == 2) { // Switch case funktion einbauen um i zu bestimmen, dann i als Parameter
-            //an die Funktion mit der For-SChleife weitergeben
-            for (let i = 0; i < 10; i++) {
-
-                const test = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
-                console.log('monsterTest', test)
-                this.monsterStack.push(test);
-            }
-            console.log('monsterCollection', this.monsterStack)
+        switch (setting) {
+            case 'easy+2':
+                this.loadMonster(10)
+                break;
+            case 'easy+3':
+                this.loadMonster(12)
+                break;
+            case 'easy+4':
+                this.loadMonster(14)
+                break;
+                case 'easy+5':
+                    this.loadMonster(16)
+                    break;
+            default:
+                break;
         }
+
 
     }
 
+    loadMonster(numberOfMonsterCards: number) {
+        for (let i = 0; i < numberOfMonsterCards; i++) {
+            const test = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
+            this.monsterStack.push(test);
+        }
+        console.log('monsterCollection', this.monsterStack)
+    }
 
     monsterCollection: Array<object> = [
         {
@@ -80,7 +94,7 @@ export class Monster {
         },
         {
             "name": "Knappe Nedward",
-            "tokens": ['yellow', 'yellow','green'],
+            "tokens": ['yellow', 'yellow', 'green'],
             "type": "Person"
         },
         {

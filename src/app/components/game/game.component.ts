@@ -31,6 +31,7 @@ export class GameComponent implements OnInit {
   gameDifficulty: string = '';
   gameIsLost: boolean = false;
   enemy: string = '';
+  monsterSetting!:string;
   mySubscription;
   monster!:Monster;
   db = getFirestore();
@@ -59,21 +60,33 @@ export class GameComponent implements OnInit {
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
-      this.currentGameService.getCurrentGame(this.gameId).then((response) => {
+      this.currentGameService.getCurrentGame(this.gameId)
+      .then((response) => {
         this.numberOfPlayers = response!['numberOfPlayers'];
         this.gameDifficulty = response!['difficulty'];
         this.gameIsLost = response!['isLost'];
         this.enemy = response!['currentEnemy'];
       }
-      );
-      this.monster = new Monster(this.gameDifficulty, this.numberOfPlayers);
+      )
+      .then(() => {
+        this.setMonsterSetting(this.gameDifficulty, this.numberOfPlayers);
+        //funktion wird jedes mal ausgeführt wenn das Spiel geladen wird.
+        //Monstersetting muss beim Starten des Spiels ausgeführt und dann im Backend gespeichert werden.
+        //Boss und Aktionskarten müssen dem MonsterStack noch hinzugefügt werden und dann ins Backend.
+        //Beim Öffnen des Spiels per Laden müssen dann der Monsterstack geladen werden
+      })
+      
       if (isEmpty(this.currentHero)) {
         this.openDialog()
-        console.log(this.currentPlayerId)
       } 
-      console.log(this.monster, this.numberOfPlayers)
 
     });
+  }
+
+  setMonsterSetting(difficulty: string, playernumber: number) {
+    this.monsterSetting = `${difficulty}+${playernumber}`;
+    this.monster = new Monster(this.monsterSetting);
+    console.log('monster', this.monster.monsterStack)
   }
 
   openDialog() {
