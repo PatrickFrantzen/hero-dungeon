@@ -72,10 +72,10 @@ export class StartscreenComponent implements OnInit{
       this.game.numberOfPlayers = data.numberOfPlayer;
       this.game.difficulty = data.difficulty;
       this.game.gameId = data.gameId;
-      this.monsterSetting = `${data.difficulty}+${data.numberOfPlayer}`;
-      this.game.monsterStack = new Monster(this.monsterSetting).monsterStack;
-      this.game.allBosses = new Monster(this.monsterSetting).bossCollection;
+      this.game.allBosses = new Monster().bossCollection;
       this.game.currentBoss = this.game.allBosses[0];
+      this.game.monsterStack = new Monster().createMonsterStack(data.numberOfPlayer, this.game.currentBoss, data.difficulty);
+      
 
       //monsterSettings aus dem constructor rausholen, damit man auch ohne die Variable auf newMonster.bossCollection zugreifen kann.
       //dann eine function in monster.class schreiben um den monsterStack zu holen

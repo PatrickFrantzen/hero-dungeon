@@ -1,35 +1,77 @@
 export class Monster {
     public monsterStack: Array<object> = [];
 
-    constructor(setting: string) {
+    constructor() { }
 
-        switch (setting) {
-            case 'easy+2':
-                this.loadMonster(10);
-                this.loadQuests(4);
-                this.shuffle(this.monsterStack);
+    createMonsterStack(numberOfPlayers: number, currentBoss: any, difficulty: string) {
+        if (currentBoss.bossname == 'Baby-Barbar') {
+            if (difficulty == 'easy') {
+                this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
+            } else if (difficulty == 'medium') {
+                this.getMonsterForGame(numberOfPlayers, 14, 4, 16, 6, 18, 8, 20, 10);
+            } else {
+                this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
+            }
+        } else if (currentBoss.bossname == 'Der Flecken-Schrecken') {
+            if (difficulty == 'easy') {
+                this.getMonsterForGame(numberOfPlayers, 14, 4, 16, 6, 18, 8, 20, 10);
+            } else if (difficulty == 'medium')  {
+                this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
+            }else {
+                this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
+            }
+        } else if (currentBoss.bossname == 'Zola, die Gorgone') {
+            if (difficulty == 'easy') {
+                this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
+            } else if (difficulty == 'medium')  {
+                this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
+            }else {
+                this.getMonsterForGame(numberOfPlayers, 26, 4, 28, 6, 30, 8, 32, 10);
+            }
+        } else if (currentBoss.bossname == 'Verdammt, ein Drache!!!') {
+            if (difficulty == 'easy') {
+                this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
+            } else if (difficulty == 'medium')  {
+                this.getMonsterForGame(numberOfPlayers, 26, 4, 28, 6, 30, 8, 32, 10);
+            }else {
+                this.getMonsterForGame(numberOfPlayers, 30, 4, 32, 6, 34, 8, 36, 10);
+            }
+        } else {
+            if (difficulty == 'easy') {
+                this.getMonsterForGame(numberOfPlayers, 26, 4, 28, 6, 30, 8, 32, 10);
+            } else if (difficulty == 'medium')  {
+                this.getMonsterForGame(numberOfPlayers, 30, 4, 32, 6, 34, 8, 36, 10);
+            }else {
+                this.getMonsterForGame(numberOfPlayers, 34, 4, 36, 6, 38, 8, 40, 10);
+            }
+        }
+        return this.monsterStack
+    }
+
+    getMonsterForGame(numberOfPlayers: number, monsterTwo: number, questTwo: number, monsterThree: number, questThree: number,
+        monsterFour: number, questFour: number, monsterFive: number, questFive: number) {
+        switch (numberOfPlayers) {
+            case 2:
+                this.loadMonster(monsterTwo);
+                this.loadQuests(questTwo);
                 break;
-            case 'easy+3':
-                this.loadMonster(12);
-                this.loadQuests(6);
-                this.shuffle(this.monsterStack);
+            case 3:
+                this.loadMonster(monsterThree);
+                this.loadQuests(questThree);
                 break;
-            case 'easy+4':
-                this.loadMonster(14);
-                this.loadQuests(8);
-                this.shuffle(this.monsterStack);
+            case 4:
+                this.loadMonster(monsterFour);
+                this.loadQuests(questFour);
                 break;
-                case 'easy+5':
-                    this.loadMonster(16);
-                    this.loadQuests(10);
-                    this.shuffle(this.monsterStack);
-                    break;
+            case 5:
+                this.loadMonster(monsterFive);
+                this.loadQuests(questFive);
+                break;
             default:
                 break;
         }
+        this.shuffle(this.monsterStack);
     }
-
-
 
     loadMonster(numberOfMonsterCards: number) {
         for (let i = 0; i < numberOfMonsterCards; i++) {
@@ -106,7 +148,7 @@ export class Monster {
         },
         {
             "bossname": "Der Flecken-Schrecken",
-            "tokens": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'yellow', 'yellow', 'yellow' ]
+            "tokens": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'yellow', 'yellow', 'yellow']
         },
         {
             "bossname": "Zola, die Gorgone",
@@ -325,21 +367,21 @@ export class Monster {
         }
     ];
 
-    shuffle(array:object[]) {
+    shuffle(array: object[]) {
         let currentIndex = array.length, randomIndex;
-    
+
         // While there remain elements to shuffle.
         while (currentIndex != 0) {
-    
+
             // Pick a remaining element.
             randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex--;
-    
+
             // And swap it with the current element.
             [array[currentIndex], array[randomIndex]] = [
                 array[randomIndex], array[currentIndex]];
         }
-    
+
         return array;
     };
 
