@@ -5,7 +5,7 @@ import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameService } from 'src/app/services/current-game.service';
-import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
 import { initializeApp } from '@angular/fire/app';
@@ -61,12 +61,20 @@ export class GameComponent implements OnInit {
 
   ngOnInit(): void {
     const firebaseApp = initializeApp(environment.firebase);
-    this.route.params.subscribe((params) => {
+    this.route.params.subscribe(async (params) => {
       //When url is changed the Hero Data of this User is loaded
       this.gameId = params['id'];
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
+      //
+      if (this.currentHero) {
+        const docRef = doc(this.db, 'users', this.currentPlayerId);
+        const docSnap = await getDoc(docRef);
+        let data = docSnap.data();
+        this.initialHand = data!['handstack'];
+        console.log('initHand', this.initialHand)
+      }
       this.currentGameService.getCurrentGame(this.gameId)
       .then((response) => {
         //get Data from Server for Game
@@ -80,15 +88,12 @@ export class GameComponent implements OnInit {
       })
       //if currentHero is empty a Dialog is opened
       if (isEmpty(this.currentHero)) {
-        this.openDialog()
-      } else {
-        this.drawCards(this.currentHero)
-      }
-      
+        this.openDialog();
+      }      
     });
   }
 
-  drawCards(currentHero:any) {
+  drawCards(currentHero: any) {
     for (let i = 0; i < 5; i++) {
       const cardsinHand = currentHero.value.heroStack.shift();
       this.initialHand.push(cardsinHand); 
@@ -115,7 +120,9 @@ export class GameComponent implements OnInit {
         choosenHero: this.user.choosenHero,
       }
       const docRef = doc(this.db, 'users', this.currentPlayerId);
-      updateDoc(docRef, updateData);
+      updateDoc(docRef, updateData).then(() => {
+        this.drawCards(this.user.choosenHero)
+      });
     }
     )
   }
