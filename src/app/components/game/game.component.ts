@@ -12,6 +12,7 @@ import { initializeApp } from '@angular/fire/app';
 import { environment } from 'src/environments/environment';
 import { getAuth } from '@angular/fire/auth';
 import { Monster } from 'src/models/monster/monster.class';
+import { Hero } from 'src/models/helden/hero.class';
 
 
 @Component({
@@ -39,6 +40,8 @@ export class GameComponent implements OnInit {
   currentBoss: object[] = [];
   allBosses: object[] = [];
 
+  initialHand:string[] = [];
+
   constructor(
     public currentUserService: CurrentUserService,
     public currentGameService: CurrentGameService,
@@ -59,12 +62,14 @@ export class GameComponent implements OnInit {
   ngOnInit(): void {
     const firebaseApp = initializeApp(environment.firebase);
     this.route.params.subscribe((params) => {
+      //When url is changed the Hero Data of this User is loaded
       this.gameId = params['id'];
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
       this.currentGameService.getCurrentGame(this.gameId)
       .then((response) => {
+        //get Data from Server for Game
         this.numberOfPlayers = response!['numberOfPlayers'];
         this.gameDifficulty = response!['difficulty'];
         this.gameIsLost = response!['isLost'];
@@ -73,10 +78,27 @@ export class GameComponent implements OnInit {
         this.currentBoss = response!['currentBoss'];
         this.allBosses = response!['allBosses'];
       })
+      //if currentHero is empty a Dialog is opened
       if (isEmpty(this.currentHero)) {
         this.openDialog()
-      } 
+      } else {
+        this.drawCards(this.currentHero)
+      }
+      
     });
+  }
+
+  drawCards(currentHero:any) {
+    for (let i = 0; i < 5; i++) {
+      const cardsinHand = currentHero.value.heroStack.shift();
+      this.initialHand.push(cardsinHand); 
+    }
+    const updateData = {
+      handstack: this.initialHand
+    }
+    const docRef = doc(this.db, 'users', this.currentPlayerId)
+    updateDoc(docRef, updateData);
+    console.log('initialHand', this.initialHand)
   }
 
 
