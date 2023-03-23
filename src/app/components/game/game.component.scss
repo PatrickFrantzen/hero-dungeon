@@ -26,5 +26,8 @@
         position: absolute;
         bottom: 15px;
         width: 150px;
+        &:hover {
+            cursor: pointer;
+        }
     }
 }

@@ -93,18 +93,7 @@ export class GameComponent implements OnInit {
     });
   }
 
-  drawCards(currentHero: any) {
-    for (let i = 0; i < 5; i++) {
-      const cardsinHand = currentHero.value.heroStack.shift();
-      this.initialHand.push(cardsinHand); 
-    }
-    const updateData = {
-      handstack: this.initialHand
-    }
-    const docRef = doc(this.db, 'users', this.currentPlayerId)
-    updateDoc(docRef, updateData);
-    console.log('initialHand', this.initialHand)
-  }
+
 
 
   openDialog() {
@@ -131,6 +120,23 @@ export class GameComponent implements OnInit {
     if (data) {
       this.user.choosenHero = data.choosenHero;
     }
+  }
+
+  drawCards(currentHero: any) {
+    for (let i = 0; i < 5; i++) {
+      const cardsinHand = currentHero.value.heroStack.shift();
+      this.initialHand.push(cardsinHand); 
+    }
+    const updateData = {
+      handstack: this.initialHand
+    }
+    const docRef = doc(this.db, 'users', this.currentPlayerId)
+    updateDoc(docRef, updateData);
+    console.log('initialHand', this.initialHand)
+  }
+
+  chooseCard(card:any) {
+    console.log('testCard', card)
   }
 
 }
