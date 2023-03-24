@@ -6,7 +6,8 @@ import { AppComponent } from './app.component';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from '../environments/environment';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { FirestoreModule, getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { list } from '@angular/fire/database';
 import { provideAuth,getAuth } from '@angular/fire/auth';
 
 import { MatDialogModule } from '@angular/material/dialog';
@@ -24,6 +25,7 @@ import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
 import { SigninComponent } from './components/signin/signin.component';
 import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialog-choose-hero.component';
+import { enableIndexedDbPersistence, Firestore } from '@angular/fire/firestore/firebase';
 
 
 @NgModule({
@@ -41,6 +43,10 @@ import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialo
     AppRoutingModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     AngularFireModule.initializeApp(environment.firebase),
+    provideFirestore(() => {
+      const firestore = getFirestore();
+      return firestore;
+  }),
     provideAuth(() => getAuth()),
     MatDialogModule,
     FormsModule,
@@ -48,7 +54,8 @@ import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialo
     MatInputModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
-    AngularFirestoreModule,
+    AngularFireModule,
+    FirestoreModule,
     MatSelectModule,
     MatCardModule,
     MatButtonModule,
@@ -57,3 +64,5 @@ import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialo
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+
+

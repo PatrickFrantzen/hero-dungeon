@@ -8,11 +8,7 @@ import { CurrentGameService } from 'src/app/services/current-game.service';
 import { getFirestore, doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
-import { initializeApp } from '@angular/fire/app';
-import { environment } from 'src/environments/environment';
-import { getAuth } from '@angular/fire/auth';
 import { Monster } from 'src/models/monster/monster.class';
-import { Hero } from 'src/models/helden/hero.class';
 
 
 @Component({
@@ -36,11 +32,11 @@ export class GameComponent implements OnInit {
   monsterSetting!:string;
   mySubscription;
   monster!:Monster;
-  db = getFirestore();
   currentBoss: object[] = [];
   allBosses: object[] = [];
 
   initialHand:string[] = [];
+  db = getFirestore();
 
   constructor(
     public currentUserService: CurrentUserService,
@@ -60,7 +56,8 @@ export class GameComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const firebaseApp = initializeApp(environment.firebase);
+    // const firebaseApp = initializeApp(environment.firebase);
+    // this.db = getFirestore(firebaseApp);
     this.route.params.subscribe(async (params) => {
       //When url is changed the Hero Data of this User is loaded
       this.gameId = params['id'];
