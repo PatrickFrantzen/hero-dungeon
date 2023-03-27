@@ -58,6 +58,7 @@ export class GameComponent implements OnInit {
   ngOnInit(): void {
     // const firebaseApp = initializeApp(environment.firebase);
     // this.db = getFirestore(firebaseApp);
+    //test
     this.route.params.subscribe(async (params) => {
       //When url is changed the Hero Data of this User is loaded
       this.gameId = params['id'];
