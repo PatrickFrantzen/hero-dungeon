@@ -11,7 +11,7 @@ const routes: Routes = [
   {path: 'signIn', component:SigninComponent, ...canActivate( () => redirectLoggedInTo(['startscreen']))},
   {path: 'signUp', component: SignupComponent, ...canActivate( () => redirectLoggedInTo(['startscreen']))},
   {path: 'startscreen', component: StartscreenComponent, ...canActivate(() => redirectUnauthorizedTo(['signIn']))},
-  {path: 'game/:id', component: GameComponent},
+  {path: 'game/:id', component: GameComponent, ...canActivate(() => redirectUnauthorizedTo(['game/:id']))},
 ];
 
 @NgModule({

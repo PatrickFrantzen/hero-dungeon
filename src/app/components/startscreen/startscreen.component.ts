@@ -5,7 +5,7 @@ import { Hero } from 'src/models/helden/hero.class';
 import { Barbar } from 'src/models/helden/barbar.class';
 import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
-import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, updateDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { Monster } from 'src/models/monster/monster.class';

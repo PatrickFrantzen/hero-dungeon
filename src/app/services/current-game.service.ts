@@ -1,7 +1,7 @@
 import { BlockScrollStrategy } from '@angular/cdk/overlay';
 import { Injectable } from '@angular/core';
 import { initializeApp } from '@angular/fire/app';
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc } from '@angular/fire/firestore';
 import { environment } from 'src/environments/environment';
 
 @Injectable({

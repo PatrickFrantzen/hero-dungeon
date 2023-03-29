@@ -1,14 +1,18 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
-import { CurrentUserService } from 'src/app/services/current-user.service';
+
 import { CurrentGameService } from 'src/app/services/current-game.service';
-import { getFirestore, doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
+import { Firestore, collectionData, collection, doc, getFirestore, getDoc, updateDoc } from '@angular/fire/firestore';
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
 import { Monster } from 'src/models/monster/monster.class';
+import { initializeApp } from '@angular/fire/app';
+import { environment } from 'src/environments/environment';
+import { Observable } from 'rxjs';
+import { CurrentUserService } from 'src/app/services/current-user.service';
 
 
 @Component({
@@ -20,52 +24,55 @@ export class GameComponent implements OnInit {
 
   game = new Game();
   user = new User();
-  gameId:string = '';
-  currentPlayer:string = '';
+  gameId: string = '';
+  currentPlayer: string = '';
   currentPlayerId!: string;
-  currentHero:Object = {};
+  currentHero: Object = {};
   numberOfPlayers: number = 0;
   gameDifficulty: string = '';
   gameIsLost: boolean = false;
   enemy: string = '';
   monsterStack: string[] = [];
-  monsterSetting!:string;
-  mySubscription;
-  monster!:Monster;
+  monsterSetting!: string;
+  // mySubscription;
+  monster!: Monster;
   currentBoss: object[] = [];
   allBosses: object[] = [];
 
-  initialHand:string[] = [];
+  initialHand: string[] = [];
   db = getFirestore();
+
 
   constructor(
     public currentUserService: CurrentUserService,
     public currentGameService: CurrentGameService,
     private route: ActivatedRoute,
-    public dialog:MatDialog,
+    public dialog: MatDialog,
     private router: Router
-  ) { 
-    
-    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-    this.mySubscription = this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-  // Trick the Router into believing it's last link wasn't previously loaded
-      this.router.navigated = false;
-      }
-    }); 
+  ) {
+
+    //   this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+    //   this.mySubscription = this.router.events.subscribe((event) => {
+    //     if (event instanceof NavigationEnd) {
+    // // Trick the Router into believing it's last link wasn't previously loaded
+    //     this.router.navigated = false;
+    //     }
+    //   }); 
+
   }
 
   ngOnInit(): void {
-    // const firebaseApp = initializeApp(environment.firebase);
-    // this.db = getFirestore(firebaseApp);
-    //test test
     this.route.params.subscribe(async (params) => {
       //When url is changed the Hero Data of this User is loaded
-      this.gameId = params['id'];
+      this.gameId = params['id']
+    });
+    this.currentUserService.getCurrentUser().then((response) => {
+      console.log('gameResponse', response);
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
-      //
+      console.log('addedHero', this.currentHero);
+    }).then(async () => {
       if (this.currentHero) {
         const docRef = doc(this.db, 'users', this.currentPlayerId);
         const docSnap = await getDoc(docRef);
@@ -73,8 +80,10 @@ export class GameComponent implements OnInit {
         this.initialHand = data!['handstack'];
         console.log('initHand', this.initialHand)
       }
+    }).then(() => {
       this.currentGameService.getCurrentGame(this.gameId)
       .then((response) => {
+        console.log('CurrentgameResponse', response)
         //get Data from Server for Game
         this.numberOfPlayers = response!['numberOfPlayers'];
         this.gameDifficulty = response!['difficulty'];
@@ -83,22 +92,32 @@ export class GameComponent implements OnInit {
         this.monsterStack = response!['monsterStack'];
         this.currentBoss = response!['currentBoss'];
         this.allBosses = response!['allBosses'];
-      })
-      //if currentHero is empty a Dialog is opened
-      if (isEmpty(this.currentHero)) {
-        this.openDialog();
-      }      
+      }).then(() => {
+        //if currentHero is empty a Dialog is opened
+        if (isEmpty(this.currentHero)) {
+          this.openDialog();
+        }
+      });
     });
+
+
+  };
+
+
+  async loadHandstack() {
+    const docRef = doc(this.db, 'users', this.currentPlayerId);
+    const docSnap = await getDoc(docRef);
+    let data = docSnap.data();
+    this.initialHand = data!['handstack'];
+    console.log('initHand', this.initialHand)
   }
-
-
 
 
   openDialog() {
     let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
       data: {
-             choosenHero: this.currentHero 
-            }
+        choosenHero: this.currentHero
+      }
     })
 
     dialogRef.afterClosed().subscribe(result => {
@@ -114,7 +133,7 @@ export class GameComponent implements OnInit {
     )
   }
 
-  setHeroToUser(data:any) {
+  setHeroToUser(data: any) {
     if (data) {
       this.user.choosenHero = data.choosenHero;
     }
@@ -123,7 +142,7 @@ export class GameComponent implements OnInit {
   drawCards(currentHero: any) {
     for (let i = 0; i < 5; i++) {
       const cardsinHand = currentHero.value.heroStack.shift();
-      this.initialHand.push(cardsinHand); 
+      this.initialHand.push(cardsinHand);
     }
     const updateData = {
       handstack: this.initialHand
@@ -133,7 +152,7 @@ export class GameComponent implements OnInit {
     console.log('initialHand', this.initialHand)
   }
 
-  chooseCard(card:any) {
+  chooseCard(card: any) {
     console.log('testCard', card)
   }
 

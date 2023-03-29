@@ -4,9 +4,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from '../environments/environment';
-import { FirestoreModule, getFirestore, provideFirestore } from '@angular/fire/firestore';
+import {  getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { list } from '@angular/fire/database';
 import { provideAuth,getAuth } from '@angular/fire/auth';
 
@@ -25,7 +24,6 @@ import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
 import { SigninComponent } from './components/signin/signin.component';
 import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialog-choose-hero.component';
-import { enableIndexedDbPersistence, Firestore } from '@angular/fire/firestore/firebase';
 
 
 @NgModule({
@@ -42,11 +40,7 @@ import { enableIndexedDbPersistence, Firestore } from '@angular/fire/firestore/f
     BrowserModule,
     AppRoutingModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    AngularFireModule.initializeApp(environment.firebase),
-    provideFirestore(() => {
-      const firestore = getFirestore();
-      return firestore;
-  }),
+    provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
     MatDialogModule,
     FormsModule,
@@ -54,8 +48,6 @@ import { enableIndexedDbPersistence, Firestore } from '@angular/fire/firestore/f
     MatInputModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
-    AngularFireModule,
-    FirestoreModule,
     MatSelectModule,
     MatCardModule,
     MatButtonModule,

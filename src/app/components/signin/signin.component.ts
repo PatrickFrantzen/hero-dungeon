@@ -2,6 +2,7 @@ import { Component, OnInit} from '@angular/core';
 import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CurrentUserService } from 'src/app/services/current-user.service';
 
 @Component({
   selector: 'app-signin',
@@ -18,6 +19,7 @@ export class SigninComponent implements OnInit{
     public auth: Auth,
     private fb: FormBuilder,
     private route: Router,
+    public currentUserService: CurrentUserService,
   ) {}
 
   ngOnInit(): void {
@@ -25,6 +27,7 @@ export class SigninComponent implements OnInit{
       email : new FormControl('', Validators.required),
       password: new FormControl('', Validators.required)
     })
+    this.currentUserService.getCurrentUser();
   }
 
   logIn() {
