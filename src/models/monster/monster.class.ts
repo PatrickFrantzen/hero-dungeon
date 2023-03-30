@@ -90,53 +90,53 @@ export class Monster {
 
     questCollection: Array<object> = [
         {
-            "questname": "Feindselige Riesenkrabbe",
-            "description": "Mini-Boss",
+            "name": "Feindselige Riesenkrabbe",
+            "type": "Mini-Boss",
             "token": ['green', 'green', 'green', 'yellow', 'yellow', 'yellow']
         },
         {
-            "questname": "Ein Bonsai-T-Rex",
-            "description": "Mini-Boss",
+            "name": "Ein Bonsai-T-Rex",
+            "type": "Mini-Boss",
             "token": ['yellow', 'yellow', 'green', 'green', 'red', 'red']
         },
         {
-            "questname": "Der Sammler",
-            "description": "Mini-Boss",
+            "name": "Der Sammler",
+            "type": "Mini-Boss",
             "token": ['yellow', 'green', 'red', 'blue', 'purple']
         },
         {
-            "questname": "Plötzliche Krankheit",
-            "description": "Jeder legt alle Handkarten auf den eigenen Ablagestapel.",
+            "name": "Plötzliche Krankheit",
+            "type": "Jeder legt alle Handkarten auf den eigenen Ablagestapel.",
             "token": ['']
         },
         {
-            "questname": "Chaos",
-            "description": "Jeder gibt seine Handkarten einem Mitspieler.",
+            "name": "Chaos",
+            "type": "Jeder gibt seine Handkarten einem Mitspieler.",
             "token": ['']
         },
         {
-            "questname": "Ein Wehweh",
-            "description": "Jeder legt 1 Karte auf den eigenen Ablagestapel.",
+            "name": "Ein Wehweh",
+            "type": "Jeder legt 1 Karte auf den eigenen Ablagestapel.",
             "token": ['']
         },
         {
-            "questname": "Hinterhalt",
-            "description": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
+            "name": "Hinterhalt",
+            "type": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
             "token": ['']
         },
         {
-            "questname": "Falltür",
-            "description": "Jeder legt 3 Karten auf den eigenen Ablagestapel.",
+            "name": "Falltür",
+            "type": "Jeder legt 3 Karten auf den eigenen Ablagestapel.",
             "token": ['']
         },
         {
-            "questname": "Der Rattenkönig",
-            "description": "Mini-Boss",
+            "name": "Der Rattenkönig",
+            "type": "Mini-Boss",
             "token": ['purple', 'purple', 'purple', 'red', 'red', 'red']
         },
         {
-            "questname": "Ein Zauberer mit schlechtem Ruf",
-            "description": "Mini-Boss",
+            "name": "Ein Zauberer mit schlechtem Ruf",
+            "type": "Mini-Boss",
             "token": ['blue', 'blue', 'blue', 'blue', 'purple', 'purple']
         },
     ];
@@ -144,225 +144,230 @@ export class Monster {
     bossCollection: Array<object> = [
         {
             "bossname": "Baby-Barbar",
-            "tokens": ['red', 'red', 'green', 'green', 'purple', 'purple', 'purple']
+            "token": ['red', 'red', 'green', 'green', 'purple', 'purple', 'purple'],
+            "type": "Boss"
         },
         {
             "bossname": "Der Flecken-Schrecken",
-            "tokens": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'yellow', 'yellow', 'yellow']
+            "token": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'yellow', 'yellow', 'yellow'],
+            "type": "Boss"
         },
         {
             "bossname": "Zola, die Gorgone",
-            "tokens": ['red', 'red', 'red', 'red', 'yellow', 'yellow', 'yellow', 'purple', 'purple', 'purple']
+            "token": ['red', 'red', 'red', 'red', 'yellow', 'yellow', 'yellow', 'purple', 'purple', 'purple'],
+            "type": "Boss"
         },
         {
             "bossname": "Verdammt, ein Drache!!!",
-            "tokens": ['red', 'yellow', 'purple', 'purple', 'purple', 'purple', 'green', 'green', 'green', 'green', 'green', 'green']
+            "token": ['red', 'yellow', 'purple', 'purple', 'purple', 'purple', 'green', 'green', 'green', 'green', 'green', 'green'],
+            "type": "Boss"
         },
         {
             "bossname": "Der Dungeon-Overlord",
-            "tokens": ['red', 'red', 'red', 'green', 'green', 'green', 'yellow', 'yellow', 'yellow', 'blue', 'blue', 'blue']
+            "token": ['red', 'red', 'red', 'green', 'green', 'green', 'yellow', 'yellow', 'yellow', 'blue', 'blue', 'blue'],
+            "type": "Boss"
         },
     ];
 
     monsterCollection: Array<object> = [
         {
             "name": "Treibsand",
-            "tokens": ['purple', 'purple', 'yellow'],
+            "token": ['purple', 'purple', 'yellow'],
             "type": "Hindernis"
         },
         {
             "name": "Unsichtbare Wand",
-            "tokens": ['blue', 'blue'],
+            "token": ['blue', 'blue'],
             "type": "Hindernis"
         },
         {
             "name": "Ein etwas unbequemer Stuhl",
-            "tokens": ['red', 'purple', 'yellow'],
+            "token": ['red', 'purple', 'yellow'],
             "type": "Hindernis"
         },
         {
             "name": "Ein Rosetta-Stein-Golem",
-            "tokens": ['purple', 'yellow'],
+            "token": ['purple', 'yellow'],
             "type": "Monster"
         },
         {
             "name": "Genau 26 Ninjas",
-            "tokens": ['blue', 'purple', 'purple'],
+            "token": ['blue', 'purple', 'purple'],
             "type": "Person"
         },
         {
             "name": "William Duck I.",
-            "tokens": ['blue', 'purple', 'yellow'],
+            "token": ['blue', 'purple', 'yellow'],
             "type": "Monster"
         },
         {
             "name": "Eingestürzte Decke",
-            "tokens": ['red', 'blue', 'blue'],
+            "token": ['red', 'blue', 'blue'],
             "type": "Hindernis"
         },
         {
             "name": "Bodenloser Abgrund",
-            "tokens": ['purple', 'purple'],
+            "token": ['purple', 'purple'],
             "type": "Hindernis"
         },
         {
             "name": "Ein Ad-Hoc-Völkerballturnier",
-            "tokens": ['purple', 'purple', 'green'],
+            "token": ['purple', 'purple', 'green'],
             "type": "Hindernis"
         },
         {
             "name": "Der Karpaltunnel",
-            "tokens": ['blue', 'green', 'green'],
+            "token": ['blue', 'green', 'green'],
             "type": "Hindernis"
         },
         {
             "name": "Zombies ohne Ende",
-            "tokens": ['red', 'red', 'red'],
+            "token": ['red', 'red', 'red'],
             "type": "Monster"
         },
         {
             "name": "Steve",
-            "tokens": ['blue', 'purple', 'green'],
+            "token": ['blue', 'purple', 'green'],
             "type": "Person"
         },
         {
             "name": "Knappe Nedward",
-            "tokens": ['yellow', 'yellow', 'green'],
+            "token": ['yellow', 'yellow', 'green'],
             "type": "Person"
         },
         {
             "name": "Eine Kriegerprinzessin",
-            "tokens": ['yellow', 'green'],
+            "token": ['yellow', 'green'],
             "type": "Person"
         },
         {
             "name": "Hai mit sexy Beinen!!",
-            "tokens": ['red', 'green', 'green'],
+            "token": ['red', 'green', 'green'],
             "type": "Monster"
         },
         {
             "name": "Eine 'Abkürzung'",
-            "tokens": ['red', 'yellow', 'yellow'],
+            "token": ['red', 'yellow', 'yellow'],
             "type": "Hindernis"
         },
         {
             "name": "Knuffiger Goblin",
-            "tokens": ['red', 'purple'],
+            "token": ['red', 'purple'],
             "type": "Monster"
         },
         {
             "name": "Ein überteuerter Händler",
-            "tokens": ['blue', 'blue', 'purple'],
+            "token": ['blue', 'blue', 'purple'],
             "type": "Person"
         },
         {
             "name": "Zombietusse",
-            "tokens": ['red', 'green'],
+            "token": ['red', 'green'],
             "type": "Monster"
         },
         {
             "name": "Ein Kaktus, der umarmen will",
-            "tokens": ['yellow', 'yellow', 'yellow'],
+            "token": ['yellow', 'yellow', 'yellow'],
             "type": "Monster"
         },
         {
             "name": "Ein aufrechter Geist",
-            "tokens": ['blue', 'yellow'],
+            "token": ['blue', 'yellow'],
             "type": "Monster"
         },
         {
             "name": "Buchstäblich ein Strohmann",
-            "tokens": ['red', 'blue', 'purple'],
+            "token": ['red', 'blue', 'purple'],
             "type": "Hindernis"
         },
         {
             "name": "Ein Armhändler",
-            "tokens": ['blue', 'green'],
+            "token": ['blue', 'green'],
             "type": "Person"
         },
         {
             "name": "Eine sicher sprengfallenfreie Truhe",
-            "tokens": ['purple', 'yellow', 'yellow'],
+            "token": ['purple', 'yellow', 'yellow'],
             "type": "Hindernis"
         },
         {
             "name": "Ein Haufen schreiender Kinder",
-            "tokens": ['red', 'yellow', 'green'],
+            "token": ['red', 'yellow', 'green'],
             "type": "Person"
         },
         {
             "name": "Ein langsam ladender Bildschirm",
-            "tokens": ['red', 'purple', 'green'],
+            "token": ['red', 'purple', 'green'],
             "type": "Hindernis"
         },
         {
             "name": "Lebendiges Grünzeug",
-            "tokens": ['blue', 'blue', 'blue'],
+            "token": ['blue', 'blue', 'blue'],
             "type": "Hindernis"
         },
         {
             "name": "Sir Fuzzy",
-            "tokens": ['purple', 'green', 'green'],
+            "token": ['purple', 'green', 'green'],
             "type": "Monster"
         },
         {
             "name": "Ein 'Geist', ja klar!",
-            "tokens": ['red', 'red', 'green'],
+            "token": ['red', 'red', 'green'],
             "type": "Person"
         },
         {
             "name": "Ein Timberwolf",
-            "tokens": ['red', 'red'],
+            "token": ['red', 'red'],
             "type": "Monster"
         },
         {
             "name": "Reizender Schleim",
-            "tokens": ['purple', 'green'],
+            "token": ['purple', 'green'],
             "type": "Monster"
         },
         {
             "name": "Grozznak der Große",
-            "tokens": ['purple', 'yellow', 'green'],
+            "token": ['purple', 'yellow', 'green'],
             "type": "Person"
         },
         {
             "name": "Eine lächerlich hohe Eiswand",
-            "tokens": ['purple', 'purple', 'purple'],
+            "token": ['purple', 'purple', 'purple'],
             "type": "Hindernis"
         },
         {
             "name": "Gespickte Wand",
-            "tokens": ['blue', 'blue', 'yellow'],
+            "token": ['blue', 'blue', 'yellow'],
             "type": "Hindernis"
         },
         {
             "name": "Nur ein paar Stufen",
-            "tokens": ['blue', 'purple'],
+            "token": ['blue', 'purple'],
             "type": "Hindernis"
         },
         {
             "name": "Barb-Irrer",
-            "tokens": ['red', 'red', 'yellow'],
+            "token": ['red', 'red', 'yellow'],
             "type": "Person"
         },
         {
             "name": "ÖÖÖÖHHAA",
-            "tokens": ['yellow', 'blue', 'yellow'],
+            "token": ['yellow', 'blue', 'yellow'],
             "type": "Monster"
         },
         {
             "name": "Typ mit massiven Schulterpanzern",
-            "tokens": ['red', 'blue', 'red'],
+            "token": ['red', 'blue', 'red'],
             "type": "Person"
         },
         {
             "name": "7 Null-Bock-Zwerge",
-            "tokens": ['red', 'blue', 'yellow'],
+            "token": ['red', 'blue', 'yellow'],
             "type": "Person"
         },
         {
             "name": "2 Mann, 1 Bogen",
-            "tokens": ['green', 'yellow', 'green'],
+            "token": ['green', 'yellow', 'green'],
             "type": "Person"
         }
     ];

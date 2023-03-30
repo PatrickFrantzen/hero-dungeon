@@ -1,7 +1,7 @@
 export class Game {
     public numberOfPlayers: number = 0;
     public choosenHeros: object[] = [];
-    public currentEnemy: object[] = [];
+    public currentEnemy: object|undefined = [];
     public currentBoss: {} = [];
     public isLost:boolean = false;
     public gameId: string = '';

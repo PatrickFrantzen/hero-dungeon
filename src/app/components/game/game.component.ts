@@ -28,20 +28,25 @@ export class GameComponent implements OnInit {
   currentPlayer: string = '';
   currentPlayerId!: string;
   currentHero: Object = {};
+  currentEnemy!: Array<object>;
   numberOfPlayers: number = 0;
   gameDifficulty: string = '';
   gameIsLost: boolean = false;
   enemy: string = '';
-  monsterStack: string[] = [];
+  monsterStack: Array<object> = [];
   monsterSetting!: string;
   // mySubscription;
   monster!: Monster;
   currentBoss: object[] = [];
+  currentMonster: Array<object> = [];
   allBosses: object[] = [];
 
   initialHand: string[] = [];
   db = getFirestore();
 
+  currentEnemyName!:string;
+  currentEnemyType!:string;
+  currentEnemyToken!:Array<string>;
 
   constructor(
     public currentUserService: CurrentUserService,
@@ -92,17 +97,45 @@ export class GameComponent implements OnInit {
         this.monsterStack = response!['monsterStack'];
         this.currentBoss = response!['currentBoss'];
         this.allBosses = response!['allBosses'];
+        this.currentEnemy = response!['currentEnemy'];
+        this.currentEnemyName = response!['currentEnemy'].name;
+        this.currentEnemyType = response!['currentEnemy'].type;
+        this.currentEnemyToken = response!['currentEnemy'].token;
       }).then(() => {
         //if currentHero is empty a Dialog is opened
         if (isEmpty(this.currentHero)) {
           this.openDialog();
         }
+        // this.setMonster()
+        console.log('currentEnemy', this.currentEnemyName);
+        console.log('currentEnemyType', this.currentEnemyType);
+        console.log('currentEnemyToken', this.currentEnemyToken)
       });
     });
-
+    
 
   };
 
+  // setMonster() {
+    
+  //     let currentMonster = this.monsterStack.shift();
+  //     const updateData = {
+  //       monsterStack: this.monsterStack,
+  //       currentEnemy: currentMonster
+  //     }
+  //     const docRef = doc(this.db, 'games', this.gameId);
+  //     updateDoc(docRef, updateData). then(()=> {
+  //       this.currentGameService.getCurrentGame(this.gameId)
+  //       .then((response) => {
+  //         console.log('GameWithCurrentMonster', response);
+  //         this.currentEnemyName = response!['currentEnemy'].name;
+  //         console.log('test', this.currentEnemyName);
+  //       })
+  //     })
+    
+    
+
+  // }
 
   async loadHandstack() {
     const docRef = doc(this.db, 'users', this.currentPlayerId);

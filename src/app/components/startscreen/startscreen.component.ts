@@ -75,6 +75,7 @@ export class StartscreenComponent implements OnInit{
       this.game.allBosses = new Monster().bossCollection;
       this.game.currentBoss = this.game.allBosses[0];
       this.game.monsterStack = new Monster().createMonsterStack(data.numberOfPlayer, this.game.currentBoss, data.difficulty);
+      this.game.currentEnemy = this.game.monsterStack.shift();
     }
   }
 

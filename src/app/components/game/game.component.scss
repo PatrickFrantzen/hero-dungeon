@@ -8,6 +8,19 @@
     background-repeat: no-repeat;
 }
 
+.current-Enemy {
+    position: relative;
+    top: 10%;
+    height: 250px;
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+
+    img{
+        padding:10px
+    }
+}
+
 .card-stack {
     position: relative;
     right: 40%;

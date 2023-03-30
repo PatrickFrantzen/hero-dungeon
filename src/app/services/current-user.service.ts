@@ -19,7 +19,7 @@ export class CurrentUserService {
   ) {
 
    }
-
+   
   public getCurrentUser():Promise<any> {
     const firebaseApp = initializeApp(environment.firebase)
     const auth = getAuth(firebaseApp);
@@ -34,20 +34,12 @@ export class CurrentUserService {
           this.currentUser = this.currentUserData!['userNickname'];
           this.currentUserId = this.currentUserData!['userId'];
           this.currentUserHero = this.currentUserData!['choosenHero'];
-          console.log('testDB', this.currentUserData)
-          
         } else {
           this.currentUser = 'Gast'
-          console.log('testDB', this.currentUser);
           
         }
         resolve(this.currentUserData)
       })
     })
-
-    // return [this.currentUser, this.currentUserId, this.currentUserHero];
-    
   }
-
-
 }
