@@ -1,17 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 
 import { CurrentGameService } from 'src/app/services/current-game.service';
-import { Firestore, collectionData, collection, doc, getFirestore, getDoc, updateDoc } from '@angular/fire/firestore';
+import { doc, getFirestore, getDoc, updateDoc } from '@angular/fire/firestore';
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
 import { Monster } from 'src/models/monster/monster.class';
-import { initializeApp } from '@angular/fire/app';
-import { environment } from 'src/environments/environment';
-import { Observable } from 'rxjs';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 
 
@@ -35,7 +32,6 @@ export class GameComponent implements OnInit {
   enemy: string = '';
   monsterStack: Array<object> = [];
   monsterSetting!: string;
-  // mySubscription;
   monster!: Monster;
   currentBoss: object[] = [];
   currentMonster: Array<object> = [];
@@ -52,19 +48,8 @@ export class GameComponent implements OnInit {
     public currentUserService: CurrentUserService,
     public currentGameService: CurrentGameService,
     private route: ActivatedRoute,
-    public dialog: MatDialog,
-    private router: Router
-  ) {
-
-    //   this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-    //   this.mySubscription = this.router.events.subscribe((event) => {
-    //     if (event instanceof NavigationEnd) {
-    // // Trick the Router into believing it's last link wasn't previously loaded
-    //     this.router.navigated = false;
-    //     }
-    //   }); 
-
-  }
+    public dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe(async (params) => {
