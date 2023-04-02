@@ -40,28 +40,27 @@ export class GameComponent implements OnInit {
   initialHand: string[] = [];
   db = getFirestore();
 
-  currentEnemyName!:string;
-  currentEnemyType!:string;
-  currentEnemyToken!:Array<string>;
+  currentEnemyName!: string;
+  currentEnemyType!: string;
+  currentEnemyToken!: Array<string>;
 
   constructor(
     public currentUserService: CurrentUserService,
     public currentGameService: CurrentGameService,
     private route: ActivatedRoute,
     public dialog: MatDialog
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(async (params) => {
       //When url is changed the Hero Data of this User is loaded
-      this.gameId = params['id']
+      this.getGameId(params)
     });
     this.currentUserService.getCurrentUser().then((response) => {
       console.log('gameResponse', response);
       this.currentHero = this.currentUserService.currentUserHero;
       this.currentPlayer = this.currentUserService.currentUser;
       this.currentPlayerId = this.currentUserService.currentUserId;
-      console.log('addedHero', this.currentHero);
     }).then(async () => {
       if (this.currentHero) {
         const docRef = doc(this.db, 'users', this.currentPlayerId);
@@ -72,55 +71,33 @@ export class GameComponent implements OnInit {
       }
     }).then(() => {
       this.currentGameService.getCurrentGame(this.gameId)
-      .then((response) => {
-        console.log('CurrentgameResponse', response)
-        //get Data from Server for Game
-        this.numberOfPlayers = response!['numberOfPlayers'];
-        this.gameDifficulty = response!['difficulty'];
-        this.gameIsLost = response!['isLost'];
-        this.enemy = response!['currentEnemy'];
-        this.monsterStack = response!['monsterStack'];
-        this.currentBoss = response!['currentBoss'];
-        this.allBosses = response!['allBosses'];
-        this.currentEnemy = response!['currentEnemy'];
-        this.currentEnemyName = response!['currentEnemy'].name;
-        this.currentEnemyType = response!['currentEnemy'].type;
-        this.currentEnemyToken = response!['currentEnemy'].token;
-      }).then(() => {
-        //if currentHero is empty a Dialog is opened
-        if (isEmpty(this.currentHero)) {
-          this.openDialog();
-        }
-        // this.setMonster()
-        console.log('currentEnemy', this.currentEnemyName);
-        console.log('currentEnemyType', this.currentEnemyType);
-        console.log('currentEnemyToken', this.currentEnemyToken)
-      });
+        .then((response) => {
+          console.log('CurrentgameResponse', response)
+          //get Data from Server for Game
+          this.numberOfPlayers = response!['numberOfPlayers'];
+          this.gameDifficulty = response!['difficulty'];
+          this.gameIsLost = response!['isLost'];
+          this.enemy = response!['currentEnemy'];
+          this.monsterStack = response!['monsterStack'];
+          this.currentBoss = response!['currentBoss'];
+          this.allBosses = response!['allBosses'];
+          this.currentEnemy = response!['currentEnemy'];
+          this.currentEnemyName = response!['currentEnemy'].name;
+          this.currentEnemyType = response!['currentEnemy'].type;
+          this.currentEnemyToken = response!['currentEnemy'].token;
+        }).then(() => {
+          //if currentHero is empty a Dialog is opened
+          if (isEmpty(this.currentHero)) {
+            this.openDialog();
+          }
+        });
     });
-    
-
   };
 
-  // setMonster() {
-    
-  //     let currentMonster = this.monsterStack.shift();
-  //     const updateData = {
-  //       monsterStack: this.monsterStack,
-  //       currentEnemy: currentMonster
-  //     }
-  //     const docRef = doc(this.db, 'games', this.gameId);
-  //     updateDoc(docRef, updateData). then(()=> {
-  //       this.currentGameService.getCurrentGame(this.gameId)
-  //       .then((response) => {
-  //         console.log('GameWithCurrentMonster', response);
-  //         this.currentEnemyName = response!['currentEnemy'].name;
-  //         console.log('test', this.currentEnemyName);
-  //       })
-  //     })
-    
-    
-
-  // }
+ getGameId(params: { [x: string]: string; }) {
+  this.gameId = params['id'];
+  console.log('getGameID', this.gameId)
+ }
 
   async loadHandstack() {
     const docRef = doc(this.db, 'users', this.currentPlayerId);

@@ -1,6 +1,7 @@
 .mainfield {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    flex-direction: column;
     background-image: url('^assets/img/backgroundimage/background.jpg');
     background-size: cover;
     height: 100vh;
@@ -9,8 +10,6 @@
 }
 
 .current-Enemy {
-    position: relative;
-    top: 10%;
     height: 250px;
     display: flex;
     justify-content:space-between;
@@ -21,11 +20,16 @@
     }
 }
 
+.card-area {
+    display: flex;
+    justify-content: center;
+    width: 100vw;
+}
+
 .card-stack {
-    position: relative;
-    right: 40%;
     img {
         position: absolute;
+        left: 50px;
         bottom: 15px;
         width: 150px;
     }
