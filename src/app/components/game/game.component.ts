@@ -38,6 +38,7 @@ export class GameComponent implements OnInit {
   allBosses: object[] = [];
 
   initialHand: string[] = [];
+  playedCards:string[] = [];
   db = getFirestore();
 
   currentEnemyName!: string;
@@ -57,40 +58,19 @@ export class GameComponent implements OnInit {
       this.getGameId(params)
     });
     this.currentUserService.getCurrentUser().then((response) => {
-      console.log('gameResponse', response);
-      this.currentHero = this.currentUserService.currentUserHero;
-      this.currentPlayer = this.currentUserService.currentUser;
-      this.currentPlayerId = this.currentUserService.currentUserId;
+      this.getPlayerInfos(response)
     }).then(async () => {
-      if (this.currentHero) {
-        const docRef = doc(this.db, 'users', this.currentPlayerId);
-        const docSnap = await getDoc(docRef);
-        let data = docSnap.data();
-        this.initialHand = data!['handstack'];
-        console.log('initHand', this.initialHand)
+      if (isEmpty(this.currentHero)) {
+        this.openDialog();
+      } else {
+        this.loadHandstack(this.currentPlayerId)
       }
     }).then(() => {
       this.currentGameService.getCurrentGame(this.gameId)
         .then((response) => {
-          console.log('CurrentgameResponse', response)
           //get Data from Server for Game
-          this.numberOfPlayers = response!['numberOfPlayers'];
-          this.gameDifficulty = response!['difficulty'];
-          this.gameIsLost = response!['isLost'];
-          this.enemy = response!['currentEnemy'];
-          this.monsterStack = response!['monsterStack'];
-          this.currentBoss = response!['currentBoss'];
-          this.allBosses = response!['allBosses'];
-          this.currentEnemy = response!['currentEnemy'];
-          this.currentEnemyName = response!['currentEnemy'].name;
-          this.currentEnemyType = response!['currentEnemy'].type;
-          this.currentEnemyToken = response!['currentEnemy'].token;
-        }).then(() => {
-          //if currentHero is empty a Dialog is opened
-          if (isEmpty(this.currentHero)) {
-            this.openDialog();
-          }
-        });
+          this.getGameInfos(response);
+        })
     });
   };
 
@@ -99,8 +79,29 @@ export class GameComponent implements OnInit {
   console.log('getGameID', this.gameId)
  }
 
-  async loadHandstack() {
-    const docRef = doc(this.db, 'users', this.currentPlayerId);
+ getPlayerInfos(response: any) {
+  this.currentHero = response.choosenHero;
+  this.currentPlayer = response.userNickname;
+  this.currentPlayerId = response.userId;
+  this.playedCards = response.playedCards;
+ }
+
+ getGameInfos(response:any) {
+  this.numberOfPlayers = response!['numberOfPlayers'];
+  this.gameDifficulty = response!['difficulty'];
+  this.gameIsLost = response!['isLost'];
+  this.enemy = response!['currentEnemy'];
+  this.monsterStack = response!['monsterStack'];
+  this.currentBoss = response!['currentBoss'];
+  this.allBosses = response!['allBosses'];
+  this.currentEnemy = response!['currentEnemy'];
+  this.currentEnemyName = response!['currentEnemy'].name;
+  this.currentEnemyType = response!['currentEnemy'].type;
+  this.currentEnemyToken = response!['currentEnemy'].token;
+ }
+
+  async loadHandstack(currentPlayerId: string) {
+    const docRef = doc(this.db, 'users', currentPlayerId);
     const docSnap = await getDoc(docRef);
     let data = docSnap.data();
     this.initialHand = data!['handstack'];
@@ -122,7 +123,7 @@ export class GameComponent implements OnInit {
       }
       const docRef = doc(this.db, 'users', this.currentPlayerId);
       updateDoc(docRef, updateData).then(() => {
-        this.drawCards(this.user.choosenHero)
+        this.drawInitialHand(this.user.choosenHero)
       });
     }
     )
@@ -134,7 +135,7 @@ export class GameComponent implements OnInit {
     }
   }
 
-  drawCards(currentHero: any) {
+  drawInitialHand(currentHero: any) {
     for (let i = 0; i < 5; i++) {
       const cardsinHand = currentHero.value.heroStack.shift();
       this.initialHand.push(cardsinHand);
