@@ -5,11 +5,12 @@ import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 
 import { CurrentGameService } from 'src/app/services/current-game.service';
-import { doc, getFirestore, getDoc, updateDoc } from '@angular/fire/firestore';
+import { doc, getFirestore, getDoc, updateDoc, addDoc, setDoc } from '@angular/fire/firestore';
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
 import { Monster } from 'src/models/monster/monster.class';
 import { CurrentUserService } from 'src/app/services/current-user.service';
+import { update } from '@angular/fire/database';
 
 
 @Component({
@@ -121,15 +122,21 @@ export class GameComponent implements OnInit {
       const updateData = {
         choosenHero: this.user.choosenHero,
       }
-      const docRef = doc(this.db, 'users', this.currentPlayerId);
-      updateDoc(docRef, updateData).then(() => {
+      // const docRef = doc(this.db, 'users', this.currentPlayerId);
+      // updateDoc(docRef, updateData).then(() => {
+      //   this.drawInitialHand(this.user.choosenHero)
+      // });
+      //User soll als Sammlung eines Spieles gespeichert werden
+      const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
+      setDoc(docRef, updateData).then( () => {
         this.drawInitialHand(this.user.choosenHero)
-      });
+      })
     }
     )
   }
 
   setHeroToUser(data: any) {
+    //derzeit wird nur choosenHero aber nicht der ganze User hinzugefügt
     if (data) {
       this.user.choosenHero = data.choosenHero;
     }
