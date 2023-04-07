@@ -1,6 +1,6 @@
 export class Game {
     public numberOfPlayers: number = 0;
-    public choosenHeros: object[] = [];
+    public choosenHeros: [] = [];
     public currentEnemy: object|undefined = [];
     public currentBoss: {} = [];
     public isLost:boolean = false;
@@ -9,7 +9,7 @@ export class Game {
     public monsterStack: object[] = [];
     public allBosses: object[] = [];
 
-    constructor(obj?: { numberOfPlayers: number; choosenHeros: object[]; currentEnemy: object[], currentBoss: {}, isLost: boolean, gameId: string, difficulty: string, monsterStack: object[], allBosses: object[] }) {
+    constructor(obj?: { numberOfPlayers: number; choosenHeros: []; currentEnemy: object[], currentBoss: {}, isLost: boolean, gameId: string, difficulty: string, monsterStack: object[], allBosses: object[] }) {
         this.numberOfPlayers = obj?.numberOfPlayers || 0;
         this.choosenHeros = obj?.choosenHeros || [];
         this.currentEnemy = obj?.currentEnemy || [];

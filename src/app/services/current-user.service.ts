@@ -33,7 +33,7 @@ export class CurrentUserService {
           this.currentUserData = docSnap.data();
           this.currentUser = this.currentUserData!['userNickname'];
           this.currentUserId = this.currentUserData!['userId'];
-          this.currentUserHero = this.currentUserData!['choosenHero'];
+          // this.currentUserHero = this.currentUserData!['choosenHero'];
         } else {
           this.currentUser = 'Gast'
           

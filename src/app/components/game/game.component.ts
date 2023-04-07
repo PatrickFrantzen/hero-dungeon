@@ -10,7 +10,7 @@ import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
 import { Monster } from 'src/models/monster/monster.class';
 import { CurrentUserService } from 'src/app/services/current-user.service';
-import { update } from '@angular/fire/database';
+import { get, update } from '@angular/fire/database';
 
 
 @Component({
@@ -39,7 +39,7 @@ export class GameComponent implements OnInit {
   allBosses: object[] = [];
 
   initialHand: string[] = [];
-  playedCards:string[] = [];
+  playedCards: string[] = [];
   db = getFirestore();
 
   currentEnemyName!: string;
@@ -59,14 +59,10 @@ export class GameComponent implements OnInit {
       this.getGameId(params)
     });
     this.currentUserService.getCurrentUser().then((response) => {
-      this.getPlayerInfos(response)
-    }).then(async () => {
-      if (isEmpty(this.currentHero)) {
-        this.openDialog();
-      } else {
-        this.loadHandstack(this.currentPlayerId)
-      }
-    }).then(() => {
+      this.getPlayerInfos(response);
+      this.checkIfPlayerIsAlreadyPartOfGame()
+    })
+    .then(() => {
       this.currentGameService.getCurrentGame(this.gameId)
         .then((response) => {
           //get Data from Server for Game
@@ -75,34 +71,70 @@ export class GameComponent implements OnInit {
     });
   };
 
- getGameId(params: { [x: string]: string; }) {
-  this.gameId = params['id'];
-  console.log('getGameID', this.gameId)
- }
+  //Functions to Load the Game
+  getGameId(params: { [x: string]: string; }) {
+    this.gameId = params['id'];
+    console.log('getGameID', this.gameId)
+  }
 
- getPlayerInfos(response: any) {
-  this.currentHero = response.choosenHero;
-  this.currentPlayer = response.userNickname;
-  this.currentPlayerId = response.userId;
-  this.playedCards = response.playedCards;
- }
+  async checkIfPlayerIsAlreadyPartOfGame() {
+    const docPlayer = doc(this.db, 'games', this.gameId);
+    const docSnap = await getDoc(docPlayer);
+    let data = docSnap.data();
+    let players: string[] = data!['choosenHeros'];
+    if (players.includes(this.currentPlayer)) {
+      this.loadHandstack(this.currentPlayerId)
+    } else {
+      this.createNewPlayer();
+      this.updatePlayerOfGame(docPlayer, players);
+      this.openDialog();
+    }
+  }
 
- getGameInfos(response:any) {
-  this.numberOfPlayers = response!['numberOfPlayers'];
-  this.gameDifficulty = response!['difficulty'];
-  this.gameIsLost = response!['isLost'];
-  this.enemy = response!['currentEnemy'];
-  this.monsterStack = response!['monsterStack'];
-  this.currentBoss = response!['currentBoss'];
-  this.allBosses = response!['allBosses'];
-  this.currentEnemy = response!['currentEnemy'];
-  this.currentEnemyName = response!['currentEnemy'].name;
-  this.currentEnemyType = response!['currentEnemy'].type;
-  this.currentEnemyToken = response!['currentEnemy'].token;
- }
+  createNewPlayer() {
+    const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId);
+    setDoc(docRef, this.user.toJSON());
+    const updateData = {
+      userId: this.currentPlayerId,
+      userNickname: this.currentPlayer,
+    }
+    updateDoc(docRef, updateData);
+  }
+
+  async updatePlayerOfGame(docPlayer:any, players: string[]) {
+    players.push(this.currentPlayer)
+    const updatePlayer = {
+      choosenHeros: players
+    }
+    updateDoc(docPlayer, updatePlayer);
+  }
+
+  getPlayerInfos(response: any) {
+    console.log('PlayerInfo', response)
+    this.currentHero = response.choosenHero;
+    this.currentPlayer = response.userNickname;
+    this.currentPlayerId = response.userId;
+    this.playedCards = response.playedCards;
+
+  }
+
+  getGameInfos(response: any) {
+    this.numberOfPlayers = response!['numberOfPlayers'];
+    this.gameDifficulty = response!['difficulty'];
+    this.gameIsLost = response!['isLost'];
+    this.enemy = response!['currentEnemy'];
+    this.monsterStack = response!['monsterStack'];
+    this.currentBoss = response!['currentBoss'];
+    this.allBosses = response!['allBosses'];
+    this.currentEnemy = response!['currentEnemy'];
+    this.currentEnemyName = response!['currentEnemy'].name;
+    this.currentEnemyType = response!['currentEnemy'].type;
+    this.currentEnemyToken = response!['currentEnemy'].token;
+  }
+
 
   async loadHandstack(currentPlayerId: string) {
-    const docRef = doc(this.db, 'users', currentPlayerId);
+    const docRef = doc(this.db, 'games', this.gameId, 'player', currentPlayerId);
     const docSnap = await getDoc(docRef);
     let data = docSnap.data();
     this.initialHand = data!['handstack'];
@@ -113,50 +145,51 @@ export class GameComponent implements OnInit {
   openDialog() {
     let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
       data: {
-        choosenHero: this.currentHero
+        choosenHero: this.currentHero,
       }
     })
 
     dialogRef.afterClosed().subscribe(result => {
-      this.setHeroToUser(result.data);
+      console.log('resultDataDialog', result.data)
       const updateData = {
-        choosenHero: this.user.choosenHero,
+        choosenHero: result.data.choosenHero,
       }
-      // const docRef = doc(this.db, 'users', this.currentPlayerId);
-      // updateDoc(docRef, updateData).then(() => {
-      //   this.drawInitialHand(this.user.choosenHero)
-      // });
-      //User soll als Sammlung eines Spieles gespeichert werden
       const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
-      setDoc(docRef, updateData).then( () => {
-        this.drawInitialHand(this.user.choosenHero)
+      updateDoc(docRef, updateData).then(() => {
+        this.drawInitialHand(result.data.choosenHero.value.heroStack)
       })
     }
     )
   }
 
-  setHeroToUser(data: any) {
-    //derzeit wird nur choosenHero aber nicht der ganze User hinzugefügt
-    if (data) {
-      this.user.choosenHero = data.choosenHero;
-    }
-  }
 
   drawInitialHand(currentHero: any) {
     for (let i = 0; i < 5; i++) {
-      const cardsinHand = currentHero.value.heroStack.shift();
+      const cardsinHand = currentHero.shift();
       this.initialHand.push(cardsinHand);
     }
     const updateData = {
       handstack: this.initialHand
     }
-    const docRef = doc(this.db, 'users', this.currentPlayerId)
+    const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
     updateDoc(docRef, updateData);
     console.log('initialHand', this.initialHand)
   }
 
   chooseCard(card: any) {
-    console.log('testCard', card)
+    console.log('testCard', card);
+    console.log('currentMonster', this.currentEnemyToken);
+    if (this.currentEnemyToken.includes(card)) {
+      let index = this.currentEnemyToken.indexOf(card);
+      console.log('index', index);
+      this.currentEnemyToken.splice(index, 1);
+      console.log('newTokenArray', this.currentEnemyToken);
+      this.drawACard();
+    }
+  }
+
+  drawACard() {
+    //if handstack.length is < 5 draw Cards until 5 in Hand
   }
 
 }
