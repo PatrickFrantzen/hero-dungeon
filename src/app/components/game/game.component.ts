@@ -62,13 +62,13 @@ export class GameComponent implements OnInit {
       this.getPlayerInfos(response);
       this.checkIfPlayerIsAlreadyPartOfGame()
     })
-    .then(() => {
-      this.currentGameService.getCurrentGame(this.gameId)
-        .then((response) => {
-          //get Data from Server for Game
-          this.getGameInfos(response);
-        })
-    });
+      .then(() => {
+        this.currentGameService.getCurrentGame(this.gameId)
+          .then((response) => {
+            //get Data from Server for Game
+            this.getGameInfos(response);
+          })
+      });
   };
 
   //Functions to Load the Game
@@ -101,7 +101,7 @@ export class GameComponent implements OnInit {
     updateDoc(docRef, updateData);
   }
 
-  async updatePlayerOfGame(docPlayer:any, players: string[]) {
+  async updatePlayerOfGame(docPlayer: any, players: string[]) {
     players.push(this.currentPlayer)
     const updatePlayer = {
       choosenHeros: players
@@ -156,19 +156,21 @@ export class GameComponent implements OnInit {
       }
       const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
       updateDoc(docRef, updateData).then(() => {
-        this.drawInitialHand(result.data.choosenHero.value.heroStack)
+        this.drawInitialHand(result)
       })
     }
     )
   }
 
 
-  drawInitialHand(currentHero: any) {
+  drawInitialHand(result:any) {
+    console.log('result', result)
     for (let i = 0; i < 5; i++) {
-      const cardsinHand = currentHero.shift();
+      const cardsinHand = result.data.choosenHero.value.heroStack.shift();
       this.initialHand.push(cardsinHand);
     }
     const updateData = {
+      heroStack: result.data.choosenHero.value.heroStack,
       handstack: this.initialHand
     }
     const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
@@ -177,19 +179,31 @@ export class GameComponent implements OnInit {
   }
 
   chooseCard(card: any) {
-    console.log('testCard', card);
-    console.log('currentMonster', this.currentEnemyToken);
     if (this.currentEnemyToken.includes(card)) {
-      let index = this.currentEnemyToken.indexOf(card);
-      console.log('index', index);
-      this.currentEnemyToken.splice(index, 1);
-      console.log('newTokenArray', this.currentEnemyToken);
+      let indexOfToken = this.currentEnemyToken.indexOf(card);
+      let indexOfHandCard = this.initialHand.indexOf(card);
+      this.currentEnemyToken.splice(indexOfToken, 1);
+      this.initialHand.splice(indexOfHandCard, 1);
+      console.log('currentHand', this.initialHand)
       this.drawACard();
     }
   }
 
-  drawACard() {
+  async drawACard() {
     //if handstack.length is < 5 draw Cards until 5 in Hand
+    const docHand = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId);
+    const docSnap = await getDoc(docHand);
+    let data = docSnap.data();
+    for (let i = 0; this.initialHand.length < 5; i++) {
+      const cardsInHand = data!['heroStack'].shift();
+      this.initialHand.push(cardsInHand)
+    }
+    const updateData = {
+      heroStack: data!['heroStack'] ,
+      handstack: this.initialHand,
+    }
+    const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
+    updateDoc(docRef, updateData);
+    console.log('initialHand', this.initialHand)
   }
-
 }
