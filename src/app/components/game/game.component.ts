@@ -5,7 +5,7 @@ import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 
 import { CurrentGameService } from 'src/app/services/current-game.service';
-import { doc, getFirestore, getDoc, updateDoc, addDoc, setDoc } from '@angular/fire/firestore';
+import { doc, getFirestore, getDoc, updateDoc, addDoc, setDoc, DocumentReference } from '@angular/fire/firestore';
 import { Game } from 'src/models/game';
 import { User } from 'src/models/user.class';
 import { Monster } from 'src/models/monster/monster.class';
@@ -38,13 +38,14 @@ export class GameComponent implements OnInit {
   currentMonster: Array<object> = [];
   allBosses: object[] = [];
 
-  initialHand: string[] = [];
+  initialHand: string[] | undefined = [];
   playedCards: string[] = [];
   db = getFirestore();
 
   currentEnemyName!: string;
   currentEnemyType!: string;
   currentEnemyToken!: Array<string>;
+  cardStack!:string[] ;
 
   constructor(
     public currentUserService: CurrentUserService,
@@ -156,34 +157,37 @@ export class GameComponent implements OnInit {
       }
       const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
       updateDoc(docRef, updateData).then(() => {
-        this.drawInitialHand(result)
+        this.drawInitialHand(docRef)
       })
     }
     )
   }
 
 
-  drawInitialHand(result:any) {
-    console.log('result', result)
+  async drawInitialHand(docRef:DocumentReference) {
+    const docSnap = await getDoc(docRef);
+    let data = docSnap.data();
+    this.cardStack = data!['choosenHero'].herostack;
     for (let i = 0; i < 5; i++) {
-      const cardsinHand = result.data.choosenHero.value.heroStack.shift();
-      this.initialHand.push(cardsinHand);
+      const cardsinHand:string | undefined = this.cardStack.shift();
+      this.initialHand!.push(cardsinHand!);
     }
     const updateData = {
-      heroStack: result.data.choosenHero.value.heroStack,
+      heroStack: this.cardStack,
       handstack: this.initialHand
     }
-    const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
+   
     updateDoc(docRef, updateData);
     console.log('initialHand', this.initialHand)
+    console.log('reduzierter Kartenstapel', this.cardStack)
   }
 
   chooseCard(card: any) {
     if (this.currentEnemyToken.includes(card)) {
       let indexOfToken = this.currentEnemyToken.indexOf(card);
-      let indexOfHandCard = this.initialHand.indexOf(card);
+      let indexOfHandCard = this.initialHand!.indexOf(card);
       this.currentEnemyToken.splice(indexOfToken, 1);
-      this.initialHand.splice(indexOfHandCard, 1);
+      this.initialHand!.splice(indexOfHandCard, 1);
       console.log('currentHand', this.initialHand)
       this.drawACard();
     }
@@ -194,9 +198,9 @@ export class GameComponent implements OnInit {
     const docHand = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId);
     const docSnap = await getDoc(docHand);
     let data = docSnap.data();
-    for (let i = 0; this.initialHand.length < 5; i++) {
+    for (let i = 0; this.initialHand!.length < 5; i++) {
       const cardsInHand = data!['heroStack'].shift();
-      this.initialHand.push(cardsInHand)
+      this.initialHand!.push(cardsInHand)
     }
     const updateData = {
       heroStack: data!['heroStack'] ,

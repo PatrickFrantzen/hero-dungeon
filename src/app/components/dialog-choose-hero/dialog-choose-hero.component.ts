@@ -55,9 +55,9 @@ export class DialogChooseHeroComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogChooseHeroComponent>) {}
 
   getChoosenHero(choosenHero:any) {
-    console.log(choosenHero)
+    console.log('Dialogfeld',choosenHero)
     this.dialogRef.close({data: {
-      choosenHero: choosenHero,
+      choosenHero: {heroname: choosenHero.value.heroName, heropower: choosenHero.value.heroPower, herostack: choosenHero.value.heroStack},
     }})
   }
 

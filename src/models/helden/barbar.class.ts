@@ -28,6 +28,7 @@ export class Barbar extends Hero {
             }
         })
         shuffle(this.heroStack)
+        console.log('test',this.heroStack)
     }
 }
 
