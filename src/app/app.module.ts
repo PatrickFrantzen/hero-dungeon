@@ -24,6 +24,10 @@ import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
 import { SigninComponent } from './components/signin/signin.component';
 import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialog-choose-hero.component';
+import { PlayerHandComponent } from './components/player-hand/player-hand.component';
+import { CurrentGameService } from './services/current-game.service';
+import { CurrentUserService } from './services/current-user.service';
+import { EnemyComponent } from './components/enemy/enemy.component';
 
 
 @NgModule({
@@ -34,7 +38,9 @@ import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialo
     StartscreenComponent,
     SignupComponent,
     SigninComponent,
-    DialogChooseHeroComponent
+    DialogChooseHeroComponent,
+    PlayerHandComponent,
+    EnemyComponent
   ],
   imports: [
     BrowserModule,
@@ -52,7 +58,7 @@ import { DialogChooseHeroComponent } from './components/dialog-choose-hero/dialo
     MatCardModule,
     MatButtonModule,
   ],
-  providers: [ ],
+  providers: [CurrentGameService, CurrentUserService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

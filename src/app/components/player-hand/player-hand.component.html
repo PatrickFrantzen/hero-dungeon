@@ -1,0 +1,11 @@
+<div class="card-area">
+    <div class="card-stack">
+        <img [ngStyle]="{'left.px': i * 5}" *ngFor="let c of [0,1,2,3]; let i = index;"
+            src="./assets/img/cards/monster.png">
+    </div>
+
+    <div class="currentHandStack">
+        <img (click)="chooseCard(card)"
+        [ngStyle]="{'left.px': x * 170}" *ngFor="let card of this.currentHand; let x = index "  src="./assets/img/cards/{{card}}.png">
+    </div>
+</div>

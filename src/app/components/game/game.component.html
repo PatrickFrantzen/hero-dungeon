@@ -1,24 +1,8 @@
 <div class="mainfield">
 
-    <mat-card class="current-Enemy">
-        <mat-card-header>{{this.currentEnemyName}}</mat-card-header>
-        <mat-card-content>
-            <img *ngFor="let token of this.currentEnemyToken; let x = index" src="./assets/img/monsterToken/{{token}}.png">
-        </mat-card-content>
-        <mat-card-footer>{{this.currentEnemyType}}</mat-card-footer>
-    </mat-card>
+    <app-enemy></app-enemy>
 
-    <div class="card-area">
-        <div class="card-stack">
-            <img [ngStyle]="{'left.px': i * 5}" *ngFor="let c of [0,1,2,3]; let i = index;"
-                src="./assets/img/cards/monster.png">
-        </div>
-    
-        <div class="currentHandStack">
-            <img (click)="chooseCard(card)"
-            [ngStyle]="{'left.px': x * 170}" *ngFor="let card of this.initialHand; let x = index "  src="./assets/img/cards/{{card}}.png">
-        </div>
-    </div>
+    <app-player-hand></app-player-hand>
 
 
 </div>

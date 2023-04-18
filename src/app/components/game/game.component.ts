@@ -11,6 +11,7 @@ import { User } from 'src/models/user.class';
 import { Monster } from 'src/models/monster/monster.class';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { get, update } from '@angular/fire/database';
+import { CurrentHandService } from 'src/app/services/current-hand.service';
 
 
 @Component({
@@ -50,6 +51,7 @@ export class GameComponent implements OnInit {
   constructor(
     public currentUserService: CurrentUserService,
     public currentGameService: CurrentGameService,
+    private currentHandService: CurrentHandService,
     private route: ActivatedRoute,
     public dialog: MatDialog
   ) { }
@@ -75,7 +77,6 @@ export class GameComponent implements OnInit {
   //Functions to Load the Game
   getGameId(params: { [x: string]: string; }) {
     this.gameId = params['id'];
-    console.log('getGameID', this.gameId)
   }
 
   async checkIfPlayerIsAlreadyPartOfGame() {
@@ -182,32 +183,5 @@ export class GameComponent implements OnInit {
     console.log('reduzierter Kartenstapel', this.cardStack)
   }
 
-  chooseCard(card: any) {
-    if (this.currentEnemyToken.includes(card)) {
-      let indexOfToken = this.currentEnemyToken.indexOf(card);
-      let indexOfHandCard = this.initialHand!.indexOf(card);
-      this.currentEnemyToken.splice(indexOfToken, 1);
-      this.initialHand!.splice(indexOfHandCard, 1);
-      console.log('currentHand', this.initialHand)
-      this.drawACard();
-    }
-  }
 
-  async drawACard() {
-    //if handstack.length is < 5 draw Cards until 5 in Hand
-    const docHand = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId);
-    const docSnap = await getDoc(docHand);
-    let data = docSnap.data();
-    for (let i = 0; this.initialHand!.length < 5; i++) {
-      const cardsInHand = data!['heroStack'].shift();
-      this.initialHand!.push(cardsInHand)
-    }
-    const updateData = {
-      heroStack: data!['heroStack'] ,
-      handstack: this.initialHand,
-    }
-    const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
-    updateDoc(docRef, updateData);
-    console.log('initialHand', this.initialHand)
-  }
 }

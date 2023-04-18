@@ -31,4 +31,5 @@ export class CurrentGameService {
     console.log('currentGame', currentGameData);
     return currentGameData;
   }
+
 }
