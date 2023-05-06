@@ -1,13 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Store } from '@ngxs/store';
+import { ChooseCardAction } from 'src/app/actions/cardsInHand-action';
+import { CreateNewCardStackAction } from 'src/app/actions/createNewCardStack-action';
+import { UpdateCardStackAction } from 'src/app/actions/updateCardStack-action';
 import { CurrentEnemyService } from 'src/app/services/current-enemy.service';
 import { CurrentHandService } from 'src/app/services/current-hand.service';
+import { CardStack } from 'src/models/helden/card.class';
 
 @Component({
   selector: 'app-player-hand',
   templateUrl: './player-hand.component.html',
-  styleUrls: ['./player-hand.component.scss'],
-  providers: [CurrentHandService, CurrentEnemyService]
+  styleUrls: ['./player-hand.component.scss']
 })
 export class PlayerHandComponent implements OnInit{
   currentHand: string[] = [];
@@ -18,8 +22,9 @@ export class PlayerHandComponent implements OnInit{
 
   constructor(
     private handservice: CurrentHandService,
-    private currentEnemyService: CurrentEnemyService,
-    private route: ActivatedRoute
+    public currentEnemyService: CurrentEnemyService,
+    private route: ActivatedRoute,
+    private store: Store,
   ) {}
 
   ngOnInit(): void {
@@ -32,6 +37,7 @@ export class PlayerHandComponent implements OnInit{
       this.currentHand = response.handstack;
       this.currentStack = response.heroStack;
       this.playedCards = response.playedCards;
+      this.store.dispatch(new UpdateCardStackAction(this.currentStack))
     });
     this.checkEnemyToken();
     
@@ -39,23 +45,26 @@ export class PlayerHandComponent implements OnInit{
 
  
   chooseCard(card: string) {
+    this.store.dispatch(new ChooseCardAction(card))
+    
     
     if (this.currentEnemyToken.includes(card)) {
-      let indexOfToken = this.currentEnemyToken.indexOf(card);
       let indexOfHandCard = this.currentHand.indexOf(card);
-      this.currentEnemyToken.splice(indexOfToken,1);
       this.currentHand.splice(indexOfHandCard, 1);
-      console.log('chooseCard', this.currentHand, this.currentEnemyToken)
+      this.currentEnemyService.removeEnemyToken(this.gameId, card)
+      .then((response:any) => {
+        console.log('responseAfterService', response)
+        this.currentEnemyToken = response;
+        this.currentEnemyService.currentEnemyTokenEvent.emit(this.currentEnemyToken)
+        console.log('EventTOken', this.currentEnemyService.currentEnemyTokenEvent.emit(this.currentEnemyToken))
+      });
     }
-    // if (this.currentEnemyToken.includes(card)) {
-    //   let indexOfToken = this.currentEnemyToken.indexOf(card);
-    //   let indexOfHandCard = this.initialHand!.indexOf(card);
-    //   this.currentEnemyToken.splice(indexOfToken, 1);
-    //   this.initialHand!.splice(indexOfHandCard, 1);
-    //   console.log('currentHand', this.initialHand)
-    //   this.drawACard();
-    // }
-  }
+
+    if (this.currentHand.length < 5) {
+      this.handservice.drawACard(this.gameId, this.currentHand)
+    }
+      
+    }
 
   checkEnemyToken() {
     this.currentEnemyService.getCurrentEnemyFromServer(this.gameId)
@@ -64,21 +73,6 @@ export class PlayerHandComponent implements OnInit{
     })
   }
 
-  // async drawACard() {
-  //   //if handstack.length is < 5 draw Cards until 5 in Hand
-  //   const docHand = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId);
-  //   const docSnap = await getDoc(docHand);
-  //   let data = docSnap.data();
-  //   for (let i = 0; this.initialHand!.length < 5; i++) {
-  //     const cardsInHand = data!['heroStack'].shift();
-  //     this.initialHand!.push(cardsInHand)
-  //   }
-  //   const updateData = {
-  //     heroStack: data!['heroStack'] ,
-  //     handstack: this.initialHand,
-  //   }
-  //   const docRef = doc(this.db, 'games', this.gameId, 'player', this.currentPlayerId)
-  //   updateDoc(docRef, updateData);
-  //   console.log('initialHand', this.initialHand)
-  // }
+
+
 }

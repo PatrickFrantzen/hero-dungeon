@@ -15,7 +15,7 @@ interface Difficulty {
   styleUrls: ['./dialog-game-settings.component.scss']
 })
 export class DialogGameSettings {
-  playerValidation = new FormControl('', [Validators.required, Validators.min(1), Validators.max(5)]);
+  playerValidation = new FormControl('', [Validators.required, Validators.min(2), Validators.max(5)]);
   idValidation = new FormControl('', Validators.required);
 
   numberOfPlayer!:number;

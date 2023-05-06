@@ -28,7 +28,6 @@ export class CurrentGameService {
     const docRef = doc(this.db, 'games', gameId);
     const docSnap = await getDoc(docRef);
     const currentGameData = docSnap.data();
-    console.log('currentGame', currentGameData);
     return currentGameData;
   }
 

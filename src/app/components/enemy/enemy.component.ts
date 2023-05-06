@@ -1,23 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CurrentEnemyService } from 'src/app/services/current-enemy.service';
+import { CurrentHandService } from 'src/app/services/current-hand.service';
 
 @Component({
   selector: 'app-enemy',
   templateUrl: './enemy.component.html',
-  styleUrls: ['./enemy.component.scss']
+  styleUrls: ['./enemy.component.scss'],
+  providers: [CurrentHandService, CurrentEnemyService]
 })
-export class EnemyComponent implements OnInit{
-
+export class EnemyComponent implements OnInit, OnChanges{
+  currentEnemyTokenEvent = new EventEmitter<string[]>();
   gameId:string = '';
   currentEnemyName:string = '';
   currentEnemyType:string = '';
-  currentEnemyTokens:string[] = [];
+  currentEnemyToken:string[] = [];
 
   constructor(
     private route: ActivatedRoute,
-    private enemyService: CurrentEnemyService
-  ) {}
+    public enemyService: CurrentEnemyService
+  ) {
+
+  }
 
   ngOnInit(): void {
     this.route.params.subscribe(async (params) => {
@@ -28,8 +32,29 @@ export class EnemyComponent implements OnInit{
     .then((response:any) => {
       this.currentEnemyName = response.currentEnemy.name;
       this.currentEnemyType = response.currentEnemy.type;
-      this.currentEnemyTokens = response.currentEnemy.token;
+      this.currentEnemyToken = response.currentEnemy.token;
+    })
+    // this.checkEnemyToken();
+    
+    this.enemyService.currentEnemyTokenEvent
+    .subscribe((enemyToken: string[]) => {
+      console.log(enemyToken)
+      this.currentEnemyToken = enemyToken
     })
   }
 
+  // checkEnemyToken() {
+  //   this.enemyService.getCurrentEnemyFromServer(this.gameId)
+  //   .then((response:any) =>{
+  //     this.currentEnemyToken = response.currentEnemy.token;
+  //   })
+  // }
+
+
+
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('changes', changes)
+  }
+
+  
 }

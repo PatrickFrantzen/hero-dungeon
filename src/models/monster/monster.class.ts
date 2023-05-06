@@ -1,3 +1,21 @@
+export interface Monster {
+    name: string, 
+    type: string,
+    token: []
+}
+
+export interface Boss {
+    bossname: string,
+    type: string,
+    token: []
+}
+
+export interface Quest {
+    name: string, 
+    type: string,
+    token: []
+}
+
 export class Monster {
     public monsterStack: Array<object> = [];
 
