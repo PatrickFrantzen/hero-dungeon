@@ -6,6 +6,7 @@ import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMonsterStackAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/currentGame-action';
+import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
@@ -70,14 +71,18 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         token: currEne,
         type: currType
       }
+      const deliveryStack = []
       let indexOfHandCard = this.currentHand.indexOf(card);
       let indexOfEnemyToken = this.currentEnemy.token.indexOf(card);
       currHand.splice(indexOfHandCard, 1);
       currEne.splice(indexOfEnemyToken, 1);
+      deliveryStack.push(card)
       this.store.dispatch(new UpdateCurrentHandAction(currHand));
       this.store.dispatch(new UpdateMonsterTokenArray(currEne));
+      this.store.dispatch(new UpdateDeliveryStack(deliveryStack));
       this.updatePlayer('handstack', currHand);
       this.updateGame('currentEnemyToken', currMob);
+      this.updatePlayer('deliveryStack', deliveryStack)
 
       if (this.currentHand.length < 5) {
         const currHand = [...this.currentHand];
@@ -88,7 +93,8 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           this.store.dispatch(new UpdateCardStackAction(currCardStack));
           this.store.dispatch(new UpdateCurrentHandAction(currHand));
           this.updatePlayer('handstack', currHand);
-          this.updatePlayer('cardstack', currCardStack)
+          this.updatePlayer('cardstack', currCardStack);
+          
         }
       }
     }
@@ -99,7 +105,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       this.store.dispatch(new UpdateMonsterStackAction(currMonsterStack))
       this.updateGame('newEnemy', newCurrentEnemy)
       this.updateGame('newMonsterstack', currMonsterStack)
-      //der nächste Gegner wird nicht richtig geladen. es ist immer der aktuelle
     }
   }
 
@@ -115,6 +120,11 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         heroStack: cardsToUpdate,
       }
       updateDoc(docPlayer, updateCardstack);
+    } else if (prop === 'deliveryStack') {
+      const updateDeliveryStack = {
+        playedCards: cardsToUpdate
+      }
+      updateDoc(docPlayer, updateDeliveryStack) // PlayedCards funktioniert noch nicht richtig
     }
   }
 

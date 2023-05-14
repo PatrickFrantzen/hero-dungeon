@@ -3,7 +3,8 @@ import { Action, State, StateContext } from "@ngxs/store";
 import { CurrentGameAction, CurrentGameData, SetNewEnemy, UpdateMonsterTokenArray } from "../actions/currentGame-action";
 import { Game } from "src/models/game";
 import { ToJSONService } from "../services/to-json.service";
-import { Mob } from "src/models/monster/monster.class";
+import { Mob, MonsterStack } from "src/models/monster/monster.class";
+import { UpdateMonsterStackAction } from "../actions/MonsterStack-action";
 
 
 export interface CurrentGameModel {
@@ -115,6 +116,31 @@ export class CurrentGameState {
             }
         })
         console.log('newEnemy', ctx.getState())
+    }
+
+    @Action(UpdateMonsterStackAction)
+    updateMonsterstack(ctx: StateContext<CurrentGameModel>, action: UpdateMonsterStackAction) {
+        const {monsterStack} = action;
+        if (!monsterStack) {
+            return
+        }
+        const state = ctx.getState()
+        const newMonsterstack:MonsterStack[] = monsterStack
+        ctx.patchState({
+            ...state, 
+            game: {
+                numberOfPlayers: state.game.numberOfPlayers,
+                currentEnemy: state.game.currentEnemy,
+                choosenHeros: state.game.choosenHeros,
+                currentBoss: state.game.currentBoss, 
+                isLost: state.game.isLost, 
+                gameId: state.game.gameId, 
+                difficulty: state.game.difficulty, 
+                monsterStack: newMonsterstack, 
+                allBosses: state.game.allBosses 
+            }
+        })
+        console.log('newMonsterstack', ctx.getState())
     }
 }
 

@@ -1,7 +1,7 @@
 import { CardStack } from "src/models/helden/card.class"
 
-export class ChooseCardAction {
-    static readonly type = '[PlayerHand page] Choose Card'
+export class CardToAblagestapelAction {
+    static readonly type = '[PlayerHand page] Played Card goes to Ablagestapel'
     constructor(public token: string) {}
 }
 

@@ -24,6 +24,7 @@ import { cardsInHandState } from 'src/app/states/cardsInHand-state';
 import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
+import { CurrentDeliveryStack } from 'src/app/actions/deliveryStack-action';
 
 @Component({
   selector: 'app-game',
@@ -125,6 +126,7 @@ export class GameComponent implements OnInit, OnDestroy {
       userNickname: this.currentPlayerName,
     }
     updateDoc(docRef, updateData);
+    this.store.dispatch(new CurrentCardsInHand(this.user.playedCards));
   }
 
   async updatePlayerOfGame(docPlayer: any, players: string[]) {
@@ -144,6 +146,8 @@ export class GameComponent implements OnInit, OnDestroy {
     let data = docSnap.data();
     console.log('geladen', data)
     this.store.dispatch(new CurrentCardsInHand(data!['handstack']));
+    this.store.dispatch(new CurrentDeliveryStack(data!['playedCards']));
+
   }
 
 
@@ -160,6 +164,7 @@ export class GameComponent implements OnInit, OnDestroy {
       const updateData = {
         choosenHero: result.data.choosenHero,
       }
+      console.log('choosenHeroToServer', result.data.choosenHero)
       const cardStack: string[] = result.data.choosenHero.herostack;
       this.store.dispatch(new CreateNewCardStackAction(cardStack));
       const docRef = doc(this.db, 'games', this.currentGameId, 'player', this.currentPlayerId)

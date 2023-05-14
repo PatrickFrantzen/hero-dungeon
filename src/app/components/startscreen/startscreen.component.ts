@@ -101,6 +101,7 @@ export class StartscreenComponent implements OnInit, OnDestroy{
       const monsterstack: MonsterStack[] = new Monster().createMonsterStack(data.numberOfPlayer, 'Baby-Barbar', data.difficulty);
       const allBosses: Boss[] = new Monster().bossCollection;
       const currentEnemy: Mob = monsterstack.shift()!;
+
       const game:Game = {
         numberOfPlayers: data.numberOfPlayer,
         choosenHeros: [],
