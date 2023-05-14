@@ -8,6 +8,7 @@ import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/currentGame-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
+import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
@@ -28,6 +29,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   @Select(CurrentCardStackSelector.currentCardStack) currentCardStack$!: Observable<string[]>
   @Select(CurrentGameSelectors.currentEnemy) currentEnemy$!: Observable<Mob>
   @Select(CurrentGameSelectors.currentMonsterStack) currentMonsterStack$!: Observable<MonsterStack[]>
+  @Select(CurrentDeliveryStackSelector.currentDeliveryStack) currentDeliveryStack$!: Observable<string[]>
 
   playerIdSubscription!: Subscription;
   playerNameSubscription!: Subscription;
@@ -36,14 +38,16 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   stackSubscription!: Subscription;
   currentEnemySubscription!: Subscription;
   monsterstackSubscription!: Subscription;
+  deliveryStackSubscription!: Subscription
 
   currentPlayerId!: string;
   currentPlayerName!: string;
   currentGameId!: string;
   currentHand!: string[];
   currentCardStack!: string[];
-  currentEnemy!: Mob
-  currentMonsterStack!: MonsterStack[]
+  currentEnemy!: Mob;
+  currentMonsterStack!: MonsterStack[];
+  currentDeliveryStack!: string[];
 
   db = getFirestore();
   // -------------------------------------
@@ -71,7 +75,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         token: currEne,
         type: currType
       }
-      const deliveryStack = []
+      const deliveryStack = [...this.currentDeliveryStack];
       let indexOfHandCard = this.currentHand.indexOf(card);
       let indexOfEnemyToken = this.currentEnemy.token.indexOf(card);
       currHand.splice(indexOfHandCard, 1);
@@ -105,6 +109,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       this.store.dispatch(new UpdateMonsterStackAction(currMonsterStack))
       this.updateGame('newEnemy', newCurrentEnemy)
       this.updateGame('newMonsterstack', currMonsterStack)
+    }
+
+    if (Array.isArray(this.currentMonsterStack) && !this.currentMonsterStack.length) {
+      
     }
   }
 
@@ -183,6 +191,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.stackSubscription = this.currentCardStack$
     .subscribe((data)=> {
       this.currentCardStack = data;
+    })
+    this.deliveryStackSubscription = this.currentDeliveryStack$
+    .subscribe((data)=> {
+      this.currentDeliveryStack = data;
     })
 
   }

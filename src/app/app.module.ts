@@ -36,6 +36,8 @@ import { CardStackState } from './states/cardStack-state';
 import { CurrentGameState } from './states/currentGame-state';
 import { CurrentUserState } from './states/currentUser-state';
 import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
+import { CurrentDeliveryStack } from './actions/deliveryStack-action';
+import { DeliveryStackState } from './states/deliveryStack-state';
 
 
 @NgModule({
@@ -65,7 +67,7 @@ import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
     MatSelectModule,
     MatCardModule,
     MatButtonModule,
-    NgxsModule.forRoot([cardsInHandState, CardStackState, CurrentGameState, CurrentUserState], {developmentMode: !environment.production}),
+    NgxsModule.forRoot([cardsInHandState, CardStackState, CurrentGameState, CurrentUserState, DeliveryStackState], {developmentMode: !environment.production}),
     NgxsStoragePluginModule.forRoot(),
   ],
   providers: [CurrentGameService, CurrentUserService, ],
