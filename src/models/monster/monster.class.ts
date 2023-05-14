@@ -1,28 +1,34 @@
-export interface Monster {
+export interface Mob {
     name: string, 
     type: string,
-    token: []
+    token: string[]
 }
 
 export interface Boss {
     bossname: string,
     type: string,
-    token: []
+    token: string[]
 }
 
 export interface Quest {
     name: string, 
     type: string,
-    token: []
+    token: string[]
+}
+
+export interface MonsterStack {
+    name: string, 
+    type: string,
+    token: string[]
 }
 
 export class Monster {
-    public monsterStack: Array<object> = [];
+    public monsterStack: MonsterStack[] = [];
 
     constructor() { }
 
     createMonsterStack(numberOfPlayers: number, currentBoss: any, difficulty: string) {
-        if (currentBoss.bossname == 'Baby-Barbar') {
+        if ((currentBoss.bossname == 'Baby-Barbar') || (currentBoss = 'Baby-barbar')) {
             if (difficulty == 'easy') {
                 this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
             } else if (difficulty == 'medium') {
@@ -93,10 +99,9 @@ export class Monster {
 
     loadMonster(numberOfMonsterCards: number) {
         for (let i = 0; i < numberOfMonsterCards; i++) {
-            const monsterStack = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
+            const monsterStack: Mob = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
             this.monsterStack.push(monsterStack);
         }
-        console.log('monsterCollection', this.monsterStack)
     }
 
     loadQuests(numberOfQuestCards: number) {
@@ -106,7 +111,7 @@ export class Monster {
         }
     }
 
-    questCollection: Array<object> = [
+    questCollection: Quest[] = [
         {
             "name": "Feindselige Riesenkrabbe",
             "type": "Mini-Boss",
@@ -159,7 +164,7 @@ export class Monster {
         },
     ];
 
-    bossCollection: Array<object> = [
+    bossCollection: Boss[] = [
         {
             "bossname": "Baby-Barbar",
             "token": ['red', 'red', 'green', 'green', 'purple', 'purple', 'purple'],
@@ -187,7 +192,7 @@ export class Monster {
         },
     ];
 
-    monsterCollection: Array<object> = [
+    monsterCollection: Mob[] = [
         {
             "name": "Treibsand",
             "token": ['purple', 'purple', 'yellow'],

@@ -1,10 +1,9 @@
 import { Injectable } from "@angular/core"
 import { Action, State, StateContext } from "@ngxs/store"
 import { CardStack } from "src/models/helden/card.class"
-import { CreateNewCardStackAction } from "../actions/createNewCardStack-action"
+import { CreateNewCardStackAction, UpdateCardStackAction } from "../actions/CardStack-action"
 import { Hero } from "src/models/helden/hero.class"
 import { cardsInHandState } from "./cardsInHand-state"
-import { UpdateCardStackAction } from "../actions/updateCardStack-action"
 import { patch } from "@ngxs/store/operators"
 
 export interface CardStackModel {
@@ -39,7 +38,7 @@ export class CardStackState {
             ...state,
             items: HeroStack
         });
-        
+        console.log('CreatedCardstackState', ctx.getState())
     }
 
     @Action(UpdateCardStackAction)

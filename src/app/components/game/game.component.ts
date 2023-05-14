@@ -13,13 +13,17 @@ import { CurrentUserService } from 'src/app/services/current-user.service';
 import { get, update } from '@angular/fire/database';
 import { CurrentHandService } from 'src/app/services/current-hand.service';
 import { Select, Store } from '@ngxs/store';
-import { CreateNewCardStackAction } from 'src/app/actions/createNewCardStack-action';
-import { CardStack } from 'src/models/helden/card.class';
+import { CreateNewCardStackAction, UpdateCardStackAction } from 'src/app/actions/CardStack-action';
+import { Card, CardStack } from 'src/models/helden/card.class';
 import { CurrentGameAction } from 'src/app/actions/currentGame-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
 import { Observable, Subscription } from 'rxjs';
 import { CurrentUserModel } from 'src/app/states/currentUser-state';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
+import { cardsInHandState } from 'src/app/states/cardsInHand-state';
+import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
+import { CurrentGameState } from 'src/app/states/currentGame-state';
+import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 
 @Component({
   selector: 'app-game',
@@ -28,18 +32,23 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 })
 export class GameComponent implements OnInit, OnDestroy {
 
-  @Select(CurrentUserSelectors.currentUser) currentUserId$!: Observable<string>
+  @Select(CurrentUserSelectors.currentUserId) currentUserId$!: Observable<string>
+  @Select(CurrentUserSelectors.currentUserName) currentUserName$!: Observable<string>
   @Select(CurrentGameSelectors.currentGame) currentGameId$!: Observable<string>
+  @Select(CurrentHandSelector.currentHand) currentHand$!:Observable<string[]>
 
   playerIdSubscription!: Subscription;
+  playerNameSubscription!: Subscription;
   gameIdSubscription!: Subscription;
 
   currentPlayerId!: string;
+  currentPlayerName!: string;
   currentGameId!: string;
+  initialHand:CardStack = {cardstack: []};
 
   // ----------------- //
 
-  game = new Game();
+  
   user = new User();
   gameId: string = '';
   currentPlayer: string = '';
@@ -56,7 +65,7 @@ export class GameComponent implements OnInit, OnDestroy {
   currentMonster: Array<object> = [];
   allBosses: object[] = [];
 
-  initialHand: string[] | undefined = [];
+ 
   playedCards: string[] = [];
   db = getFirestore();
 
@@ -75,48 +84,31 @@ export class GameComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(async (params) => {
-      //When url is changed the Hero Data of this User is loaded
-      this.store.dispatch(new CurrentGameAction(params['id']))
+    
+    this.setUserID();
+    this.setGameId();
+    this.checkIfPlayerIsAlreadyPartOfGame();
+    // this.route.params.subscribe(async (params) => {
+    //   //When url is changed the Hero Data of this User is loaded
+      
+    //   this.setGameId();
+    // });
 
-      this.playerIdSubscription = 
-      this.currentUserId$
-      .subscribe((data) => {
-        this.currentPlayerId = data;
-        console.log('Obsdata', this.currentPlayerId)
-      });
-
-      this.gameIdSubscription = 
-      this.currentGameId$
-      .subscribe((data) => {
-        this.currentGameId = data;
-        console.log('Obsdata2', this.currentGameId)
-      });
-
-      console.log('Obsdata3', this.currentGameId ,this.currentPlayerId)
-    });
-//Die CurrentUserService muss vor der Select currentUserID$ laufen, da dort erst der Store dispatch läuft
-    this.currentUserService.getCurrentUser().then((response) => {
-      this.getPlayerInfos(response);
-      this.checkIfPlayerIsAlreadyPartOfGame()
-      console.log('Obsdata4', this.currentPlayerId)
-    })
-      .then(() => {
-        this.currentGameService.getCurrentGame(this.currentGameId)
-          .then((response) => {
-            //get Data from Server for Game
-            this.getGameInfos(response);
-          })
-      });
+    // this.currentUserService.getCurrentUser().then(()=>{
+    //   this.setUserID();
+    // }
+    // ).then(()=>{
+    //   this.checkIfPlayerIsAlreadyPartOfGame();
+    // });
+    
   };
-
 
   async checkIfPlayerIsAlreadyPartOfGame() {
     const docPlayer = doc(this.db, 'games', this.currentGameId);
     const docSnap = await getDoc(docPlayer);
     let data = docSnap.data();
     let players: string[] = data!['choosenHeros'];
-    if (players.includes(this.currentPlayer)) {
+    if (players.includes(this.currentPlayerName)) {
       this.loadHandstack(this.currentPlayerId)
     } else {
       this.createNewPlayer();
@@ -130,49 +122,32 @@ export class GameComponent implements OnInit, OnDestroy {
     setDoc(docRef, this.user.toJSON());
     const updateData = {
       userId: this.currentPlayerId,
-      userNickname: this.currentPlayer,
+      userNickname: this.currentPlayerName,
     }
     updateDoc(docRef, updateData);
   }
 
   async updatePlayerOfGame(docPlayer: any, players: string[]) {
-    players.push(this.currentPlayer)
+    players.push(this.currentPlayerName)
     const updatePlayer = {
       choosenHeros: players
     }
     updateDoc(docPlayer, updatePlayer);
   }
 
-  getPlayerInfos(response: any) {
-    this.currentHero = response.choosenHero;
-    this.currentPlayer = response.userNickname;
-    this.currentPlayerId = response.userId;
-    this.playedCards = response.playedCards;
 
-  }
-
-  getGameInfos(response: any) {
-    this.numberOfPlayers = response!['numberOfPlayers'];
-    this.gameDifficulty = response!['difficulty'];
-    this.gameIsLost = response!['isLost'];
-    this.enemy = response!['currentEnemy'];
-    this.monsterStack = response!['monsterStack'];
-    this.currentBoss = response!['currentBoss'];
-    this.allBosses = response!['allBosses'];
-    this.currentEnemy = response!['currentEnemy'];
-    this.currentEnemyName = response!['currentEnemy'].name;
-    this.currentEnemyType = response!['currentEnemy'].type;
-    this.currentEnemyToken = response!['currentEnemy'].token;
-  }
 
 
   async loadHandstack(currentPlayerId: string) {
     const docRef = doc(this.db, 'games', this.currentGameId, 'player', currentPlayerId);
     const docSnap = await getDoc(docRef);
     let data = docSnap.data();
-    this.initialHand = data!['handstack'];
+    console.log('geladen', data)
+    this.store.dispatch(new CurrentCardsInHand(data!['handstack']));
   }
 
+
+    
 
   openDialog() {
     let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
@@ -186,9 +161,7 @@ export class GameComponent implements OnInit, OnDestroy {
         choosenHero: result.data.choosenHero,
       }
       const cardStack: string[] = result.data.choosenHero.herostack;
-
       this.store.dispatch(new CreateNewCardStackAction(cardStack));
-
       const docRef = doc(this.db, 'games', this.currentGameId, 'player', this.currentPlayerId)
       updateDoc(docRef, updateData).then(() => {
         this.drawInitialHand(docRef)
@@ -203,20 +176,57 @@ export class GameComponent implements OnInit, OnDestroy {
     let data = docSnap.data();
     this.cardStack = data!['choosenHero'].herostack;
     for (let i = 0; i < 5; i++) {
-      const cardsinHand: string | undefined = this.cardStack.shift();
-      this.initialHand!.push(cardsinHand!);
+      const cardsinHand: string = this.cardStack.shift()!;
+      this.initialHand.cardstack.push(cardsinHand)
     }
     const updateData = {
       heroStack: this.cardStack,
-      handstack: this.initialHand
+      handstack: this.initialHand.cardstack
     }
-
+    this.store.dispatch(new CurrentCardsInHand(this.initialHand.cardstack));
+    this.store.dispatch(new UpdateCardStackAction(this.cardStack))
     updateDoc(docRef, updateData);
+  }
+
+  setGameId() {
+      this.gameIdSubscription = this.currentGameId$
+      .subscribe((data) => {
+        this.currentGameId = data;
+      });
+    
+  }
+  
+  setUserID() {
+    this.playerIdSubscription = this.currentUserId$
+    .subscribe((data) => {
+      this.currentPlayerId = data;
+    });
+    this.playerNameSubscription = this.currentUserName$
+    .subscribe((data) => {
+      this.currentPlayerName = data;
+    });
   }
 
   ngOnDestroy(): void {
     this.playerIdSubscription.unsubscribe();
+    this.playerNameSubscription.unsubscribe();
     this.gameIdSubscription.unsubscribe();
   }
+
+
+  
+  // getGameInfos(response: any) {
+  //   this.numberOfPlayers = response!['numberOfPlayers'];
+  //   this.gameDifficulty = response!['difficulty'];
+  //   this.gameIsLost = response!['isLost'];
+  //   this.enemy = response!['currentEnemy'];
+  //   this.monsterStack = response!['monsterStack'];
+  //   this.currentBoss = response!['currentBoss'];
+  //   this.allBosses = response!['allBosses'];
+  //   this.currentEnemy = response!['currentEnemy'];
+  //   this.currentEnemyName = response!['currentEnemy'].name;
+  //   this.currentEnemyType = response!['currentEnemy'].type;
+  //   this.currentEnemyToken = response!['currentEnemy'].token;
+  // }
 
 }

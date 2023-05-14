@@ -1,7 +1,9 @@
 <mat-card class="current-Enemy">
-    <mat-card-header>{{this.currentEnemyName}}</mat-card-header>
+    <mat-card-header>{{ currentEnemy.name }}</mat-card-header>
     <mat-card-content>
-        <img *ngFor="let token of this.currentEnemyToken; let x = index" src="./assets/img/monsterToken/{{token}}.png">
+        <img *ngFor="let token of currentEnemy.token; let x = index" src="./assets/img/monsterToken/{{token}}.png">
     </mat-card-content>
-    <mat-card-footer>{{this.currentEnemyType}}</mat-card-footer>
+    <mat-card-footer>{{currentEnemy.type}}
+    
+    </mat-card-footer>
 </mat-card>

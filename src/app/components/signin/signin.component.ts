@@ -35,8 +35,8 @@ export class SigninComponent implements OnInit{
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
-      console.log(user);
-      this.route.navigate(['startscreen'])
+      this.route.navigate(['startscreen']);
+      this.currentUserService.getCurrentUser()
     })
     .catch((error) => {
       const errorCode = error.code;

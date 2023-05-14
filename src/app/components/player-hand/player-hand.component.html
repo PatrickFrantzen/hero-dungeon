@@ -6,6 +6,6 @@
 
     <div class="currentHandStack">
         <img (click)="chooseCard(card)"
-        [ngStyle]="{'left.px': x * 170}" *ngFor="let card of this.currentHand; let x = index "  src="./assets/img/cards/{{card}}.png">
+        [ngStyle]="{'left.px': x * 170}" *ngFor="let card of this.currentHand , let x = index "  src="./assets/img/cards/{{card}}.png">
     </div>
 </div>

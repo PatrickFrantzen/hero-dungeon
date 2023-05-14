@@ -52,7 +52,6 @@ export class CurrentEnemyService {
         updateDoc(EnemyRef, updateData);
       })
       .then(() => {
-        console.log('Service', this.currentEnemyToken)
         resolve(this.currentEnemyToken)
       })
     })

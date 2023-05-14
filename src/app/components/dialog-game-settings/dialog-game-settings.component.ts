@@ -23,7 +23,7 @@ export class DialogGameSettings {
   difficulties: Difficulty[] = [
     {value: 'easy', viewValue: 'easy'},
     {value: 'medium', viewValue: 'medium'},
-    {value: 'hard', viewValue: 'hard'},
+    {value: 'hard', viewValue: 'hard'}
   ];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogGameSettings>) {}

@@ -3,5 +3,5 @@ export interface Card {
 }
 
 export interface CardStack {
-    cardstack: string[];
+    cardstack: string[]
 }

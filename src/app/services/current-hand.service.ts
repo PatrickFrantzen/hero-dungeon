@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { doc, getFirestore, getDoc, DocumentData, updateDoc } from '@angular/fire/firestore';
 import { CurrentUserService } from './current-user.service';
 import { Select, Store } from '@ngxs/store';
-import { UpdateCardStackAction } from '../actions/updateCardStack-action';
 import { CurrentUserSelectors } from '../selectors/currentUser-selectos';
 import { Observable } from 'rxjs';
 import { CurrentUserModel } from '../states/currentUser-state';
+import { UpdateCardStackAction } from '../actions/CardStack-action';
 
 
 
@@ -47,7 +47,6 @@ export class CurrentHandService {
   }
 
   getCards() {
-    console.log('felhler2', this.currentCardsInHand)
     return this.currentCardsInHand;
   }
 
