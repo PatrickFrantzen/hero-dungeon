@@ -3,8 +3,8 @@ import { Action, State, StateContext } from "@ngxs/store";
 import { CurrentGameAction, CurrentGameData, SetNewEnemy, UpdateMonsterTokenArray } from "../actions/currentGame-action";
 import { Game } from "src/models/game";
 import { ToJSONService } from "../services/to-json.service";
-import { Mob, MonsterStack } from "src/models/monster/monster.class";
-import { UpdateMonsterStackAction } from "../actions/MonsterStack-action";
+import { Mob } from "src/models/monster/monster.class";
+import { UpdateMobAction } from "../actions/MonsterStack-action";
 
 
 export interface CurrentGameModel {
@@ -20,11 +20,11 @@ export interface CurrentGameModel {
             numberOfPlayers: 0,
             choosenHeros: [], 
             currentEnemy:{name:'', token: [], type: ''}, 
-            currentBoss: {bossname:'', token: [], type: ''}, 
+            currentBoss: {name:'', token: [], type: ''}, 
             isLost: false, 
             gameId: '', 
             difficulty: '', 
-            monsterStack: [], 
+            Mob: [], 
             allBosses: [] 
         },
     }
@@ -85,7 +85,7 @@ export class CurrentGameState {
                 isLost: state.game.isLost, 
                 gameId: state.game.gameId, 
                 difficulty: state.game.difficulty, 
-                monsterStack: state.game.monsterStack, 
+                Mob: state.game.Mob, 
                 allBosses: state.game.allBosses 
             }
         })
@@ -111,21 +111,21 @@ export class CurrentGameState {
                 isLost: state.game.isLost, 
                 gameId: state.game.gameId, 
                 difficulty: state.game.difficulty, 
-                monsterStack: state.game.monsterStack, 
+                Mob: state.game.Mob, 
                 allBosses: state.game.allBosses 
             }
         })
         console.log('newEnemy', ctx.getState())
     }
 
-    @Action(UpdateMonsterStackAction)
-    updateMonsterstack(ctx: StateContext<CurrentGameModel>, action: UpdateMonsterStackAction) {
-        const {monsterStack} = action;
-        if (!monsterStack) {
+    @Action(UpdateMobAction)
+    updateMob(ctx: StateContext<CurrentGameModel>, action: UpdateMobAction) {
+        const { mob } = action;
+        if (!mob) {
             return
         }
         const state = ctx.getState()
-        const newMonsterstack:MonsterStack[] = monsterStack
+        const newMob:Mob[] = mob
         ctx.patchState({
             ...state, 
             game: {
@@ -136,11 +136,11 @@ export class CurrentGameState {
                 isLost: state.game.isLost, 
                 gameId: state.game.gameId, 
                 difficulty: state.game.difficulty, 
-                monsterStack: newMonsterstack, 
+                Mob: newMob, 
                 allBosses: state.game.allBosses 
             }
         })
-        console.log('newMonsterstack', ctx.getState())
+        console.log('newMob', ctx.getState())
     }
 }
 

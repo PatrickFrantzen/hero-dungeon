@@ -1,6 +1,6 @@
 import { Selector } from "@ngxs/store";
 import { CurrentGameModel, CurrentGameState } from "../states/currentGame-state";
-import { MonsterStack } from "src/models/monster/monster.class";
+import { Mob } from "src/models/monster/monster.class";
 
 export class CurrentGameSelectors {
 
@@ -17,8 +17,13 @@ export class CurrentGameSelectors {
     }
 
     @Selector([CurrentGameState])
-    static currentMonsterStack(state: CurrentGameModel): MonsterStack[] {
-        console.log('currentMonsterStackSelector', state.game.monsterStack)
-        return state.game.monsterStack
+    static currentMob(state: CurrentGameModel): Mob[] {
+        console.log('currentMobSelector', state.game.Mob)
+        return state.game.Mob
+    }
+
+    @Selector([CurrentGameState])
+    static currentBoss(state: CurrentGameModel): Mob {
+        return state.game.currentBoss
     }
 }

@@ -4,15 +4,15 @@ export class User {
     public userNickname:string = '';
     public choosenHero:Object = {};
     public handstack: string[] = [];
-    public playedCards: string[] = [];
+    public deliveryStack: string[] = [];
 
-    constructor(obj? : { userId: string, userEmail: string, userNickname: string, choosenHero: Object, handstack: string[], playedCards: string[]}) {
+    constructor(obj? : { userId: string, userEmail: string, userNickname: string, choosenHero: Object, handstack: string[], deliveryStack: string[]}) {
         this.userId = obj?.userId || '';
         this.userEmail = obj?.userEmail || '';
         this.userNickname = obj?.userNickname || '';
         this.choosenHero = obj?.choosenHero || {};
         this.handstack = obj?.handstack || [];
-        this.playedCards = obj?.playedCards || [];
+        this.deliveryStack = obj?.deliveryStack || [];
     }
 
     public toJSON() {
@@ -22,7 +22,7 @@ export class User {
             userNickname: this.userNickname,
             choosenHero: this.choosenHero,
             handstack: this.handstack,
-            playedCards: this.playedCards,
+            deliveryStack: this.deliveryStack,
         }  
     }
 }

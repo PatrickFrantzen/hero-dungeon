@@ -14,7 +14,7 @@ export class CurrentGameService {
   currentGameDifficulty: string = '';
   currentGameIsLost: boolean = false;
   currentEnemy: object[] = [];
-  currentMonsterStack: string[] = [];
+  currentMob: string[] = [];
   currentBoss: {} = {};
   allBosses: object[] = [];
   db: any;

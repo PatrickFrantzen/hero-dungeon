@@ -46,7 +46,8 @@ export class GameComponent implements OnInit, OnDestroy {
   currentPlayerName!: string;
   currentGameId!: string;
   initialHand:CardStack = {cardstack: []};
-
+  deliveryStack: string[] = [];
+  db = getFirestore();
   // ----------------- //
 
   
@@ -59,7 +60,7 @@ export class GameComponent implements OnInit, OnDestroy {
   gameDifficulty: string = '';
   gameIsLost: boolean = false;
   enemy: string = '';
-  monsterStack: Array<object> = [];
+  Mob: Array<object> = [];
   monsterSetting!: string;
   monster!: Monster;
   currentBoss: object[] = [];
@@ -67,8 +68,7 @@ export class GameComponent implements OnInit, OnDestroy {
   allBosses: object[] = [];
 
  
-  playedCards: string[] = [];
-  db = getFirestore();
+
 
   currentEnemyName!: string;
   currentEnemyType!: string;
@@ -89,19 +89,6 @@ export class GameComponent implements OnInit, OnDestroy {
     this.setUserID();
     this.setGameId();
     this.checkIfPlayerIsAlreadyPartOfGame();
-    // this.route.params.subscribe(async (params) => {
-    //   //When url is changed the Hero Data of this User is loaded
-      
-    //   this.setGameId();
-    // });
-
-    // this.currentUserService.getCurrentUser().then(()=>{
-    //   this.setUserID();
-    // }
-    // ).then(()=>{
-    //   this.checkIfPlayerIsAlreadyPartOfGame();
-    // });
-    
   };
 
   async checkIfPlayerIsAlreadyPartOfGame() {
@@ -126,7 +113,7 @@ export class GameComponent implements OnInit, OnDestroy {
       userNickname: this.currentPlayerName,
     }
     updateDoc(docRef, updateData);
-    this.store.dispatch(new CurrentCardsInHand(this.user.playedCards));
+    this.store.dispatch(new CurrentDeliveryStack(this.user.deliveryStack));
   }
 
   async updatePlayerOfGame(docPlayer: any, players: string[]) {
@@ -146,7 +133,7 @@ export class GameComponent implements OnInit, OnDestroy {
     let data = docSnap.data();
     console.log('geladen', data)
     this.store.dispatch(new CurrentCardsInHand(data!['handstack']));
-    this.store.dispatch(new CurrentDeliveryStack(data!['playedCards']));
+    this.store.dispatch(new CurrentDeliveryStack(data!['deliveryStack']));
 
   }
 
@@ -225,7 +212,7 @@ export class GameComponent implements OnInit, OnDestroy {
   //   this.gameDifficulty = response!['difficulty'];
   //   this.gameIsLost = response!['isLost'];
   //   this.enemy = response!['currentEnemy'];
-  //   this.monsterStack = response!['monsterStack'];
+  //   this.Mob = response!['Mob'];
   //   this.currentBoss = response!['currentBoss'];
   //   this.allBosses = response!['allBosses'];
   //   this.currentEnemy = response!['currentEnemy'];

@@ -1,11 +1,11 @@
-import { MonsterStack } from "src/models/monster/monster.class";
+import { Mob } from "src/models/monster/monster.class";
 
-export class CreateNewMonsterStackAction {
-    static readonly type='[Game Page] Creating new MonsterStack'
-    constructor(public monsterStack:MonsterStack[]) {}
+export class CreateNewMobAction {
+    static readonly type='[Game Page] Creating new Mob'
+    constructor(public mob:Mob[]) {}
 }
 
-export class UpdateMonsterStackAction {
-    static readonly type='[Player Hand page], Updating the MonsterStack'
-    constructor(public monsterStack: MonsterStack[]) {}
+export class UpdateMobAction {
+    static readonly type='[Player Hand page], Updating the Mob'
+    constructor(public mob: Mob[]) {}
 }

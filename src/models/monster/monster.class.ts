@@ -4,33 +4,28 @@ export interface Mob {
     token: string[]
 }
 
-export interface Boss {
-    bossname: string,
-    type: string,
-    token: string[]
-}
+// export interface Boss {
+//     bossname: string,
+//     type: string,
+//     token: string[]
+// }
 
-export interface Quest {
-    name: string, 
-    type: string,
-    token: string[]
-}
-
-export interface MonsterStack {
-    name: string, 
-    type: string,
-    token: string[]
-}
+// export interface Quest {
+//     name: string, 
+//     type: string,
+//     token: string[]
+// }
 
 export class Monster {
-    public monsterStack: MonsterStack[] = [];
+    public Mob: Mob[] = [];
 
     constructor() { }
 
-    createMonsterStack(numberOfPlayers: number, currentBoss: any, difficulty: string) {
+    createMob(numberOfPlayers: number, currentBoss: any, difficulty: string) {
         if ((currentBoss.bossname == 'Baby-Barbar') || (currentBoss = 'Baby-barbar')) {
             if (difficulty == 'easy') {
-                this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
+                // this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
+                this.getMonsterForGame(numberOfPlayers, 1, 0, 12, 6, 14, 8, 16, 10); // zum testen
             } else if (difficulty == 'medium') {
                 this.getMonsterForGame(numberOfPlayers, 14, 4, 16, 6, 18, 8, 20, 10);
             } else {
@@ -69,7 +64,7 @@ export class Monster {
                 this.getMonsterForGame(numberOfPlayers, 34, 4, 36, 6, 38, 8, 40, 10);
             }
         }
-        return this.monsterStack
+        return this.Mob
     }
 
     getMonsterForGame(numberOfPlayers: number, monsterTwo: number, questTwo: number, monsterThree: number, questThree: number,
@@ -94,24 +89,24 @@ export class Monster {
             default:
                 break;
         }
-        this.shuffle(this.monsterStack);
+        this.shuffle(this.Mob);
     }
 
     loadMonster(numberOfMonsterCards: number) {
         for (let i = 0; i < numberOfMonsterCards; i++) {
-            const monsterStack: Mob = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
-            this.monsterStack.push(monsterStack);
+            const Mob: Mob = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
+            this.Mob.push(Mob);
         }
     }
 
     loadQuests(numberOfQuestCards: number) {
         for (let i = 0; i < numberOfQuestCards; i++) {
             const questStack = this.questCollection[Math.floor(Math.random() * this.questCollection.length)]
-            this.monsterStack.push(questStack);
+            this.Mob.push(questStack);
         }
     }
 
-    questCollection: Quest[] = [
+    questCollection: Mob[] = [
         {
             "name": "Feindselige Riesenkrabbe",
             "type": "Mini-Boss",
@@ -164,29 +159,29 @@ export class Monster {
         },
     ];
 
-    bossCollection: Boss[] = [
+    bossCollection: Mob[] = [
         {
-            "bossname": "Baby-Barbar",
+            "name": "Baby-Barbar",
             "token": ['red', 'red', 'green', 'green', 'purple', 'purple', 'purple'],
             "type": "Boss"
         },
         {
-            "bossname": "Der Flecken-Schrecken",
+            "name": "Der Flecken-Schrecken",
             "token": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'yellow', 'yellow', 'yellow'],
             "type": "Boss"
         },
         {
-            "bossname": "Zola, die Gorgone",
+            "name": "Zola, die Gorgone",
             "token": ['red', 'red', 'red', 'red', 'yellow', 'yellow', 'yellow', 'purple', 'purple', 'purple'],
             "type": "Boss"
         },
         {
-            "bossname": "Verdammt, ein Drache!!!",
+            "name": "Verdammt, ein Drache!!!",
             "token": ['red', 'yellow', 'purple', 'purple', 'purple', 'purple', 'green', 'green', 'green', 'green', 'green', 'green'],
             "type": "Boss"
         },
         {
-            "bossname": "Der Dungeon-Overlord",
+            "name": "Der Dungeon-Overlord",
             "token": ['red', 'red', 'red', 'green', 'green', 'green', 'yellow', 'yellow', 'yellow', 'blue', 'blue', 'blue'],
             "type": "Boss"
         },
@@ -415,7 +410,7 @@ export class Monster {
 
     public toJSON() {
         return {
-            monsterStack: this.monsterStack
+            Mob: this.Mob
         }
 
     };

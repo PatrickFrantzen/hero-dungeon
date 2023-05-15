@@ -7,16 +7,15 @@ import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings
 import { Auth, signOut } from '@angular/fire/auth';
 import { getFirestore, doc, setDoc, updateDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
-import { Boss, Mob, Monster, MonsterStack } from 'src/models/monster/monster.class';
+import { Mob, Monster } from 'src/models/monster/monster.class';
 import { Select, Store } from '@ngxs/store';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
 import { Observable, Subscription } from 'rxjs';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameAction, CurrentGameData } from 'src/app/actions/currentGame-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
-import { MonsterStackState } from 'src/app/states/monsterStack-state';
-import { CreateNewMonsterStackAction } from 'src/app/actions/MonsterStack-action';
 import { OnDisconnect } from '@angular/fire/database';
+import { CreateNewMobAction } from 'src/app/actions/MonsterStack-action';
 
 @Component({
   selector: 'app-startscreen',
@@ -98,9 +97,9 @@ export class StartscreenComponent implements OnInit, OnDestroy{
 
   setGameSettings(data:any) {
     if (data) {
-      const monsterstack: MonsterStack[] = new Monster().createMonsterStack(data.numberOfPlayer, 'Baby-Barbar', data.difficulty);
-      const allBosses: Boss[] = new Monster().bossCollection;
-      const currentEnemy: Mob = monsterstack.shift()!;
+      const Mob: Mob[] = new Monster().createMob(data.numberOfPlayer, 'Baby-Barbar', data.difficulty);
+      const allBosses: Mob[] = new Monster().bossCollection;
+      const currentEnemy: Mob = Mob.shift()!;
 
       const game:Game = {
         numberOfPlayers: data.numberOfPlayer,
@@ -110,17 +109,17 @@ export class StartscreenComponent implements OnInit, OnDestroy{
           token: currentEnemy.token,
           type: currentEnemy.type},
         currentBoss: {
-          "bossname": "Baby-Barbar",
+          "name": "Baby-Barbar",
           "token": ['red', 'red', 'green', 'green', 'purple', 'purple', 'purple'],
           "type": "Boss"},
         isLost: false,
         gameId: data.gameId,
         difficulty: data.difficulty,
-        monsterStack: monsterstack,
+        Mob: Mob,
         allBosses: allBosses
       }
       this.store.dispatch(new CurrentGameData(game))
-      this.store.dispatch(new CreateNewMonsterStackAction(monsterstack))
+      this.store.dispatch(new CreateNewMobAction(Mob))
       this.gameAsJSON = this.JSON.gameToJSON(game);
     }
   }

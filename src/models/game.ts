@@ -1,17 +1,17 @@
-import { Boss, Mob, MonsterStack } from "./monster/monster.class";
+import { Mob } from "./monster/monster.class";
 
 export interface Game {
     numberOfPlayers: number ;
     choosenHeros: string[];
     currentEnemy: Mob;
-    currentBoss: Boss;
+    currentBoss: Mob;
     isLost:boolean;
     gameId: string;
     difficulty: string;
-    monsterStack: MonsterStack[];
-    allBosses: Boss[];
+    Mob: Mob[];
+    allBosses: Mob[];
 
-    // constructor(obj?: { numberOfPlayers: number; choosenHeros: []; currentEnemy: object[], currentBoss: {}, isLost: boolean, gameId: string, difficulty: string, monsterStack: object[], allBosses: object[] }) {
+    // constructor(obj?: { numberOfPlayers: number; choosenHeros: []; currentEnemy: object[], currentBoss: {}, isLost: boolean, gameId: string, difficulty: string, Mob: object[], allBosses: object[] }) {
     //     this.numberOfPlayers = obj?.numberOfPlayers || 0;
     //     this.choosenHeros = obj?.choosenHeros || [];
     //     this.currentEnemy = obj?.currentEnemy || [];
@@ -19,7 +19,7 @@ export interface Game {
     //     this.isLost = obj?.isLost || false;
     //     this.gameId = obj?.gameId || '';
     //     this.difficulty = obj?.difficulty || '';
-    //     this.monsterStack = obj?.monsterStack || [];
+    //     this.Mob = obj?.Mob || [];
     //     this.allBosses = obj?.allBosses || [];
     // }
 
@@ -32,7 +32,7 @@ export interface Game {
     //         isLost: this.isLost,
     //         gameId: this.gameId,
     //         difficulty: this.difficulty,
-    //         monsterStack: this.monsterStack,
+    //         Mob: this.Mob,
     //         allBosses: this.allBosses,
     //     }
         

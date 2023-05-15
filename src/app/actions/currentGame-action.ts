@@ -1,5 +1,5 @@
 import { Game } from "src/models/game"
-import { Mob, MonsterStack } from "src/models/monster/monster.class"
+import { Mob } from "src/models/monster/monster.class"
 
 export class CurrentGameAction {
     static readonly type = '[Startscreen page] Generating new Game ID'

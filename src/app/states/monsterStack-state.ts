@@ -1,20 +1,20 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
-import { Mob, MonsterStack } from "src/models/monster/monster.class";
-import { CreateNewMonsterStackAction, UpdateMonsterStackAction } from "../actions/MonsterStack-action";
+import { Mob} from "src/models/monster/monster.class";
 import { CurrentGameAction, CurrentGameData } from "../actions/currentGame-action";
 import { CurrentGameState } from "./currentGame-state";
 import { CurrentGameSelectors } from "../selectors/currentGame-selector";
 import { patch } from "@ngxs/store/operators";
+import { CreateNewMobAction, UpdateMobAction } from "../actions/MonsterStack-action";
 
-export interface MonsterStackModel{
-    items: MonsterStack[]
+export interface MobModel{
+    enemys: Mob[]
 }
 
-@State<MonsterStackModel>({
-    name: 'monsterStack',
+@State<MobModel>({
+    name: 'Mob',
     defaults: {
-        items: [{
+        enemys: [{
             name: '',
             type: '',
             token: []
@@ -22,37 +22,37 @@ export interface MonsterStackModel{
     }
 })
 @Injectable()
-export class MonsterStackState {
+export class MobState {
 
-    @Action(CreateNewMonsterStackAction)
-    createNewMonsterStack(ctx: StateContext<MonsterStackModel>, action: CreateNewMonsterStackAction) {
-        const { monsterStack } = action;
-        if (!monsterStack) {
+    @Action(CreateNewMobAction)
+    createNewMob(ctx: StateContext<MobModel>, action: CreateNewMobAction) {
+        const { mob } = action;
+        if (!mob) {
             return
         }
         const state = ctx.getState();
-        const MonsterStack: MonsterStack[] = 
-            monsterStack;
+        const Mob: Mob[] = 
+            mob;
         
         ctx.setState({
             ...state,
-            items: MonsterStack
+            enemys: Mob
         });
-        console.log('MonsterStackState', ctx.getState())
+        console.log('MobState', ctx.getState())
     }
 
-    @Action(UpdateMonsterStackAction)
-    updateMonsterStack(ctx: StateContext<MonsterStackModel>, action: UpdateMonsterStackAction) {
-        const { monsterStack } = action;
-        if (!monsterStack) {
+    @Action(UpdateMobAction)
+    updateMob(ctx: StateContext<MobModel>, action: UpdateMobAction) {
+        const { mob } = action;
+        if (!mob) {
             return
         }
-        const MonsterStack: MonsterStack[] = 
-            monsterStack;
+        const Mob: Mob[] = 
+        mob;
 
             ctx.setState(
-                patch<MonsterStackModel>({
-                    items: MonsterStack
+                patch<MobModel>({
+                    enemys: Mob
                 })
                 )
                 console.log('UpdatedCardstackState', ctx.getState())
