@@ -12,8 +12,7 @@ import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryS
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
-import { CurrentEnemyService } from 'src/app/services/current-enemy.service';
-import { Mob, Monster } from 'src/models/monster/monster.class';
+import { Mob } from 'src/models/monster/monster.class';
 
 @Component({
   selector: 'app-player-hand',
@@ -58,7 +57,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
 
   constructor(
-    public currentEnemyService: CurrentEnemyService,
     private store: Store,
   ) { }
 
@@ -120,10 +118,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         this.updateGame('newEnemy', newCurrentEnemy)
       }
       
-    } 
-    // else if (Array.isArray(this.currentMob) && !this.currentMob.length && !this.currentEnemy.token.length) {
-
-    // }
+    }
   }
 
   updatePlayer(prop: string, cardsToUpdate: string[],) {

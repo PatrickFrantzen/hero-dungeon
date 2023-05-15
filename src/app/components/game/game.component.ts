@@ -1,28 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute } from '@angular/router';
-import { isEmpty } from '@firebase/util';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
-
-import { CurrentGameService } from 'src/app/services/current-game.service';
-import { doc, getFirestore, getDoc, updateDoc, addDoc, setDoc, DocumentReference } from '@angular/fire/firestore';
-import { Game } from 'src/models/game';
+import { doc, getFirestore, getDoc, updateDoc, setDoc, DocumentReference } from '@angular/fire/firestore';
 import { User } from 'src/models/user.class';
-import { Monster } from 'src/models/monster/monster.class';
-import { CurrentUserService } from 'src/app/services/current-user.service';
-import { get, update } from '@angular/fire/database';
-import { CurrentHandService } from 'src/app/services/current-hand.service';
 import { Select, Store } from '@ngxs/store';
 import { CreateNewCardStackAction, UpdateCardStackAction } from 'src/app/actions/CardStack-action';
-import { Card, CardStack } from 'src/models/helden/card.class';
-import { CurrentGameAction } from 'src/app/actions/currentGame-action';
+import { CardStack } from 'src/models/helden/card.class'
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
 import { Observable, Subscription } from 'rxjs';
-import { CurrentUserModel } from 'src/app/states/currentUser-state';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
-import { cardsInHandState } from 'src/app/states/cardsInHand-state';
 import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
-import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentDeliveryStack } from 'src/app/actions/deliveryStack-action';
 
@@ -47,45 +34,19 @@ export class GameComponent implements OnInit, OnDestroy {
   currentGameId!: string;
   initialHand:CardStack = {cardstack: []};
   deliveryStack: string[] = [];
+  user = new User();
+  currentHero: Object = {};
+  cardStack!: string[];
   db = getFirestore();
   // ----------------- //
 
-  
-  user = new User();
-  gameId: string = '';
-  currentPlayer: string = '';
-  currentHero: Object = {};
-  currentEnemy!: Array<object>;
-  numberOfPlayers: number = 0;
-  gameDifficulty: string = '';
-  gameIsLost: boolean = false;
-  enemy: string = '';
-  Mob: Array<object> = [];
-  monsterSetting!: string;
-  monster!: Monster;
-  currentBoss: object[] = [];
-  currentMonster: Array<object> = [];
-  allBosses: object[] = [];
-
- 
-
-
-  currentEnemyName!: string;
-  currentEnemyType!: string;
-  currentEnemyToken!: Array<string>;
-  cardStack!: string[];
 
   constructor(
-    public currentUserService: CurrentUserService,
-    public currentGameService: CurrentGameService,
-    private currentHandService: CurrentHandService,
-    private route: ActivatedRoute,
     public dialog: MatDialog,
     private store: Store,
   ) { }
 
   ngOnInit(): void {
-    
     this.setUserID();
     this.setGameId();
     this.checkIfPlayerIsAlreadyPartOfGame();
@@ -204,21 +165,5 @@ export class GameComponent implements OnInit, OnDestroy {
     this.playerNameSubscription.unsubscribe();
     this.gameIdSubscription.unsubscribe();
   }
-
-
-  
-  // getGameInfos(response: any) {
-  //   this.numberOfPlayers = response!['numberOfPlayers'];
-  //   this.gameDifficulty = response!['difficulty'];
-  //   this.gameIsLost = response!['isLost'];
-  //   this.enemy = response!['currentEnemy'];
-  //   this.Mob = response!['Mob'];
-  //   this.currentBoss = response!['currentBoss'];
-  //   this.allBosses = response!['allBosses'];
-  //   this.currentEnemy = response!['currentEnemy'];
-  //   this.currentEnemyName = response!['currentEnemy'].name;
-  //   this.currentEnemyType = response!['currentEnemy'].type;
-  //   this.currentEnemyToken = response!['currentEnemy'].token;
-  // }
 
 }

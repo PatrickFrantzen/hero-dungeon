@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Output, EventEmitter } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
 import { Inject } from '@angular/core';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 

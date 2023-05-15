@@ -24,8 +24,8 @@ export class Monster {
     createMob(numberOfPlayers: number, currentBoss: any, difficulty: string) {
         if ((currentBoss.bossname == 'Baby-Barbar') || (currentBoss = 'Baby-barbar')) {
             if (difficulty == 'easy') {
-                // this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
-                this.getMonsterForGame(numberOfPlayers, 1, 0, 12, 6, 14, 8, 16, 10); // zum testen
+                this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
+                // this.getMonsterForGame(numberOfPlayers, 1, 0, 12, 6, 14, 8, 16, 10); // zum testen
             } else if (difficulty == 'medium') {
                 this.getMonsterForGame(numberOfPlayers, 14, 4, 16, 6, 18, 8, 20, 10);
             } else {
