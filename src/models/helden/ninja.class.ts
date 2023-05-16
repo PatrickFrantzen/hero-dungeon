@@ -13,11 +13,11 @@ export class Ninja extends Hero {
             ['green', 3],
             ['blue', 6],
             ['purple', 7],
-            ['purple/purple', 3],
-            ['Sprint', 3],
-            ['Rücklings', 3],
-            ['Stehlen', 2],
-            ['Spende', 1]
+            ['purple_purple', 3],
+            ['sprint', 3],
+            ['rücklings', 3],
+            ['stehlen', 2],
+            ['spende', 1]
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {

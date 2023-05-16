@@ -13,10 +13,10 @@ export class Magier extends Hero {
             ['green', 7],
             ['blue', 9],
             ['purple', 6],
-            ['blue/blue', 2],
-            ['Verhinderung', 1],
-            ['Feuerball', 4],
-            ['Magische Bombe', 3]
+            ['blue_blue', 2],
+            ['verhinderung', 1],
+            ['feuerball', 4],
+            ['magischeBombe', 3]
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {

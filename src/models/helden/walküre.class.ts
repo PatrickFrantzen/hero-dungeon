@@ -13,12 +13,12 @@ export class Walküre extends Hero {
             ['green', 6],
             ['blue', 8],
             ['purple', 3],
-            ['yellow/yellow', 2],
-            ['Heilige Handgranate', 1],
-            ['Göttlicher Schild', 2],
-            ['Heiltrank', 2],
-            ['Heile', 1],
-            ['Hau drauf', 1]
+            ['yellow_yellow', 2],
+            ['heiligeHandgranate', 1],
+            ['göttlicherSchild', 2],
+            ['heiltrank', 2],
+            ['heile', 1],
+            ['haudrauf', 1]
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {

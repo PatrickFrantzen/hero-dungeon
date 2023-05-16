@@ -13,13 +13,13 @@ export class Gladiator extends Hero {
             ['green', 5],
             ['blue', 3],
             ['purple', 6],
-            ['red/purple', 2],
-            ['red/blue', 2],
-            ['red/green', 2],
-            ['red/red', 2],
-            ['red/yellow', 2],
-            ['Wut', 2],
-            ['Riesensprung', 2]
+            ['red_purple', 2],
+            ['red_blue', 2],
+            ['red_green', 2],
+            ['red_red', 2],
+            ['red_yellow', 2],
+            ['wut', 2],
+            ['riesensprung', 2]
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {

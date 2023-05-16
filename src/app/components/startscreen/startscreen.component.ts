@@ -1,11 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
-import { Hero } from 'src/models/helden/hero.class';
-import { Barbar } from 'src/models/helden/barbar.class';
 import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
-import { getFirestore, doc, setDoc, updateDoc } from '@angular/fire/firestore';
+import { getFirestore, doc, setDoc} from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { Mob, Monster } from 'src/models/monster/monster.class';
 import { Select, Store } from '@ngxs/store';
@@ -14,7 +12,6 @@ import { Observable, Subscription } from 'rxjs';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameAction, CurrentGameData } from 'src/app/actions/currentGame-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
-import { OnDisconnect } from '@angular/fire/database';
 import { CreateNewMobAction } from 'src/app/actions/MonsterStack-action';
 
 @Component({
@@ -24,17 +21,11 @@ import { CreateNewMobAction } from 'src/app/actions/MonsterStack-action';
 })
 export class StartscreenComponent implements OnInit, OnDestroy{
   numberOfPlayers:number = 0;
-  playerNumber!:number;
   difficulty!:string;
   gameId!:string;
-  monsterSetting!:string;
   currentGameId: string = '';
   game!: Game
-  GameSetting:any;
-  hero: Hero = new Hero;
-  barbar:Barbar = new Barbar;
   choosenHeros: any = [];
-  monster!: Monster;
   db = getFirestore();
   gameAsJSON!:Game;
 
