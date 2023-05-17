@@ -15,7 +15,7 @@ export class Zauberin extends Hero {
             ['purple', 6],
             ['blue_blue', 2],
             ['verhinderung', 1],
-            ['feuerball', 4],
+            ['feuerball_monster', 4],
             ['magischeBombe', 3]
         ])
         heroCards.forEach((value, key) => {

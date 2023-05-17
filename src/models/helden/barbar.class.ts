@@ -19,7 +19,7 @@ export class Barbar extends Hero {
             ['red_red', 2],
             ['red_yellow', 2],
             ['wut', 2],
-            ['riesensprung', 2]
+            ['riesensprung_hindernis', 2]
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {

@@ -14,8 +14,8 @@ export class Dieb extends Hero {
             ['blue', 6],
             ['purple', 7],
             ['purple_purple', 3],
-            ['sprint', 3],
-            ['rücklings', 3],
+            ['sprint_hindernis', 3],
+            ['rücklings_person', 3],
             ['stehlen', 2],
             ['spende', 1]
         ])

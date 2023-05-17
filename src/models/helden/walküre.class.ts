@@ -18,7 +18,7 @@ export class Walküre extends Hero {
             ['göttlicherSchild', 2],
             ['heiltrank', 2],
             ['heile', 1],
-            ['haudrauf', 1]
+            ['haudrauf_monster', 1]
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {

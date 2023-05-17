@@ -16,7 +16,7 @@ export class Jägerin extends Hero {
             ['green_green', 2],
             ['joker', 8],
             ['heilkräuter', 2],
-            ['treffer', 1]
+            ['treffer_person', 1]
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {
