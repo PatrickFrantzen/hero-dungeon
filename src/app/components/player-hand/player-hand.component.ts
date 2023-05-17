@@ -66,10 +66,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   playAsTwoCards(cardOne: string, cardTwo: string, currEne: string[], currMob: Mob) {
     let firstIndexOfEnemyToken = this.currentEnemy.token.indexOf(cardOne);
-    let secondIndexOfEnemyToken = this.currentEnemy.token.indexOf(cardTwo);
     currEne.splice(firstIndexOfEnemyToken, 1);
-    currEne.splice(secondIndexOfEnemyToken, 1);
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
+    this.updateGame('currentEnemyToken', currMob);
+    const secCurrEne = [...currEne]
+    let secondIndexOfEnemyToken = this.currentEnemy.token.indexOf(cardTwo);
+    secCurrEne.splice(secondIndexOfEnemyToken, 1);
+    this.store.dispatch(new UpdateMonsterTokenArray(secCurrEne));
     this.updateGame('currentEnemyToken', currMob);
   }
 
@@ -99,6 +102,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       this.updateGame('currentEnemyToken', currMob);
       this.saveHand(card, currHand)
     }
+    // debugger
     if (card.includes('_') && (this.currentEnemy.token.includes(doubleCard[0]) || this.currentEnemy.token.includes(doubleCard[1]))) {
         if (this.currentEnemy.token.includes(doubleCard[0]) && this.currentEnemy.token.includes(doubleCard[1])) {
         this.playAsTwoCards(doubleCard[0], doubleCard[1], currEne, currMob)
