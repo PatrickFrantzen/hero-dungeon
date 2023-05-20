@@ -2,8 +2,9 @@ import { Hero, shuffle } from "./hero.class";
 
 export class Walküre extends Hero {
     public override heroName: string = 'Walküre';
-    public override heroStack: string[] = [];
+    public override cardstack: string[] = [];
     public override heroPower: string = 'Verleiht Flügel';
+    public override description: string = 'Lege 3 Karten auf den Ablagestapel und dafür zieht jeder andere Mitspieler 2 Karten.';
 
     constructor() {
         super();
@@ -22,11 +23,11 @@ export class Walküre extends Hero {
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {
-                this.heroStack.push(key);
+                this.cardstack.push(key);
                 
             }
         })
-        shuffle(this.heroStack)
+        shuffle(this.cardstack)
     }
 }
 

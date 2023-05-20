@@ -2,8 +2,10 @@ import { Hero, shuffle } from "./hero.class";
 
 export class Waldläufer extends Hero {
     public override heroName: string = 'Waldläufer';
-    public override heroStack: string[] = [];
+    public override cardstack: string[] = [];
     public override heroPower: string = 'Kunstschuss';
+    public override description: string = 'Lege 3 Karten auf den Ablagestapel und besiege dadurch eine Person';
+
 
     constructor() {
         super();
@@ -20,11 +22,11 @@ export class Waldläufer extends Hero {
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {
-                this.heroStack.push(key);
+                this.cardstack.push(key);
                 
             }
         })
-        shuffle(this.heroStack)
+        shuffle(this.cardstack)
     }
 }
 

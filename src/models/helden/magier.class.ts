@@ -2,8 +2,10 @@ import { Hero, shuffle } from "./hero.class";
 
 export class Magier extends Hero {
     public override heroName: string = 'Magier';
-    public override heroStack: string[] = [];
+    public override cardstack: string[] = [];
     public override heroPower: string = 'Zeit einfrieren';
+    public override description: string = 'Lege 3 Karten auf den Ablagestapel und halte dafür die Zeit an, bis jemand eine Karte in die Tischmitte spielt.';
+
 
     constructor() {
         super();
@@ -20,11 +22,11 @@ export class Magier extends Hero {
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {
-                this.heroStack.push(key);
+                this.cardstack.push(key);
                 
             }
         })
-        shuffle(this.heroStack)
+        shuffle(this.cardstack)
     }
 }
 

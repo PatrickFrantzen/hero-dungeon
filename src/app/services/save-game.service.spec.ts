@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CurrentEnemyService } from './current-enemy.service';
+import { SaveGameService } from './save-game.service';
 
-describe('CurrentEnemyService', () => {
-  let service: CurrentEnemyService;
+describe('SaveGameService', () => {
+  let service: SaveGameService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(CurrentEnemyService);
+    service = TestBed.inject(SaveGameService);
   });
 
   it('should be created', () => {

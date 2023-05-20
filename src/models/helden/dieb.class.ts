@@ -2,8 +2,10 @@ import { Hero, shuffle } from "./hero.class";
 
 export class Dieb extends Hero {
     public override heroName: string = 'Dieb';
-    public override heroStack: string[] = [];
+    public override cardstack: string[] = [];
     public override heroPower: string = 'Langfinger';
+    public override description: string = 'Lege 3 Karten auf den Ablagestapel und ziehe dafür 5 Karten.';
+
 
     constructor() {
         super();
@@ -21,11 +23,11 @@ export class Dieb extends Hero {
         ])
         heroCards.forEach((value, key) => {
             for (let i = 0; i < value; i++) {
-                this.heroStack.push(key);
+                this.cardstack.push(key);
                 
             }
         })
-        shuffle(this.heroStack)
+        shuffle(this.cardstack)
     }
 }
 

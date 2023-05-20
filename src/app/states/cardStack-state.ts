@@ -31,12 +31,12 @@ export class CardStackState {
         }
 
         const state = ctx.getState();
-        const HeroStack: CardStack = {
+        const CardStack: CardStack = {
             cardstack: cardstack
         }
         ctx.setState({
             ...state,
-            items: HeroStack
+            items: CardStack
         });
         console.log('CreatedCardstackState', ctx.getState())
     }
@@ -48,13 +48,13 @@ export class CardStackState {
             return
         }
 
-        const HeroStack: CardStack = {
+        const CardStack: CardStack = {
             cardstack: cardstack
         }
 
         ctx.setState(
             patch<CardStackModel>({
-                items: HeroStack
+                items: CardStack
             })
             )
             console.log('UpdatedCardstackState', ctx.getState())

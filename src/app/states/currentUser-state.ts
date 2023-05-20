@@ -1,12 +1,17 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
-import { CurrentUserAction } from "../actions/currentUser-action";
+import { CurrentUserAction, CurrentUserHeroAction } from "../actions/currentUser-action";
 
 
 export interface CurrentUserModel{
     items: {
         id: string,
         name: string,
+    },
+    hero: {
+        choosenHero: string,
+        heroPower: string,
+        description: string
     }
 }
 
@@ -16,9 +21,13 @@ export interface CurrentUserModel{
         items: {
             id: '',
             name:''
-        }
+        },
+        hero: {
+            choosenHero: '',
+            heroPower: '',
+            description: ''
     }
-})
+}})
 
 @Injectable()
 export class CurrentUserState{
@@ -41,5 +50,27 @@ export class CurrentUserState{
         })
 
         console.log('UserState', ctx.getState())
+    }
+
+    @Action(CurrentUserHeroAction)
+    getUserHero(ctx: StateContext<CurrentUserModel>, action: CurrentUserHeroAction) {
+        const {choosenHero, heroPower, description } = action;
+        if (!choosenHero || !heroPower) {
+            return
+        }
+
+        const state = ctx.getState();
+        const userHero = {
+            choosenHero: choosenHero,
+            heroPower: heroPower,
+            description: description
+        }
+
+        ctx.setState({
+            ...state,
+            hero: userHero
+        })
+
+        console.log('UserHeroState', ctx.getState())
     }
 }

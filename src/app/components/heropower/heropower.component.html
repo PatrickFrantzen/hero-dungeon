@@ -1,0 +1,21 @@
+<div class="heropower-position">
+    <div >
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <span style="color: white;">{{ this.heropower }}</span>
+        <img *ngIf="this.heroName == 'Gladiator'" src="../../../assets/img/icons/person_icon.png">
+        <img *ngIf="this.heroName == 'Barbar'" src="../../../assets/img/icons/monster_icon.png">
+        <img *ngIf="this.heroName == 'Zauberin'" src="../../../assets/img/icons/hindernis_icon.png">
+        <img *ngIf="this.heroName == 'Magier'" src="../../../assets/img/icons/heilkräuter_icon.png">
+        <img *ngIf="this.heroName == 'Jägerin'" src="../../../assets/img/icons/heiltrank_icon.png">
+        <img *ngIf="this.heroName == 'Waldläufer'" src="../../../assets/img/icons/person_icon.png">
+        <img *ngIf="this.heroName == 'Dieb'" src="../../../assets/img/icons/stehlen_icon.png">
+        <img *ngIf="this.heroName == 'Ninja'" src="../../../assets/img/icons/hindernis_icon.png">
+        <img *ngIf="this.heroName == 'Paladin'" src="../../../assets/img/icons/monster_icon.png">
+        <img *ngIf="this.heroName == 'Walküre'" src="../../../assets/img/icons/heilig_icon.png">
+    </div>
+    <span style="color: white;">{{this.description}}</span>
+</div>
+
+<!--Angular Material Tooltip einbauen-->

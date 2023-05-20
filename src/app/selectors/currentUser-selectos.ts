@@ -12,4 +12,10 @@ export class CurrentUserSelectors {
     static currentUserName(state: CurrentUserModel): string {
         return state.items.name;
     }
+
+    @Selector([CurrentUserState])
+    static currentUserHeroData(state: CurrentUserModel): object {
+        console.warn('currentUserSelector', state.hero)
+        return state.hero;
+    }
 }

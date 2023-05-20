@@ -28,8 +28,6 @@ import { PlayerHandComponent } from './components/player-hand/player-hand.compon
 import { CurrentGameService } from './services/current-game.service';
 import { CurrentUserService } from './services/current-user.service';
 import { EnemyComponent } from './components/enemy/enemy.component';
-import { CurrentEnemyService } from './services/current-enemy.service';
-import { CurrentHandService } from './services/current-hand.service';
 import { NgxsModule } from '@ngxs/store';
 import { cardsInHandState } from './states/cardsInHand-state';
 import { CardStackState } from './states/cardStack-state';
@@ -38,6 +36,7 @@ import { CurrentUserState } from './states/currentUser-state';
 import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
 import { CurrentDeliveryStack } from './actions/deliveryStack-action';
 import { DeliveryStackState } from './states/deliveryStack-state';
+import { HeropowerComponent } from './components/heropower/heropower.component';
 
 
 @NgModule({
@@ -50,7 +49,8 @@ import { DeliveryStackState } from './states/deliveryStack-state';
     SigninComponent,
     DialogChooseHeroComponent,
     PlayerHandComponent,
-    EnemyComponent
+    EnemyComponent,
+    HeropowerComponent
   ],
   imports: [
     BrowserModule,

@@ -56,7 +56,7 @@ export class DialogChooseHeroComponent {
 
   getChoosenHero(choosenHero:any) {
     this.dialogRef.close({data: {
-      choosenHero: {heroname: choosenHero.value.heroName, heropower: choosenHero.value.heroPower, herostack: choosenHero.value.heroStack},
+      choosenHero: {heroname: choosenHero.value.heroName, heropower: choosenHero.value.heroPower, cardstack: choosenHero.value.cardstack, description: choosenHero.value.description},
     }})
   }
 

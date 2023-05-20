@@ -12,6 +12,7 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentDeliveryStack } from 'src/app/actions/deliveryStack-action';
+import { CurrentUserHeroAction } from 'src/app/actions/currentUser-action';
 
 @Component({
   selector: 'app-game',
@@ -113,8 +114,12 @@ export class GameComponent implements OnInit, OnDestroy {
         choosenHero: result.data.choosenHero,
       }
       console.log('choosenHeroToServer', result.data.choosenHero)
-      const cardStack: string[] = result.data.choosenHero.herostack;
+      const cardStack: string[] = result.data.choosenHero.cardstack;
+      const hero: string = result.data.choosenHero.heroname;
+      const heroPower: string = result.data.choosenHero.heropower;
+      const description: string = result.data.choosenHero.description;
       this.store.dispatch(new CreateNewCardStackAction(cardStack));
+      this.store.dispatch(new CurrentUserHeroAction(hero, heroPower, description))
       const docRef = doc(this.db, 'games', this.currentGameId, 'player', this.currentPlayerId)
       updateDoc(docRef, updateData).then(() => {
         this.drawInitialHand(docRef)
@@ -127,13 +132,13 @@ export class GameComponent implements OnInit, OnDestroy {
   async drawInitialHand(docRef: DocumentReference) {
     const docSnap = await getDoc(docRef);
     let data = docSnap.data();
-    this.cardStack = data!['choosenHero'].herostack;
+    this.cardStack = data!['choosenHero'].cardstack;
     for (let i = 0; i < 5; i++) {
       const cardsinHand: string = this.cardStack.shift()!;
       this.initialHand.cardstack.push(cardsinHand)
     }
     const updateData = {
-      heroStack: this.cardStack,
+      cardstack: this.cardStack,
       handstack: this.initialHand.cardstack
     }
     this.store.dispatch(new CurrentCardsInHand(this.initialHand.cardstack));

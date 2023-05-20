@@ -1,15 +1,17 @@
 export class Hero {
     public heroName: string = '';
-    public heroStack: string[] = [];
+    public cardstack: string[] = [];
     public heroPower: string = '';
+    public description: string = ''
 
     constructor() {}
 
     public toJSON() {
         return {
             heroName: this.heroName,
-            heroStack: this.heroStack,
+            cardstack: this.cardstack,
             heroPower: this.heroPower,
+            description: this.description
         }
         
     }

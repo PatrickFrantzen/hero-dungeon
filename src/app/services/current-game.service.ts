@@ -9,14 +9,7 @@ import { environment } from 'src/environments/environment';
 })
 export class CurrentGameService {
 
-  currentGameId: string = '';
-  currentNumberOfPlayers: number = 0;
-  currentGameDifficulty: string = '';
-  currentGameIsLost: boolean = false;
-  currentEnemy: object[] = [];
-  currentMob: string[] = [];
-  currentBoss: {} = {};
-  allBosses: object[] = [];
+
   db: any;
   
 
