@@ -3,16 +3,17 @@ import { MatDialog } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
 import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
-import { getFirestore, doc, setDoc} from '@angular/fire/firestore';
+import { getFirestore, doc, setDoc, DocumentData} from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { Mob, Monster } from 'src/models/monster/monster.class';
 import { Select, Store } from '@ngxs/store';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
 import { Observable, Subscription } from 'rxjs';
 import { CurrentUserService } from 'src/app/services/current-user.service';
-import { CurrentGameAction, CurrentGameData } from 'src/app/actions/currentGame-action';
+import { CurrentGameAction, CurrentGameData, SetNewEnemy } from 'src/app/actions/currentGame-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
-import { CreateNewMobAction } from 'src/app/actions/MonsterStack-action';
+import { CreateNewMobAction, UpdateMobAction } from 'src/app/actions/MonsterStack-action';
+import { LoadGameService } from 'src/app/services/load-game.service';
 
 @Component({
   selector: 'app-startscreen',
@@ -38,6 +39,10 @@ export class StartscreenComponent implements OnInit, OnDestroy{
   currentUserName: string= '';
   currentUserId: string = '';
 
+  loadedCollectionData!: DocumentData;
+  loadedCurrentEnemy!: Mob;
+  loadedCurrentMob!: Mob[]
+
   constructor(
     public dialog:MatDialog,
     public auth: Auth,
@@ -45,6 +50,7 @@ export class StartscreenComponent implements OnInit, OnDestroy{
     private userService: CurrentUserService,
     private store: Store,
     private JSON: ToJSONService,
+    private loadGame: LoadGameService
   ) {}
 
 
@@ -127,6 +133,14 @@ export class StartscreenComponent implements OnInit, OnDestroy{
     let inputValue = (<HTMLInputElement>document.getElementById('joinGame')).value;
     this.route.navigate(['/game/'+ inputValue]);
     this.store.dispatch(new CurrentGameAction(inputValue));
+    this.loadGame.loadGameCollectionData(inputValue)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+      this.loadedCurrentMob = this.loadedCollectionData['Mob'];
+      this.store.dispatch(new SetNewEnemy(this.loadedCurrentEnemy));
+      this.store.dispatch(new UpdateMobAction(this.loadedCurrentMob));
+    })
   }
 
   ngOnDestroy(): void {

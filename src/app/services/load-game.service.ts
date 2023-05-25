@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { doc, getDoc, getFirestore } from '@angular/fire/firestore';
+import { DocumentData, collection, doc, getDoc, getFirestore, query } from '@angular/fire/firestore';
+import { getDocs, where } from '@firebase/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -7,31 +8,27 @@ import { doc, getDoc, getFirestore } from '@angular/fire/firestore';
 export class LoadGameService {
 
   db = getFirestore()
-
+  collectionData!: DocumentData
   constructor() { }
 
-  async loadHandstack(gameId: string, playerId: string){
-    const handstackRef = doc(this.db, 'games', gameId, 'players', playerId);
-    const docSnap = await getDoc(handstackRef);
-    const data = docSnap.data()!['handstack'];
-    console.log('testLoad', data)
-    return data;
+  async loadPlayerCollectionData(gameId: string, playerId: string){
+    const handstackRef = collection(this.db, 'games', gameId, 'player');
+    const q = query(handstackRef, where('userId', '==', playerId))
+    const docSnap = await getDocs(q);
+    docSnap.forEach((doc) => {
+      this.collectionData = doc.data()
+    })
+    return this.collectionData
   }
 
-  async loadCardstack(gameId: string, playerId: string){
-    const cardstackkRef = doc(this.db, 'games', gameId, 'players', playerId);
-    const docSnap = await getDoc(cardstackkRef);
-    const data = docSnap.data()!['cardstack'];
-    console.log('testLoad', data);
-    return data;
-  }
-
-  async loadDeliverystack(gameId: string, playerId: string){
-    const deliverystackkRef = doc(this.db, 'games', gameId, 'players', playerId);
-    const docSnap = await getDoc(deliverystackkRef);
-    const data = docSnap.data()!['deliveryStack'];
-    console.log('testLoad', data);
-    return data;
+  async loadGameCollectionData(gameId: string){
+    const handstackRef = collection(this.db, 'games');
+    const q = query(handstackRef, where('gameId', '==', gameId))
+    const docSnap = await getDocs(q);
+    docSnap.forEach((doc) => {
+      this.collectionData = doc.data()
+    })
+    return this.collectionData
   }
 
   async loadCurrentEnemyToken(gameId: string){

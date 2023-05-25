@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { doc, getDoc, getFirestore, updateDoc } from '@angular/fire/firestore';
+import { DocumentData, collection, collectionData, doc, getDoc, getFirestore, updateDoc } from '@angular/fire/firestore';
 import { Select, Store } from '@ngxs/store';
 import { Observable, Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
@@ -14,6 +14,7 @@ import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
 import { LoadGameService } from 'src/app/services/load-game.service';
 import { SaveGameService } from 'src/app/services/save-game.service';
+import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 
 @Component({
@@ -43,14 +44,17 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   @Select(CurrentCardStackSelector.currentCardStack) currentCardStack$!: Observable<string[]>
   stackSubscription!: Subscription;
   currentCardStack!: string[];
+  loadedCurrentCardStack!: string[]
 
   @Select(CurrentGameSelectors.currentEnemy) currentEnemy$!: Observable<Mob>
   currentEnemySubscription!: Subscription;
   currentEnemy!: Mob;
+  loadedCurrentEnemy!: Mob;
 
   @Select(CurrentGameSelectors.currentMob) currentMob$!: Observable<Mob[]>
   MobSubscription!: Subscription;
   currentMob!: Mob[];
+  loadedCurrentMob!: Mob[];
 
   @Select(CurrentGameSelectors.currentBoss) currentBoss$!: Observable<Mob>
   currentBossSubscription!: Subscription;
@@ -62,6 +66,8 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   currentDeliveryStack!: string[];
 
   db = getFirestore();
+  loadedCollectionData!: DocumentData;
+  game$:Observable<any>
   // -------------------------------------
 
 
@@ -70,26 +76,30 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     private store: Store,
     private saveGame: SaveGameService,
     private loadGame: LoadGameService
-  ) { }
+  ) {this.game$ = collectionData(collection(this.db, 'games')) }
 
   ngOnInit(): void {
     this.getGameData();
+    console.log('testID', this.currentGameId)
+    this.game$.subscribe(async() => {
+      const docRef = doc(this.db, 'games', this.currentGameId)
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.data()
+      this.updateFromDatabase(data!);
+    })
+    
+  }
+
+  updateFromDatabase(data:DocumentData) {
+    this.currentEnemy = data['currentEnemy'];
+    this.currentBoss = data['currentBoss'];
+    this.currentMob = data['Mob'];
+    this.store.dispatch(new UpdateMonsterTokenArray(this.currentEnemy.token))
+    this.store.dispatch(new UpdateMobAction(this.currentMob));
+
   }
 
 
-
-  saveHand(card: string, currHand: string[]) {
-    let indexOfHandCard = this.currentHand.indexOf(card);
-    currHand.splice(indexOfHandCard, 1);
-    // this.updatePlayer('handstack', currHand);
-    this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-    // this.loadGame.loadHandstack(this.currentGameId, this.currentPlayerId).then((results)=> {
-    //   this.loadedCurrentHand = results
-    // });
-    console.log('Result from Load', currHand)
-    this.store.dispatch(new UpdateCurrentHandAction(currHand));
-
-  }
 
   chooseCard(card: string) {
     const doubleCard = card.split('_');
@@ -105,12 +115,15 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     if (card.includes('_') && (this.currentEnemy.type.toLocaleLowerCase().includes(doubleCard[1]))) {
       console.log('test', card, this.currentEnemy.type.includes(doubleCard[1]))
       currEne.length = 0;
-      this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-      // this.updateGame('currentEnemyToken', currMob);
       this.saveGame.updateCurrentEnemyToken(this.currentGameId, currMob);
+      this.loadGame.loadGameCollectionData(this.currentGameId)
+      .then((results)=> {
+        this.loadedCollectionData = results!;
+        this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+        this.store.dispatch(new UpdateMonsterTokenArray(this.loadedCurrentEnemy.token));
+      })
       this.saveHand(card, currHand)
     }
-    // debugger
     if (card.includes('_') && (this.currentEnemy.token.includes(doubleCard[0]) || this.currentEnemy.token.includes(doubleCard[1]))) {
         if (this.currentEnemy.token.includes(doubleCard[0]) && this.currentEnemy.token.includes(doubleCard[1])) {
         this.playAsTwoCards(doubleCard[0], doubleCard[1], currEne, currMob)
@@ -124,10 +137,60 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     if (this.currentEnemy.token.includes(card)) {
       this.playCardfromHandAndUpdateEnemyToken(card)
     }
-    if (this.currentHand.length < 5) {
-      this.checkLenghtOfCurentHand()
+  }
+
+  playCardfromHandAndUpdateEnemyToken(card: string) {
+    
+    let currHand = [...this.currentHand];
+    const currEne = [...this.currentEnemy.token];
+    const currName = this.currentEnemy.name;
+    const currType = this.currentEnemy.type;
+    const currMob: Mob = {
+      name: currName,
+      token: currEne,
+      type: currType
     }
-    if (Array.isArray(this.currentEnemy.token) && !this.currentEnemy.token.length) {
+    let indexOfHandCard = this.currentHand.indexOf(card);
+    let indexOfEnemyToken = this.currentEnemy.token.indexOf(card);
+    currHand.splice(indexOfHandCard, 1);
+    currEne.splice(indexOfEnemyToken, 1);
+    currHand = this.checkHandsize(currHand)!;
+    this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+    this.saveGame.updateCurrentEnemyToken(this.currentGameId, currMob);
+    // debugger
+    this.loadGame.loadPlayerCollectionData(this.currentGameId, this.currentPlayerId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentHand = this.loadedCollectionData['handstack'];
+      this.store.dispatch(new UpdateCurrentHandAction(this.loadedCurrentHand));
+    });
+    this.loadGame.loadGameCollectionData(this.currentGameId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+      this.store.dispatch(new UpdateMonsterTokenArray(this.loadedCurrentEnemy.token));
+      this.checkForNextEnemy(this.loadedCurrentEnemy)
+    })
+  };
+
+  checkHandsize(handsize: string[]) {
+    if (handsize.length <5) {
+      const currHand = [...handsize];
+      const currCardStack = [...this.currentCardStack];
+      for (let i = 0; currHand.length < 5; i++) {
+        const getCardForHand = currCardStack.shift()!;
+        currHand.push(getCardForHand)
+        this.store.dispatch(new UpdateCardStackAction(currCardStack));
+        this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+        this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId ,currCardStack)
+      }
+      return currHand
+    }
+    return null
+  }
+
+  checkForNextEnemy(currentEnemy: Mob) {
+    if (Array.isArray(currentEnemy.token) && !currentEnemy.token.length) {
       if (this.currentMob.length > 0) {
         this.getNextEnemy();
       } else {
@@ -137,137 +200,84 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
 
-
-
-  playCardfromHandAndUpdateEnemyToken(card: string) {
-    const currHand = [...this.currentHand];
-    const currEne = [...this.currentEnemy.token];
-    const currName = this.currentEnemy.name;
-    const currType = this.currentEnemy.type;
-    const currMob: Mob = {
-      name: currName,
-      token: currEne,
-      type: currType
-    }
-    // const deliveryStack = [...this.currentDeliveryStack];
-    let indexOfHandCard = this.currentHand.indexOf(card);
-    let indexOfEnemyToken = this.currentEnemy.token.indexOf(card);
-    currHand.splice(indexOfHandCard, 1);
-    currEne.splice(indexOfEnemyToken, 1);
-    // deliveryStack.push(card)
-
-    // this.store.dispatch(new UpdateDeliveryStack(deliveryStack));
-    // this.updatePlayer('handstack', currHand);
-    this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-    this.saveGame.updateCurrentEnemyToken(this.currentGameId, currMob);
-    // this.loadGame.loadHandstack(this.currentGameId, this.currentPlayerId).then((results)=> {
-    //   this.loadedCurrentHand = results
-    // });
-    this.store.dispatch(new UpdateCurrentHandAction(currHand));
-    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    // this.updateGame('currentEnemyToken', currMob);
-    // this.updatePlayer('deliveryStack', deliveryStack)
-  };
-
-  checkLenghtOfCurentHand() {
-
-    const currHand = [...this.currentHand];
-    const currCardStack = [...this.currentCardStack];
-    for (let i = 0; currHand.length < 5; i++) {
-      const getCardForHand = currCardStack.shift()!;
-      currHand.push(getCardForHand)
-      this.store.dispatch(new UpdateCardStackAction(currCardStack));
-      this.store.dispatch(new UpdateCurrentHandAction(currHand));
-      // this.updatePlayer('handstack', currHand);
-      this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-      this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId ,currCardStack)
-      // this.updatePlayer('cardstack', currCardStack);
-
-    }
-  };
-
   playAsOneCard(card: string, currEne: string[], currMob: Mob) {
     let indexOfEnemyToken = this.currentEnemy.token.indexOf(card);
     currEne.splice(indexOfEnemyToken, 1);
-    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    // this.updateGame('currentEnemyToken', currMob);
     this.saveGame.updateCurrentEnemyToken(this.currentGameId, currMob)
+    this.loadGame.loadGameCollectionData(this.currentGameId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+      this.store.dispatch(new UpdateMonsterTokenArray(this.loadedCurrentEnemy.token));
+      this.checkForNextEnemy(this.loadedCurrentEnemy)
+    })
   }
 
   playAsTwoCards(cardOne: string, cardTwo: string, currEne: string[], currMob: Mob) {
     let firstIndexOfEnemyToken = this.currentEnemy.token.indexOf(cardOne);
     currEne.splice(firstIndexOfEnemyToken, 1);
-    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
     this.saveGame.updateCurrentEnemyToken(this.currentGameId, currMob);
-    // this.updateGame('currentEnemyToken', currMob);
+    this.loadGame.loadGameCollectionData(this.currentGameId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+      this.store.dispatch(new UpdateMonsterTokenArray(this.loadedCurrentEnemy.token));
+      this.checkForNextEnemy(this.loadedCurrentEnemy)
+    })
     const secCurrEne = [...currEne]
     let secondIndexOfEnemyToken = this.currentEnemy.token.indexOf(cardTwo);
     secCurrEne.splice(secondIndexOfEnemyToken, 1);
-    this.store.dispatch(new UpdateMonsterTokenArray(secCurrEne));
-    // this.updateGame('currentEnemyToken', currMob);
     this.saveGame.updateCurrentEnemyToken(this.currentGameId, currMob)
+    this.loadGame.loadGameCollectionData(this.currentGameId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+      this.store.dispatch(new UpdateMonsterTokenArray(this.loadedCurrentEnemy.token));
+      this.checkForNextEnemy(this.loadedCurrentEnemy)
+    })
   }
 
   getNextEnemy() {
     const currMob = [...this.currentMob];
     const newCurrentEnemy: Mob = currMob.shift()!;
-    this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
-    this.store.dispatch(new UpdateMobAction(currMob));
-    // this.updateGame('newEnemy', newCurrentEnemy)
     this.saveGame.updateNewEnemy(this.currentGameId, newCurrentEnemy);
     this.saveGame.updateNewMob(this.currentGameId, currMob);
-    // this.updateGame('newMob', currMob)
+    this.loadGame.loadGameCollectionData(this.currentGameId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+      this.loadedCurrentMob = this.loadedCollectionData['Mob'];
+      this.store.dispatch(new SetNewEnemy(this.loadedCurrentEnemy));
+      this.store.dispatch(new UpdateMobAction(this.loadedCurrentMob));
+    })
   };
 
   getNextBoss() {
     const newCurrentEnemy: Mob = this.currentBoss;
-    this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
-    // this.updateGame('newEnemy', newCurrentEnemy)
     this.saveGame.updateNewEnemy(this.currentGameId, newCurrentEnemy);
+    this.loadGame.loadGameCollectionData(this.currentGameId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
+      this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
+    })
   };
 
-  // updatePlayer(prop: string, cardsToUpdate: string[],) {
-  //   const docPlayer = doc(this.db, 'games', this.currentGameId, 'player', this.currentPlayerId);
-  //   if (prop === 'handstack') {
-  //     const updateCurrentHand = {
-  //       handstack: cardsToUpdate,
-  //     }
-  //     updateDoc(docPlayer, updateCurrentHand);
-  //   } else if (prop === 'cardstack') {
-  //     const updateCardstack = {
-  //       cardstack: cardsToUpdate,
-  //     }
-  //     updateDoc(docPlayer, updateCardstack);
-  //   } else if (prop === 'deliveryStack') {
-  //     const updateDeliveryStack = {
-  //       deliveryStack: cardsToUpdate
-  //     }
-  //     updateDoc(docPlayer, updateDeliveryStack) // deliveryStack ist der Ablagestapel. Nur bestimmte Karten kommen auf den Ablagestapel, daher noch auskommentiert
-  //   }
-  // }
+  saveHand(card: string, currHand: string[]) {
+    let indexOfHandCard = this.currentHand.indexOf(card);
+    currHand.splice(indexOfHandCard, 1);
+    currHand = this.checkHandsize(currHand)!;
+    this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+    this.loadGame.loadPlayerCollectionData(this.currentGameId, this.currentPlayerId)
+    .then((results)=> {
+      this.loadedCollectionData = results!;
+      this.loadedCurrentHand = [...this.loadedCollectionData['handstack']];
+      this.loadedCurrentCardStack = [...this.loadedCollectionData['cardstack']]
+      this.store.dispatch(new UpdateCurrentHandAction(this.loadedCurrentHand));
+      this.store.dispatch(new UpdateCardStackAction(this.loadedCurrentCardStack));
 
-  // updateGame(prop: string, currMob: Mob | Mob[]) {
-  //   const docServer = doc(this.db, 'games', this.currentGameId);
-  //   if (prop === 'currentEnemyToken') {
-  //     const updateEnemyToken = {
-  //       currentEnemy: currMob
-  //     }
-  //     updateDoc(docServer, updateEnemyToken)
-
-  //   } else if (prop === 'newEnemy') {
-  //     const updateMonster = {
-  //       currentEnemy: currMob
-  //     }
-  //     updateDoc(docServer, updateMonster)
-
-  //   } else if (prop === 'newMob') {
-  //     const updateMob = {
-  //       Mob: currMob
-  //     }
-  //     updateDoc(docServer, updateMob)
-  //   }
-
-  // }
+    });
+  }
 
   getGameData() {
     this.playerIdSubscription = this.currentUserId$
