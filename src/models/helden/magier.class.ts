@@ -16,7 +16,7 @@ export class Magier extends Hero {
             ['blue', 9],
             ['purple', 6],
             ['blue_blue', 2],
-            ['verhinderung', 1],
+            ['verhinderung_event', 1],
             ['feuerball_monster', 4],
             ['magischeBombe', 3]
         ])

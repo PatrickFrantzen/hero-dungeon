@@ -125,27 +125,27 @@ export class Monster {
         {
             "name": "Plötzliche Krankheit",
             "type": "Jeder legt alle Handkarten auf den eigenen Ablagestapel.",
-            "token": ['action']
+            "token": ['event']
         },
         {
             "name": "Chaos",
             "type": "Jeder gibt seine Handkarten einem Mitspieler.",
-            "token": ['action']
+            "token": ['event']
         },
         {
             "name": "Ein Wehweh",
             "type": "Jeder legt 1 Karte auf den eigenen Ablagestapel.",
-            "token": ['action']
+            "token": ['event']
         },
         {
             "name": "Hinterhalt",
             "type": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
-            "token": ['action']
+            "token": ['event']
         },
         {
             "name": "Falltür",
             "type": "Jeder legt 3 Karten auf den eigenen Ablagestapel.",
-            "token": ['action']
+            "token": ['event']
         },
         {
             "name": "Der Rattenkönig",
