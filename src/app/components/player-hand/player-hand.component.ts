@@ -162,6 +162,38 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       this.store.dispatch(new UpdateHeropowerActivated(false))
       this.heropowerArray = [];
     }
+  }
+
+  checkDiebHeropower(){
+    if (this.heropowerArray.length == 3) {
+      this.heropowerArray.forEach((card)=> {
+        let currHand = [...this.currentHand];
+        let indexOfHandCard = this.currentHand.indexOf(card);
+        currHand.splice(indexOfHandCard, 1);
+        this.store.dispatch(new UpdateCurrentHandAction(currHand));
+
+      });
+        for (let i = 0; i < 5; i++) {
+          let currCardStack = [...this.currentCardStack];
+          let currHand = [...this.currentHand];
+          if (currCardStack.length){
+            const getCardForHand = currCardStack.shift()!;
+            currHand.push(getCardForHand)
+            this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+            this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
+            this.store.dispatch(new UpdateCardStackAction(currCardStack));
+            this.store.dispatch(new UpdateCurrentHandAction(currHand));
+          } else {
+            this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+            this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
+            this.store.dispatch(new UpdateCardStackAction(currCardStack));
+            this.store.dispatch(new UpdateCurrentHandAction(currHand));
+          }
+
+        }
+      this.store.dispatch(new UpdateHeropowerActivated(false))
+      this.heropowerArray = [];
+    }
 
   }
 
@@ -209,7 +241,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           }
           break;
         case this.heroName == 'Dieb':
-
+          if (this.heropowerArray.length < 3) {
+            this.heropowerArray.push(card);
+            this.checkDiebHeropower()
+          }
           break;
         case this.heroName == 'Ninja':
           if (this.heropowerArray.length < 3) {
@@ -230,9 +265,8 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           break;
       }
     } else {
+    this.heropowerArray = [];
     if (card.includes('_') && ((currMob.token[0].toLocaleLowerCase().includes('event')) || currMob.type.toLocaleLowerCase().includes(doubleCard[1]))) {
-
-      console.log('test', card, this.currentEnemy.type.includes(doubleCard[1]))
       currEne.length = 0;
       this.store.dispatch(new UpdateMonsterTokenArray(currEne));
       this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
@@ -280,7 +314,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   };
 
   checkHandsize(handsize: string[]) {
-    if (handsize.length < 5) {
+    
       const currHand = [...handsize];
       const currCardStack = [...this.currentCardStack];
       for (let i = 0; currHand.length < 5; i++) {
@@ -293,8 +327,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       }
       return currHand
     }
-    return null
-  }
 
   checkForNextEnemy(currentEnemy: Mob) {
     if (Array.isArray(currentEnemy.token) && !currentEnemy.token.length) {

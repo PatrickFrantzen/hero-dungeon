@@ -92,7 +92,7 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   }
 
   heroPowerDieb() {
-
+    this.activateHeroPower();
   }
 
   heroPowerNinja() {
