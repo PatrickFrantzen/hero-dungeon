@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
-import { CurrentGameAction, CurrentGameData, SetNewEnemy, UpdateMonsterTokenArray } from "../actions/currentGame-action";
+import { CurrentGameAction, CurrentGameData, SetNewEnemy, UpdateMonsterTokenArray, updateChoosenHeros } from "../actions/currentGame-action";
 import { Game } from "src/models/game";
 import { ToJSONService } from "../services/to-json.service";
 import { Mob } from "src/models/monster/monster.class";
@@ -18,7 +18,11 @@ export interface CurrentGameModel {
         items: '',
         game: {
             numberOfPlayers: 0,
-            choosenHeros: [], 
+            choosenHeros: [{
+                playerName:'',
+                playerId: '',
+                playerHero: ''
+            }],
             currentEnemy:{name:'', token: [], type: ''}, 
             currentBoss: {name:'', token: [], type: ''}, 
             isLost: false, 
@@ -141,6 +145,39 @@ export class CurrentGameState {
             }
         })
         console.log('newMob', ctx.getState())
+    }
+
+    @Action(updateChoosenHeros)
+    updateChoosenHero(ctx: StateContext<CurrentGameModel>, action: updateChoosenHeros) {
+        const { hero } = action;
+        if (!hero) {
+            return
+        }
+
+        const state = ctx.getState()
+        const newHero: {
+            playerName: string,
+             playerId: string, 
+             playerHero: string} = hero;
+
+             let updatedChoosenHeros: Array<{
+                playerName: string,
+                playerId: string,
+                playerHero: string
+            }>;
+
+            if (state.game.choosenHeros.length > 0) {
+                updatedChoosenHeros = [...state.game.choosenHeros, newHero];
+            } else {
+                updatedChoosenHeros = [newHero];
+            }
+        ctx.setState({
+            ...state,
+            game: {
+                ...state.game,
+                choosenHeros: updatedChoosenHeros
+            }
+        })
     }
 }
 

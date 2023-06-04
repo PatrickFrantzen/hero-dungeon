@@ -26,4 +26,9 @@ export class CurrentGameSelectors {
     static currentBoss(state: CurrentGameModel): Mob {
         return state.game.currentBoss
     }
+
+    @Selector([CurrentGameState])
+    static currentPlayers(state: CurrentGameModel): { playerName: string; playerId: string; playerHero: string; }[] {
+        return state.game.choosenHeros
+    }
 }

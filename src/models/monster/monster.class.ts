@@ -4,17 +4,6 @@ export interface Mob {
     token: string[]
 }
 
-// export interface Boss {
-//     bossname: string,
-//     type: string,
-//     token: string[]
-// }
-
-// export interface Quest {
-//     name: string, 
-//     type: string,
-//     token: string[]
-// }
 
 export class Monster {
     public Mob: Mob[] = [];
@@ -93,16 +82,20 @@ export class Monster {
     }
 
     loadMonster(numberOfMonsterCards: number) {
+        let monsterCollectionCopy = [...this.monsterCollection];
         for (let i = 0; i < numberOfMonsterCards; i++) {
-            const Mob: Mob = this.monsterCollection[Math.floor(Math.random() * this.monsterCollection.length)]
-            this.Mob.push(Mob);
+            const randomIndex = Math.floor(Math.random() * monsterCollectionCopy.length);
+            const removedElement = monsterCollectionCopy.splice(randomIndex, 1)[0];
+            this.Mob.push(removedElement);
         }
     }
 
     loadQuests(numberOfQuestCards: number) {
+        let questCollectionCopy = [...this.questCollection];
         for (let i = 0; i < numberOfQuestCards; i++) {
-            const questStack = this.questCollection[Math.floor(Math.random() * this.questCollection.length)]
-            this.Mob.push(questStack);
+            const randomIndex = Math.floor(Math.random() * questCollectionCopy.length);
+            const removedElement = questCollectionCopy.splice(randomIndex,1)[0];
+            this.Mob.push(removedElement);
         }
     }
 
@@ -137,11 +130,11 @@ export class Monster {
             "type": "Jeder legt 1 Karte auf den eigenen Ablagestapel.",
             "token": ['event']
         },
-        {
-            "name": "Hinterhalt",
-            "type": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
-            "token": ['event']
-        },
+        // {
+        //     "name": "Hinterhalt",
+        //     "type": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
+        //     "token": ['event']
+        // },
         {
             "name": "Falltür",
             "type": "Jeder legt 3 Karten auf den eigenen Ablagestapel.",

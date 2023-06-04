@@ -7,4 +7,9 @@ export class HeropowerSelectors {
     static currentHeropowerActivated(state: HeropowerStateModel): boolean {
         return state.heropowerActivated
     }
+
+    @Selector([heropowerState])
+    static currentHeropowerArray(state: HeropowerStateModel): string[] {
+        return state.heropowerArray
+    }
 }

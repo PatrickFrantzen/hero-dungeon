@@ -20,3 +20,8 @@ export class SetNewEnemy{
     static readonly type ="[Player Hand page] creating a new Enemy"
     constructor(public newEnemy: Mob) {}
 }
+
+export class updateChoosenHeros{
+    static readonly type = "[Game page] updating choosen Heros"
+    constructor(public hero: {playerName:string, playerId: string, playerHero:string }) {}
+}

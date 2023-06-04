@@ -1,13 +1,15 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { DocumentData, collection, collectionData, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from '@angular/fire/firestore';
+import { MatDialog } from '@angular/material/dialog';
 import { Select, Store } from '@ngxs/store';
 import { Observable, Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
+import { updateChoosenHeros } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/currentGame-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
-import { UpdateHeropowerActivated } from 'src/app/actions/heropower-action';
+import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -18,6 +20,7 @@ import { LoadGameService } from 'src/app/services/load-game.service';
 import { SaveGameService } from 'src/app/services/save-game.service';
 import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
+import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.component';
 
 @Component({
   selector: 'app-player-hand',
@@ -37,6 +40,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   @Select(CurrentGameSelectors.currentGame) currentGameId$!: Observable<string>
   gameIdSubscription!: Subscription;
   currentGameId!: string;
+
+  @Select(CurrentGameSelectors.currentPlayers) currentPlayers$!: Observable<{ playerName: string; playerId: string; playerHero: string; }[]>
+  currPlayersSubscription!: Subscription;
+  currentPlayers!: { playerName: string; playerId: string; playerHero: string; }[];
 
   @Select(CurrentHandSelector.currentHand) currentHand$!: Observable<string[]>
   handSubscription!: Subscription;
@@ -71,6 +78,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   heropowerSubscription!: Subscription;
   heropowerActivated: boolean = false;
 
+  @Select(HeropowerSelectors.currentHeropowerArray) currentHeropowerArray$!: Observable<string[]>;
+  heropowerArraySubscription!: Subscription;
+  heropowerArray: string[] = [];
+
   @Select(CurrentUserSelectors.currentUserHeroData) currentUserHeroData$!: Observable<{ choosenHero: string, heroPower: string, description: string }>;
   userHeroSubscription!: Subscription;
   currentUserHeroData!: { choosenHero: string, heroPower: string, description: string }
@@ -78,11 +89,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   heropower: string = ''
   description: string = ''
 
+  playerIdForHeropowerAction: string = '';
+  playerNameForHeropowerAction: string = '';
+  playerHeroForHeropowerAction: string = '';
+
   db = getFirestore();
   loadedCollectionData!: DocumentData;
   collectionData!: DocumentData
-
-  heropowerArray: string[] = [];
 
 
   game$: Observable<any>;
@@ -95,6 +108,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private saveGame: SaveGameService,
+    public dialog: MatDialog,
   ) {
     this.game$ = collectionData(collection(this.db, 'games'));
     // this.player$= collectionData(collection(this.db, 'games', this.currentGameId, 'player'))
@@ -107,17 +121,14 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       const docSnap = await getDoc(docRef);
       const data = docSnap.data()
       this.updateFromDatabase(data!);
-      const handstackRef = collection(this.db, 'games', this.currentGameId, 'player');
-      const q = query(handstackRef, where('userId', '==', this.currentPlayerId))
-      const playerSnap = await getDocs(q);
-      playerSnap.forEach((doc) => {
-        this.collectionData = doc.data()
-        console.warn('Test', this.collectionData)
-        this.updatePlayerFromDatabase(this.collectionData)
-      })
-    })
 
+      const playerSnap = await getDocs(query(collection(this.db, 'games', this.currentGameId, 'player'), where('userId', '==', this.currentPlayerId)));
+      playerSnap.forEach(doc => this.updatePlayerFromDatabase(doc.data()));
+
+    })
   }
+
+
 
   updatePlayerFromDatabase(data: DocumentData) {
     this.currentCardStack = data['cardstack'];
@@ -132,69 +143,126 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.currentEnemy = data['currentEnemy'];
     this.currentBoss = data['currentBoss'];
     this.currentMob = data['Mob'];
+    this.currentPlayers = data['choosenHeros'];
+    this.store.dispatch(new SetNewEnemy(this.currentEnemy));
     this.store.dispatch(new UpdateMonsterTokenArray(this.currentEnemy.token))
     this.store.dispatch(new UpdateMobAction(this.currentMob));
-    this.store.dispatch(new SetNewEnemy(this.currentEnemy));
   }
 
   checkheropowerArray() {
     if (this.heropowerArray.length == 3) {
       let currEnemyToken = [...this.currentEnemy.token]
       currEnemyToken.length = 0;
+
       this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
       this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
       this.checkForNextEnemy(this.currentEnemy);
+
       this.heropowerArray.forEach((card) => {
         let indexOfHandCard = this.currentHand.indexOf(card);
         let currHand = [...this.currentHand];
         let currCardStack = [...this.currentCardStack]
         currHand.splice(indexOfHandCard, 1);
-        if (currHand.length < 5) {
-          if (currCardStack.length === 0) return;
+
+        if (currHand.length < 5 && currCardStack.length > 0) {
           const getCardForHand = currCardStack.shift()!;
-          currHand.push(getCardForHand)
+          currHand.push(getCardForHand);
+
           this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-          this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
+          this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack);
+
           this.store.dispatch(new UpdateCardStackAction(currCardStack));
           this.store.dispatch(new UpdateCurrentHandAction(currHand));
         }
       })
       this.store.dispatch(new UpdateHeropowerActivated(false))
-      this.heropowerArray = [];
+      this.store.dispatch(new UpdateHeropowerArray([]))
+
     }
   }
 
-  checkDiebHeropower(){
-    if (this.heropowerArray.length == 3) {
-      this.heropowerArray.forEach((card)=> {
+
+  async getOtherPlayerDataTogivePlayerCards() {
+    const playerSnap = await getDocs(query(collection(this.db, 'games', this.currentGameId, 'player'), where('userId', '==', this.playerIdForHeropowerAction)));
+    // playerSnap.forEach(doc => this.updatePlayerFromDatabase(doc.data()));
+    playerSnap.forEach(doc => console.log('data', doc.data()));
+    playerSnap.forEach(doc => {
+      let data = doc.data();
+      switch (this.heroName) {
+        case 'Jägerin':
+          this.executeJaegerinHeropower(data);
+          break;
+      }
+    })
+
+
+  }
+
+  async executeJaegerinHeropower(data: DocumentData) {
+    console.warn('execute', data);
+    const userId = data['userId']
+    let currentCardStack = data['cardstack'];
+    let currentHand = data['handstack'];
+
+    if (this.currentPlayerId === userId) {
+      for (let i = 0; i < 4; i++) {
+        let currCardStack = [...this.currentCardStack];
         let currHand = [...this.currentHand];
-        let indexOfHandCard = this.currentHand.indexOf(card);
-        currHand.splice(indexOfHandCard, 1);
-        this.store.dispatch(new UpdateCurrentHandAction(currHand));
 
-      });
-        for (let i = 0; i < 5; i++) {
-          let currCardStack = [...this.currentCardStack];
-          let currHand = [...this.currentHand];
-          if (currCardStack.length){
-            const getCardForHand = currCardStack.shift()!;
-            currHand.push(getCardForHand)
-            this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-            this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
-            this.store.dispatch(new UpdateCardStackAction(currCardStack));
-            this.store.dispatch(new UpdateCurrentHandAction(currHand));
-          } else {
-            this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-            this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
-            this.store.dispatch(new UpdateCardStackAction(currCardStack));
-            this.store.dispatch(new UpdateCurrentHandAction(currHand));
-          }
+        if (currCardStack.length > 0) {
+          const getCardForHand = currCardStack.shift()!;
+          currHand.push(getCardForHand);
 
+          this.saveGame.updateHandstack(this.currentGameId, userId, currHand);
+          this.saveGame.updateCardstack(this.currentGameId, userId, currCardStack);
+
+          this.store.dispatch(new UpdateCardStackAction(currCardStack));
+          this.store.dispatch(new UpdateCurrentHandAction(currHand));
         }
-      this.store.dispatch(new UpdateHeropowerActivated(false))
-      this.heropowerArray = [];
-    }
+      }
+    } else {
+      for (let i = 0; i < 4; i++) {
+        let currHand = [...currentHand];
+        let currCardStack = [...currentCardStack]
 
+        if (currCardStack.length > 0) {
+          const getCardForHand = currCardStack.shift()!;
+          currHand.push(getCardForHand)
+
+          this.saveGame.updateHandstack(this.currentGameId, userId, currHand);
+          this.saveGame.updateCardstack(this.currentGameId, userId, currCardStack);
+
+          currentCardStack = currCardStack;
+          currentHand = currHand;
+        }
+      }
+    }
+  }
+
+  checkJaegerinHeropower() {
+    if (this.heropowerArray.length !== 3) return;
+    this.heropowerArray.forEach((card) => {
+      let currHand = [...this.currentHand];
+      let currCardStack = [...this.currentCardStack]
+      let indexOfHandCard = this.currentHand.indexOf(card);
+      currHand.splice(indexOfHandCard, 1);
+      this.store.dispatch(new UpdateCurrentHandAction(currHand));
+
+      if (currHand.length < 5 && currCardStack.length > 0) {
+        let currCardStack = [...this.currentCardStack];
+        let currHand = [...this.currentHand];
+        const getCardForHand = currCardStack.shift()!;
+        currHand.push(getCardForHand)
+        this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+        this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
+        this.store.dispatch(new UpdateCardStackAction(currCardStack));
+        this.store.dispatch(new UpdateCurrentHandAction(currHand));
+      }
+    });
+    this.openDialog();
+
+    this.store.dispatch(new UpdateHeropowerActivated(false))
+    this.store.dispatch(new UpdateHeropowerArray([]))
   }
 
   chooseCard(card: string) {
@@ -209,90 +277,80 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       type: currType
     };
     if (this.heropowerActivated) {
-      switch (true) {
-        case this.heroName == 'Gladiator':
+      switch (this.heroName) {
+        case 'Gladiator':
+        case 'Barbar':
+        case 'Zauberin':
+        case 'Waldläufer':
+        case 'Ninja':
+        case 'Paladin':
           if (this.heropowerArray.length < 3) {
-            this.heropowerArray.push(card);
+            let hpArr = [...this.heropowerArray]
+            hpArr.push(card);
+            this.store.dispatch(new UpdateHeropowerArray(hpArr));
             this.checkheropowerArray()
           }
           break;
-        case this.heroName == 'Barbar':
-          if (this.heropowerArray.length < 3) {
-            this.heropowerArray.push(card);
-            this.checkheropowerArray()
-          }
-          break;
-        case this.heroName == 'Zauberin':
-          if (this.heropowerArray.length < 3) {
-            this.heropowerArray.push(card);
-            this.checkheropowerArray()
-          }
-          break;
-        case this.heroName == 'Magier':
+        case 'Magier':
 
           break;
-        case this.heroName == 'Jägerin':
-
-          break;
-        case this.heroName == 'Waldläufer':
+        case 'Jägerin':
           if (this.heropowerArray.length < 3) {
-            this.heropowerArray.push(card);
-            this.checkheropowerArray()
+            let hpArr = [...this.heropowerArray]
+            hpArr.push(card);
+            this.store.dispatch(new UpdateHeropowerArray(hpArr));
+            this.checkJaegerinHeropower()
           }
           break;
-        case this.heroName == 'Dieb':
+        case 'Dieb':
           if (this.heropowerArray.length < 3) {
-            this.heropowerArray.push(card);
+            let hpArr = [...this.heropowerArray]
+            hpArr.push(card);
+            this.store.dispatch(new UpdateHeropowerArray(hpArr));
             this.checkDiebHeropower()
           }
           break;
-        case this.heroName == 'Ninja':
-          if (this.heropowerArray.length < 3) {
-            this.heropowerArray.push(card);
-            this.checkheropowerArray()
-          }
-          break;
-        case this.heroName == 'Paladin':
-          if (this.heropowerArray.length < 3) {
-            this.heropowerArray.push(card);
-            this.checkheropowerArray()
-          }
-          break;
-        case this.heroName == 'Walküre':
+        case 'Walküre':
 
-          break;
-        default:
           break;
       }
     } else {
-    this.heropowerArray = [];
-    if (card.includes('_') && ((currMob.token[0].toLocaleLowerCase().includes('event')) || currMob.type.toLocaleLowerCase().includes(doubleCard[1]))) {
-      currEne.length = 0;
-      this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-      this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
-      this.checkForNextEnemy(this.currentEnemy)
-      this.saveHand(card, currHand)
-    }
-    if (card.includes('_') && (this.currentEnemy.token.includes(doubleCard[0]) || this.currentEnemy.token.includes(doubleCard[1]))) {
+      this.store.dispatch(new UpdateHeropowerArray([]))
 
-      if (this.currentEnemy.token.includes(doubleCard[0]) && this.currentEnemy.token.includes(doubleCard[1])) {
-        this.playAsTwoCards(doubleCard[0], doubleCard[1], currEne, currMob)
-      } else if (this.currentEnemy.token.includes(doubleCard[0])) {
-        this.playAsOneCard(doubleCard[0], currEne, currMob)
-      } else if (this.currentEnemy.token.includes(doubleCard[1])) {
-        this.playAsOneCard(doubleCard[1], currEne, currMob)
-      };
-      this.saveHand(card, currHand);
-    };
-    if (this.currentEnemy.token.includes(card)) {
-      this.playCardfromHandAndUpdateEnemyToken(card)
+      if (card.includes('_')
+      ) {
+        const isEventCard = currMob.token[0].toLocaleLowerCase().includes('event');
+        const isMatchingType = currMob.type.toLocaleLowerCase().includes(doubleCard[1]);
+
+        if (isEventCard || isMatchingType) {
+          currEne.length = 0;
+          this.store.dispatch(new UpdateMonsterTokenArray(currEne));
+          this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
+          this.checkForNextEnemy(this.currentEnemy)
+          this.saveHand(card, currHand)
+        }
+        if (card.includes('_') && (this.currentEnemy.token.includes(doubleCard[0]) || this.currentEnemy.token.includes(doubleCard[1]))) {
+
+          if (this.currentEnemy.token.includes(doubleCard[0]) && this.currentEnemy.token.includes(doubleCard[1])) {
+            this.playAsTwoCards(doubleCard[0], doubleCard[1], currEne)
+          } else if (this.currentEnemy.token.includes(doubleCard[0])) {
+            this.playAsOneCard(doubleCard[0], currEne)
+          } else if (this.currentEnemy.token.includes(doubleCard[1])) {
+            this.playAsOneCard(doubleCard[1], currEne)
+          };
+          this.saveHand(card, currHand);
+        };
+      }
+
+      if (this.currentEnemy.token.includes(card)) {
+        this.playCardfromHandAndUpdateEnemyToken(card)
+      }
     }
-  }
   }
 
   playCardfromHandAndUpdateEnemyToken(card: string) {
 
-    let currHand = [...this.currentHand];
+    const currHand = [...this.currentHand];
     const currEne = [...this.currentEnemy.token];
     const currName = this.currentEnemy.name;
     const currType = this.currentEnemy.type;
@@ -300,33 +358,38 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       name: currName,
       token: currEne,
       type: currType
-    }
-    let indexOfHandCard = this.currentHand.indexOf(card);
-    let indexOfEnemyToken = this.currentEnemy.token.indexOf(card);
+    };
+
+    const indexOfHandCard = currHand.indexOf(card);
+    const indexOfEnemyToken = currEne.indexOf(card);
     currHand.splice(indexOfHandCard, 1);
     currEne.splice(indexOfEnemyToken, 1);
-    currHand = this.checkHandsize(currHand)!;
-    this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+
+    const updatedHand = this.checkHandsize(currHand)!;
+
+    this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, updatedHand);
     this.saveGame.updateCurrentEnemyToken(this.currentGameId, currMob);
-    this.store.dispatch(new UpdateCurrentHandAction(currHand));
+
+    this.store.dispatch(new UpdateCurrentHandAction(updatedHand));
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
+
     this.checkForNextEnemy(this.currentEnemy)
   };
 
   checkHandsize(handsize: string[]) {
-    
-      const currHand = [...handsize];
-      const currCardStack = [...this.currentCardStack];
-      for (let i = 0; currHand.length < 5; i++) {
-        if (currCardStack.length === 0) return;
-        const getCardForHand = currCardStack.shift()!;
-        currHand.push(getCardForHand)
-        this.store.dispatch(new UpdateCardStackAction(currCardStack));
-        this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-        this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
-      }
-      return currHand
+    const currHand = [...handsize];
+    const currCardStack = [...this.currentCardStack];
+
+    while (currHand.length < 5 && currCardStack.length > 0) {
+      const changedCardStack = [...currCardStack]
+      const getCardForHand = changedCardStack.shift()!;
+      currHand.push(getCardForHand)
+      this.store.dispatch(new UpdateCardStackAction(currCardStack));
+      this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+      this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, changedCardStack)
     }
+    return currHand
+  }
 
   checkForNextEnemy(currentEnemy: Mob) {
     if (Array.isArray(currentEnemy.token) && !currentEnemy.token.length) {
@@ -342,25 +405,27 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
 
-  playAsOneCard(card: string, currEne: string[], currMob: Mob) {
-    let indexOfEnemyToken = this.currentEnemy.token.indexOf(card);
+  playAsOneCard(card: string, currEne: string[]) {
+    const indexOfEnemyToken = currEne.indexOf(card);
     currEne.splice(indexOfEnemyToken, 1);
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
     this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy)
     this.checkForNextEnemy(this.currentEnemy)
   }
 
-  playAsTwoCards(cardOne: string, cardTwo: string, currEne: string[], currMob: Mob) {
+  playAsTwoCards(cardOne: string, cardTwo: string, currEne: string[]) {
 
-    let firstIndexOfEnemyToken = this.currentEnemy.token.indexOf(cardOne);
+    const firstIndexOfEnemyToken = currEne.indexOf(cardOne);
     currEne.splice(firstIndexOfEnemyToken, 1);
+
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
     this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
 
     if (currEne.includes(cardTwo)) {
       const secCurrEne = [...currEne]
-      let secondIndexOfEnemyToken = this.currentEnemy.token.indexOf(cardTwo);
+      const secondIndexOfEnemyToken = currEne.indexOf(cardTwo);
       secCurrEne.splice(secondIndexOfEnemyToken, 1);
+
       this.store.dispatch(new UpdateMonsterTokenArray(secCurrEne));
       this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
       this.checkForNextEnemy(this.currentEnemy)
@@ -386,6 +451,40 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   }
 
+  
+  checkDiebHeropower() {
+    if (this.heropowerArray.length !== 3) return;
+    this.heropowerArray.forEach((card) => {
+      let currHand = [...this.currentHand];
+      let indexOfHandCard = this.currentHand.indexOf(card);
+
+      currHand.splice(indexOfHandCard, 1);
+      this.store.dispatch(new UpdateCurrentHandAction(currHand));
+    });
+    for (let i = 0; i < 5; i++) {
+      let currCardStack = [...this.currentCardStack];
+      let currHand = [...this.currentHand];
+      if (currCardStack.length > 0) {
+        const getCardForHand = currCardStack.shift()!;
+        currHand.push(getCardForHand)
+
+        this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+        this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
+
+        this.store.dispatch(new UpdateCardStackAction(currCardStack));
+        this.store.dispatch(new UpdateCurrentHandAction(currHand));
+      } else {
+        this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+        this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack);
+
+        this.store.dispatch(new UpdateCardStackAction(currCardStack));
+        this.store.dispatch(new UpdateCurrentHandAction(currHand));
+      }
+    }
+    this.store.dispatch(new UpdateHeropowerActivated(false))
+    this.store.dispatch(new UpdateHeropowerArray([]))
+  }
+
   saveHand(card: string, currHand: string[]) {
     let indexOfHandCard = this.currentHand.indexOf(card);
     currHand.splice(indexOfHandCard, 1);
@@ -393,6 +492,21 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
     this.store.dispatch(new UpdateCurrentHandAction(currHand));
     this.store.dispatch(new UpdateCardStackAction(this.currentCardStack));
+  }
+
+  openDialog() {
+    let dialogRef = this.dialog.open(DialogHeropowerComponent, {
+      data: this.currentPlayers
+    })
+
+    dialogRef.afterClosed().subscribe(result => {
+      const { playerHero, playerId, playerName } = result.data;
+      this.playerIdForHeropowerAction = playerId;
+      this.playerNameForHeropowerAction = playerName;
+      this.playerHeroForHeropowerAction = playerHero;
+      this.getOtherPlayerDataTogivePlayerCards();
+    }
+    )
   }
 
   getGameData() {
@@ -438,6 +552,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.heropowerSubscription = this.currentHeropowerActivated$.subscribe((data) => {
       this.heropowerActivated = data;
     })
+
+    this.heropowerArraySubscription = this.currentHeropowerArray$.subscribe((data) => {
+      this.heropowerArray = data;
+    })
     this.userHeroSubscription = this.currentUserHeroData$.subscribe((data) => {
       if (data) {
         this.currentUserHeroData = data;
@@ -445,6 +563,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         this.heropower = this.currentUserHeroData.heroPower;
         this.description = this.currentUserHeroData.description
       }
+    })
+
+    this.currPlayersSubscription = this.currentPlayers$.subscribe((data) => {
+      this.currentPlayers = data;
     })
   }
 
@@ -457,7 +579,9 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.stackSubscription.unsubscribe();
     this.gameSubscr.unsubscribe();
     this.heropowerSubscription.unsubscribe();
+    this.heropowerArraySubscription.unsubscribe();
     this.userHeroSubscription.unsubscribe();
+    this.currPlayersSubscription.unsubscribe();
   }
 
 

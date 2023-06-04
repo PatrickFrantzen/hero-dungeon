@@ -1,15 +1,17 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
-import { UpdateHeropowerActivated } from "../actions/heropower-action";
+import { UpdateHeropowerActivated, UpdateHeropowerArray } from "../actions/heropower-action";
 
 export interface HeropowerStateModel {
-    heropowerActivated: boolean
+    heropowerActivated: boolean,
+    heropowerArray: string[]
 }
 
 @State<HeropowerStateModel>({
     name: 'heropower',
     defaults: {
-        heropowerActivated: false
+        heropowerActivated: false,
+        heropowerArray: []
     }
 })
 
@@ -24,8 +26,20 @@ export class heropowerState {
         const heropowerStatus: boolean = heropower;
         ctx.patchState({
             ...state,
-
             heropowerActivated: heropowerStatus
         })
+    }
+
+    @Action(UpdateHeropowerArray)
+    updateHeropowerArray(ctx: StateContext<HeropowerStateModel>, action: UpdateHeropowerArray) {
+        const { heropowerArray } = action;
+
+        const state = ctx.getState();
+        const heropowerArr: string[] = heropowerArray;
+        ctx.patchState({
+            ...state,
+            heropowerArray: heropowerArr
+        })
+        console.warn('ArrayState', ctx.getState())
     }
 }

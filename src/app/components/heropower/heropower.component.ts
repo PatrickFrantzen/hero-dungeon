@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Select, Store} from '@ngxs/store';
 import { Observable, Subscription} from 'rxjs';
-import { UpdateHeropowerActivated } from 'src/app/actions/heropower-action';
+import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
@@ -24,6 +24,9 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   currentUserHeroData!: {choosenHero: string, heroPower: string, description: string}
   @Select(HeropowerSelectors.currentHeropowerActivated) currentHeropowerActivated$!: Observable<boolean>;
   heropowerSubscription!: Subscription;
+  @Select(HeropowerSelectors.currentHeropowerArray) currentHeropowerArray$!: Observable<string[]>;
+  heropowerArraySubscription!: Subscription;
+  heropowerArray: string[] = [];
   
   heroName: string = ''
   heropower: string = ''
@@ -47,34 +50,40 @@ export class HeropowerComponent implements OnInit, OnDestroy{
     this.heropowerSubscription = this.currentHeropowerActivated$.subscribe((data)=> {
       this.heropowerActivated = data;
     })
+
+    this.heropowerArraySubscription = this.currentHeropowerArray$.subscribe((data)=> {
+      this.heropowerArray = data;
+    })
   }
 
   activateHeroPower() {
-    if (!this.heropowerActivated) this.store.dispatch(new UpdateHeropowerActivated(true))
-
+    this.store.dispatch(new UpdateHeropowerActivated(true))
+    this.store.dispatch(new UpdateHeropowerArray([]))
   }
 
   deactivateHeroPower() {
-    if (this.heropowerActivated) this.store.dispatch(new UpdateHeropowerActivated(false))
+
+    this.store.dispatch(new UpdateHeropowerActivated(false))
+    this.store.dispatch(new UpdateHeropowerArray([]))
   }
 
   heroPowerGladiator() {
     if (this.currentEnemy.type === 'Person' && !this.heropowerActivated) {
       this.activateHeroPower();
-    } 
+    } else this.deactivateHeroPower();
   }
 
   heroPowerBarbar() {
     if (this.currentEnemy.type === 'Monster' && !this.heropowerActivated) {
       this.activateHeroPower();
-    } 
+    } else this.deactivateHeroPower();
 
   }
 
   heroPowerZauberin() {
     if (this.currentEnemy.type === 'Hindernis' && !this.heropowerActivated) {
       this.activateHeroPower();
-    } 
+    } else this.deactivateHeroPower();
   }
 
   heroPowerMagier() {
@@ -82,29 +91,33 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   }
 
   heroPowerJaegerin() {
-
+    if (!this.heropowerActivated) {
+      this.activateHeroPower()
+    } else this.deactivateHeroPower();
   }
 
   heroPowerWaldlaeufer() {
     if (this.currentEnemy.type === 'Person' && !this.heropowerActivated) {
       this.activateHeroPower();
-    } 
+    } else this.deactivateHeroPower();
   }
 
   heroPowerDieb() {
-    this.activateHeroPower();
+    if (!this.heropowerActivated) {
+      this.activateHeroPower()
+    } else this.deactivateHeroPower();
   }
 
   heroPowerNinja() {
     if (this.currentEnemy.type === 'Hindernis' && !this.heropowerActivated) {
       this.activateHeroPower();
-    } 
+    } else this.deactivateHeroPower();
   }
 
   heroPowerPaladin() {
     if (this.currentEnemy.type === 'Monster' && !this.heropowerActivated) {
       this.activateHeroPower();
-    } 
+    } else this.deactivateHeroPower();
   }
 
   heroPowerWalkuere() {
@@ -114,6 +127,7 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   ngOnDestroy(): void {
     this.userHeroSubscription.unsubscribe();
     this.heropowerSubscription.unsubscribe();
+    this.heropowerArraySubscription.unsubscribe();
   }
 
 }

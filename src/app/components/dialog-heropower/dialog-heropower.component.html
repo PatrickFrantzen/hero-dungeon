@@ -1,0 +1,22 @@
+<div class="dialog">
+    <h1 mat-dialog-title>Wähle einen Helden</h1>
+    <div mat-dialog-content class="settings">
+
+
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Helden</mat-label>
+        <mat-select [(ngModel)]="selectedValue" name="hero">
+          <mat-option *ngFor="let hero of data" [value]="hero">
+            {{hero.playerName}} {{hero.playerId}} {{hero.playerHero}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+
+    </div>
+
+    <div mat-dialog-actions>
+      <button mat-button mat-dialog-close cdkFocusInitial (click)="getChoosenHero(selectedValue)">Ok</button>
+    </div>
+</div>
