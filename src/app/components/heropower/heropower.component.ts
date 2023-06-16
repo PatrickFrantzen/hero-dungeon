@@ -121,7 +121,9 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   }
 
   heroPowerWalkuere() {
-
+    if (!this.heropowerActivated) {
+      this.activateHeroPower()
+    } else this.deactivateHeroPower();
   }
 
   ngOnDestroy(): void {

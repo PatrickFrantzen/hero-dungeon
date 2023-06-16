@@ -14,5 +14,5 @@ export interface Game {
     difficulty: string;
     Mob: Mob[];
     allBosses: Mob[];
-
+    questCardActivated: boolean;
 }

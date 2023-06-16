@@ -43,7 +43,7 @@ export class GameComponent implements OnInit, OnDestroy {
   deliveryStack: string[] = [];
   user = new User();
   currentHero: Object = {};
-  playerData: { playerName: string, playerId: string, playerHero: string } = { playerName: '', playerId: '', playerHero: '' }
+  playerData: { playerName: string, playerId: string, playerHero: string } = { playerName: '', playerId: '', playerHero: ''}
   players!: [{ playerName: string, playerId: string, playerHero: string }]
   cardStack!: string[];
   foundCurrentPlayer: boolean = false;
@@ -87,6 +87,7 @@ export class GameComponent implements OnInit, OnDestroy {
     const updateData = {
       userId: this.currentPlayerId,
       userNickname: this.currentPlayerName,
+      gameId: this.currentGameId,
     }
     updateDoc(docRef, updateData);
     this.store.dispatch(new CurrentDeliveryStack(this.user.deliveryStack));
@@ -96,7 +97,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.playerData = {
       playerName: this.currentPlayerName,
       playerId: this.currentPlayerId,
-      playerHero: this.currentUserHeroData.choosenHero
+      playerHero: this.currentUserHeroData.choosenHero,
     }
 
     this.players.push(this.playerData)

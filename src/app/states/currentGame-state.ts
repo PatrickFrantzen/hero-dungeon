@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
-import { CurrentGameAction, CurrentGameData, SetNewEnemy, UpdateMonsterTokenArray, updateChoosenHeros } from "../actions/currentGame-action";
+import { CurrentGameAction, CurrentGameData, SetNewEnemy, UpdateMonsterTokenArray, updateChoosenHeros, updateQuestCardActivated } from "../actions/currentGame-action";
 import { Game } from "src/models/game";
 import { ToJSONService } from "../services/to-json.service";
 import { Mob } from "src/models/monster/monster.class";
@@ -29,7 +29,8 @@ export interface CurrentGameModel {
             gameId: '', 
             difficulty: '', 
             Mob: [], 
-            allBosses: [] 
+            allBosses: [],
+            questCardActivated: false 
         },
     }
 })
@@ -90,7 +91,8 @@ export class CurrentGameState {
                 gameId: state.game.gameId, 
                 difficulty: state.game.difficulty, 
                 Mob: state.game.Mob, 
-                allBosses: state.game.allBosses 
+                allBosses: state.game.allBosses,
+                questCardActivated: state.game.questCardActivated
             }
         })
         
@@ -116,7 +118,8 @@ export class CurrentGameState {
                 gameId: state.game.gameId, 
                 difficulty: state.game.difficulty, 
                 Mob: state.game.Mob, 
-                allBosses: state.game.allBosses 
+                allBosses: state.game.allBosses,
+                questCardActivated: state.game.questCardActivated
             }
         })
         console.log('newEnemy', ctx.getState())
@@ -141,7 +144,8 @@ export class CurrentGameState {
                 gameId: state.game.gameId, 
                 difficulty: state.game.difficulty, 
                 Mob: newMob, 
-                allBosses: state.game.allBosses 
+                allBosses: state.game.allBosses,
+                questCardActivated: state.game.questCardActivated
             }
         })
         console.log('newMob', ctx.getState())
@@ -176,6 +180,21 @@ export class CurrentGameState {
             game: {
                 ...state.game,
                 choosenHeros: updatedChoosenHeros
+            }
+        })
+    }
+
+    @Action(updateQuestCardActivated)
+    updateQuestCardActivated(ctx: StateContext<CurrentGameModel>, action: updateQuestCardActivated) {
+        const { questCardActivated } = action;
+        
+        const state = ctx.getState()
+        const activation = questCardActivated
+        ctx.patchState({
+            ...state,
+            game: {
+                ...state.game,
+                questCardActivated: activation
             }
         })
     }

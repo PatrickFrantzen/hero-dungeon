@@ -25,3 +25,8 @@ export class updateChoosenHeros{
     static readonly type = "[Game page] updating choosen Heros"
     constructor(public hero: {playerName:string, playerId: string, playerHero:string }) {}
 }
+
+export class updateQuestCardActivated {
+    static readonly type = "[Game page, Monster Page] updating quest card activation"
+    constructor(public questCardActivated: boolean){}
+}

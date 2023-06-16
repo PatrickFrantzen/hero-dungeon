@@ -29,8 +29,9 @@ export class SaveGameService {
   updateDeliveryStack(gameId: string, playerId: string, update: string[]) {
     const docPlayer = doc(this.db, 'games', gameId, 'player', playerId);
     const updateData = {
-      deliverystack: update
+      deliveryStack: update
     }
+    console.warn('delStack', update)
     updateDoc(docPlayer, updateData)
   }
 
@@ -58,5 +59,12 @@ export class SaveGameService {
     updateDoc(docServer, updateData)
   }
 
+  updateQuestStatus(gameId: string, update: boolean) {
+    const docServer= doc(this.db, 'games', gameId);
+    const updateData = {
+      questCardActivated: update
+    }
+    updateDoc(docServer, updateData)
+  }
 
 }

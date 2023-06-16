@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { DocumentData, collection, collectionData, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from '@angular/fire/firestore';
+import { DocumentData, QuerySnapshot, collection, collectionData, doc, getDoc, getDocs, getFirestore, onSnapshot, query, updateDoc, where } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Select, Store } from '@ngxs/store';
 import { Observable, Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { updateChoosenHeros } from 'src/app/actions/currentGame-action';
+import { updateChoosenHeros, updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/currentGame-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
@@ -89,17 +89,22 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   heropower: string = ''
   description: string = ''
 
+  @Select(CurrentGameSelectors.currentQuestCardStatus) questStatus$!: Observable<boolean>
+  questCardStatus: boolean = false;
+  questCardStatusSubscription!: Subscription;
+
   playerIdForHeropowerAction: string = '';
   playerNameForHeropowerAction: string = '';
   playerHeroForHeropowerAction: string = '';
 
   db = getFirestore();
   loadedCollectionData!: DocumentData;
-  collectionData!: DocumentData
-
+  collectionData!: DocumentData;
+  allPlayerDataFromServer: DocumentData[] = [];
 
   game$: Observable<any>;
-  gameSubscr!: Subscription
+  gameSubscr!: Subscription;
+  playerSubsc!: Subscription;
   // player$:Observable<any>;
   // -------------------------------------
 
@@ -111,7 +116,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
   ) {
     this.game$ = collectionData(collection(this.db, 'games'));
-    // this.player$= collectionData(collection(this.db, 'games', this.currentGameId, 'player'))
   }
 
   ngOnInit(): void {
@@ -121,10 +125,15 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       const docSnap = await getDoc(docRef);
       const data = docSnap.data()
       this.updateFromDatabase(data!);
-
-      const playerSnap = await getDocs(query(collection(this.db, 'games', this.currentGameId, 'player'), where('userId', '==', this.currentPlayerId)));
-      playerSnap.forEach(doc => this.updatePlayerFromDatabase(doc.data()));
-
+      const currentPlayerData = query(collection(this.db, 'games', this.currentGameId, 'player'), where('userId', '==', this.currentPlayerId));
+      const getPlayerData = onSnapshot(currentPlayerData, (querySnapshot) => {
+        const player: DocumentData[] = [];
+        querySnapshot.forEach((doc) => {
+          player.push(doc.data())
+          this.updatePlayerFromDatabase(doc.data())
+        })
+        console.log('snapshot', player)
+      })
     })
   }
 
@@ -144,62 +153,83 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.currentBoss = data['currentBoss'];
     this.currentMob = data['Mob'];
     this.currentPlayers = data['choosenHeros'];
+    this.questCardStatus = data['questCardActivated'];
     this.store.dispatch(new SetNewEnemy(this.currentEnemy));
     this.store.dispatch(new UpdateMonsterTokenArray(this.currentEnemy.token))
     this.store.dispatch(new UpdateMobAction(this.currentMob));
+    this.store.dispatch(new updateQuestCardActivated(this.questCardStatus))
   }
 
-  checkheropowerArray() {
-    if (this.heropowerArray.length == 3) {
-      let currEnemyToken = [...this.currentEnemy.token]
-      currEnemyToken.length = 0;
 
-      this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
-      this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
-      this.checkForNextEnemy(this.currentEnemy);
+  checkWalkuereHeropower() {
+    if (this.heropowerArray.length !== 3) return;
 
-      this.heropowerArray.forEach((card) => {
-        let indexOfHandCard = this.currentHand.indexOf(card);
+    this.heropowerArray.forEach((card) => {
+      let currHand = [...this.currentHand];
+      let currCardStack = [...this.currentCardStack]
+      let indexOfHandCard = this.currentHand.indexOf(card);
+      currHand.splice(indexOfHandCard, 1);
+      this.store.dispatch(new UpdateCurrentHandAction(currHand));
+      
+
+      if (currHand.length < 5 && currCardStack.length > 0) {
+        let currCardStack = [...this.currentCardStack];
         let currHand = [...this.currentHand];
-        let currCardStack = [...this.currentCardStack]
-        currHand.splice(indexOfHandCard, 1);
+        const getCardForHand = currCardStack.shift()!;
+        currHand.push(getCardForHand)
+        this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+        this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack)
+        this.store.dispatch(new UpdateCardStackAction(currCardStack));
+        this.store.dispatch(new UpdateCurrentHandAction(currHand));
+      }
+    });
+    this.getAllPlayerDatatoGivePlayersCards();
+    
+    this.store.dispatch(new UpdateHeropowerActivated(false))
+    this.store.dispatch(new UpdateHeropowerArray([]))
+  }
 
-        if (currHand.length < 5 && currCardStack.length > 0) {
-          const getCardForHand = currCardStack.shift()!;
-          currHand.push(getCardForHand);
+  async getAllPlayerDatatoGivePlayersCards() {
+    const allPlayerData = query(collection(this.db, 'games', this.currentGameId, 'player'), where ('gameId', '==', this.currentGameId), where('userId','!=', this.currentPlayerId ));
+    const querySnapshot = await getDocs(allPlayerData);
+    querySnapshot.forEach((doc) => {
+      this.executeWalkuereHeropower(doc.data())
+    })
+  }
 
-          this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
-          this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack);
+  executeWalkuereHeropower(data:DocumentData) {
+    console.warn('executeWalküre', data)
+    const userId = data['userId']
+    let currentCardStack = data['cardstack'];
+    let currentHand = data['handstack'];
+    for (let i = 0; i < 2; i++) {
+      let currHand = [...currentHand];
+      let currCardStack = [...currentCardStack]
 
-          this.store.dispatch(new UpdateCardStackAction(currCardStack));
-          this.store.dispatch(new UpdateCurrentHandAction(currHand));
-        }
-      })
-      this.store.dispatch(new UpdateHeropowerActivated(false))
-      this.store.dispatch(new UpdateHeropowerArray([]))
+      if (currCardStack.length > 0) {
+        const getCardForHand = currCardStack.shift()!;
+        currHand.push(getCardForHand)
 
+        this.saveGame.updateHandstack(this.currentGameId, userId, currHand);
+        this.saveGame.updateCardstack(this.currentGameId, userId, currCardStack);
+
+        currentCardStack = currCardStack;
+        currentHand = currHand;
+      }
     }
   }
 
-
   async getOtherPlayerDataTogivePlayerCards() {
     const playerSnap = await getDocs(query(collection(this.db, 'games', this.currentGameId, 'player'), where('userId', '==', this.playerIdForHeropowerAction)));
-    // playerSnap.forEach(doc => this.updatePlayerFromDatabase(doc.data()));
-    playerSnap.forEach(doc => console.log('data', doc.data()));
+    // playerSnap.forEach(doc => console.log('data', doc.data()));
     playerSnap.forEach(doc => {
       let data = doc.data();
-      switch (this.heroName) {
-        case 'Jägerin':
-          this.executeJaegerinHeropower(data);
-          break;
-      }
+      this.executeJaegerinHeropower(data);
     })
-
-
   }
 
-  async executeJaegerinHeropower(data: DocumentData) {
-    console.warn('execute', data);
+  executeJaegerinHeropower(data: DocumentData) {
+    // console.warn('execute', data);
     const userId = data['userId']
     let currentCardStack = data['cardstack'];
     let currentHand = data['handstack'];
@@ -260,7 +290,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       }
     });
     this.openDialog();
-
     this.store.dispatch(new UpdateHeropowerActivated(false))
     this.store.dispatch(new UpdateHeropowerArray([]))
   }
@@ -276,6 +305,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       token: currEne,
       type: currType
     };
+    if (this.questCardStatus) {
+      //check welche Quest usw. 
+    }
+
     if (this.heropowerActivated) {
       switch (this.heroName) {
         case 'Gladiator':
@@ -311,7 +344,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           }
           break;
         case 'Walküre':
-
+          if (this.heropowerArray.length < 3) {
+            let hpArr = [...this.heropowerArray]
+            hpArr.push(card);
+            this.store.dispatch(new UpdateHeropowerArray(hpArr));
+            this.checkWalkuereHeropower()
+          }
           break;
       }
     } else {
@@ -452,6 +490,38 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   
+  checkheropowerArray() {
+    if (this.heropowerArray.length == 3) {
+      let currEnemyToken = [...this.currentEnemy.token]
+      currEnemyToken.length = 0;
+
+      this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
+      this.saveGame.updateCurrentEnemyToken(this.currentGameId, this.currentEnemy);
+      this.checkForNextEnemy(this.currentEnemy);
+
+      this.heropowerArray.forEach((card) => {
+        let indexOfHandCard = this.currentHand.indexOf(card);
+        let currHand = [...this.currentHand];
+        let currCardStack = [...this.currentCardStack]
+        currHand.splice(indexOfHandCard, 1);
+
+        if (currHand.length < 5 && currCardStack.length > 0) {
+          const getCardForHand = currCardStack.shift()!;
+          currHand.push(getCardForHand);
+
+          this.saveGame.updateHandstack(this.currentGameId, this.currentPlayerId, currHand);
+          this.saveGame.updateCardstack(this.currentGameId, this.currentPlayerId, currCardStack);
+
+          this.store.dispatch(new UpdateCardStackAction(currCardStack));
+          this.store.dispatch(new UpdateCurrentHandAction(currHand));
+        }
+      })
+      this.store.dispatch(new UpdateHeropowerActivated(false))
+      this.store.dispatch(new UpdateHeropowerArray([]))
+
+    }
+  }
+
   checkDiebHeropower() {
     if (this.heropowerArray.length !== 3) return;
     this.heropowerArray.forEach((card) => {
@@ -568,6 +638,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.currPlayersSubscription = this.currentPlayers$.subscribe((data) => {
       this.currentPlayers = data;
     })
+
+    this.questCardStatusSubscription = this.questStatus$.subscribe((data)=> {
+      this.questCardStatus = data;
+    })
   }
 
   ngOnDestroy(): void {
@@ -582,6 +656,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.heropowerArraySubscription.unsubscribe();
     this.userHeroSubscription.unsubscribe();
     this.currPlayersSubscription.unsubscribe();
+    this.questCardStatusSubscription.unsubscribe();
   }
 
 

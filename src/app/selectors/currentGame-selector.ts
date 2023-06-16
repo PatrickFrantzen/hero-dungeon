@@ -31,4 +31,9 @@ export class CurrentGameSelectors {
     static currentPlayers(state: CurrentGameModel): { playerName: string; playerId: string; playerHero: string; }[] {
         return state.game.choosenHeros
     }
+
+    @Selector([CurrentGameState])
+    static currentQuestCardStatus(state: CurrentGameModel): boolean {
+        return state.game.questCardActivated
+    }
 }

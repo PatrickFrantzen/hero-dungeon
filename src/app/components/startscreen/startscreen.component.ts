@@ -113,7 +113,8 @@ export class StartscreenComponent implements OnInit, OnDestroy{
         gameId: data.gameId,
         difficulty: data.difficulty,
         Mob: Mob,
-        allBosses: allBosses
+        allBosses: allBosses,
+        questCardActivated: false
       }
       this.store.dispatch(new CurrentGameData(game))
       this.store.dispatch(new CreateNewMobAction(Mob))
