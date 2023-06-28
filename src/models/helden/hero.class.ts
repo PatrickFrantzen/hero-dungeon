@@ -1,3 +1,9 @@
+export interface Herointerface {
+    choosenHero: string;
+    heroPower: string;
+    description: string;
+}
+
 export class Hero {
     public heroName: string = '';
     public cardstack: string[] = [];

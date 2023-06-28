@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Select, Store} from '@ngxs/store';
+import { NgxsSimpleChange, Select, Store} from '@ngxs/store';
 import { Observable, Subscription} from 'rxjs';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
@@ -24,9 +24,7 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   currentUserHeroData!: {choosenHero: string, heroPower: string, description: string}
   @Select(HeropowerSelectors.currentHeropowerActivated) currentHeropowerActivated$!: Observable<boolean>;
   heropowerSubscription!: Subscription;
-  @Select(HeropowerSelectors.currentHeropowerArray) currentHeropowerArray$!: Observable<string[]>;
-  heropowerArraySubscription!: Subscription;
-  heropowerArray: string[] = [];
+
   
   heroName: string = ''
   heropower: string = ''
@@ -38,6 +36,7 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   ) {}
 
   ngOnInit(): void {
+
 
     this.userHeroSubscription = this.currentUserHeroData$.subscribe((data) => {
       if (data) {
@@ -51,10 +50,11 @@ export class HeropowerComponent implements OnInit, OnDestroy{
       this.heropowerActivated = data;
     })
 
-    this.heropowerArraySubscription = this.currentHeropowerArray$.subscribe((data)=> {
-      this.heropowerArray = data;
-    })
+    // this.heropowerArraySubscription = this.currentHeropowerArray$.subscribe((data)=> {
+    //   this.heropowerArray = data;
+    // })
   }
+
 
   activateHeroPower() {
     this.store.dispatch(new UpdateHeropowerActivated(true))
@@ -129,7 +129,5 @@ export class HeropowerComponent implements OnInit, OnDestroy{
   ngOnDestroy(): void {
     this.userHeroSubscription.unsubscribe();
     this.heropowerSubscription.unsubscribe();
-    this.heropowerArraySubscription.unsubscribe();
   }
-
 }

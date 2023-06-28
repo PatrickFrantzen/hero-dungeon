@@ -1,9 +1,8 @@
-import { Component, Input, OnDestroy, OnInit} from '@angular/core';
-import { Select, Store } from '@ngxs/store';
-import { Observable, Subscription } from 'rxjs';
-import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
-import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
-import { SaveGameService } from 'src/app/services/save-game.service';
+import {
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { Mob } from 'src/models/monster/monster.class';
 
 @Component({
@@ -11,46 +10,15 @@ import { Mob } from 'src/models/monster/monster.class';
   templateUrl: './enemy.component.html',
   styleUrls: ['./enemy.component.scss'],
 })
-export class EnemyComponent implements OnInit, OnDestroy{
-  @Input() currentGameId: string = ''
+export class EnemyComponent implements OnInit {
+  @Input() currentEnemy!: Mob;
+  @Input() gameId: string = '';
+  @Input() questCardStatus: boolean = false;
 
-  @Select(CurrentGameSelectors.currentEnemy) currentEnemy$!: Observable<Mob>
-  currentEnemy!:Mob
-  currentEnemySubscription!: Subscription;
-  @Select(CurrentGameSelectors.currentQuestCardStatus) questStatus$!: Observable<boolean>
-  questCardStatus: boolean = false;
-  questCardStatusSubscription!: Subscription;
-  constructor(
-    private store: Store,
-    private saveGame: SaveGameService
-  ) {
+  constructor() {}
+  ngAfterContentInit(): void {}
 
-  }
 
   ngOnInit(): void {
-    this.setCurrentEnemy();
-    console.log('currentEnemy', this.currentEnemy)
-    if (this.currentEnemy.token.includes('event')) {
-      this.store.dispatch(new updateQuestCardActivated(true))
-      this.saveGame.updateQuestStatus(this.currentGameId, this.questCardStatus)
-    }
   }
-
-  setCurrentEnemy() {
-    this.currentEnemySubscription = this.currentEnemy$.subscribe((data)=> {
-      this.currentEnemy = data;
-    })
-    this.questCardStatusSubscription = this.questStatus$.subscribe((data)=> {
-      this.questCardStatus = data;
-      console.warn('questCardStatus', this.questCardStatus)
-    })
-  }
-
-  ngOnDestroy(): void {
-    this.currentEnemySubscription.unsubscribe()
-    this.questCardStatusSubscription.unsubscribe()
-  }
- 
-
-  
 }

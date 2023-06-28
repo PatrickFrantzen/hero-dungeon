@@ -39,6 +39,8 @@ import { DeliveryStackState } from './states/deliveryStack-state';
 import { HeropowerComponent } from './components/heropower/heropower.component';
 import { heropowerState } from './states/heropower-state';
 import { DialogHeropowerComponent } from './components/dialog-heropower/dialog-heropower.component';
+import { EnemyContainerComponent } from './components/enemy/enemy-container/enemy-container.component';
+import { HeropowerContainerComponent } from './components/heropower/heropower-container/heropower-container.component';
 
 
 @NgModule({
@@ -53,7 +55,9 @@ import { DialogHeropowerComponent } from './components/dialog-heropower/dialog-h
     PlayerHandComponent,
     EnemyComponent,
     HeropowerComponent,
-    DialogHeropowerComponent
+    DialogHeropowerComponent,
+    EnemyContainerComponent,
+    HeropowerContainerComponent
   ],
   imports: [
     BrowserModule,
