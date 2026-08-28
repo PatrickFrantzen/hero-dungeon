@@ -6,9 +6,10 @@ import {
 import { Mob } from 'src/models/monster/monster.class';
 
 @Component({
-  selector: 'app-enemy',
-  templateUrl: './enemy.component.html',
-  styleUrls: ['./enemy.component.scss'],
+    selector: 'app-enemy',
+    templateUrl: './enemy.component.html',
+    styleUrls: ['./enemy.component.scss'],
+    standalone: false
 })
 export class EnemyComponent implements OnInit {
   @Input() currentEnemy!: Mob;

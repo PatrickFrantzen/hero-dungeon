@@ -45,9 +45,10 @@ import { Mob } from 'src/models/monster/monster.class';
 import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.component';
 
 @Component({
-  selector: 'app-player-hand',
-  templateUrl: './player-hand.component.html',
-  styleUrls: ['./player-hand.component.scss'],
+    selector: 'app-player-hand',
+    templateUrl: './player-hand.component.html',
+    styleUrls: ['./player-hand.component.scss'],
+    standalone: false
 })
 export class PlayerHandComponent implements OnInit, OnDestroy {
   @Select(CurrentUserSelectors.currentUserId)

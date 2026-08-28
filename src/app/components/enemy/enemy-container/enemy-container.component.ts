@@ -12,15 +12,16 @@ import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 
 @Component({
-  selector: 'app-enemy-container',
-  template: `
+    selector: 'app-enemy-container',
+    template: `
     <app-enemy
       [gameId]="(this.gameId$ | async) || ''"
       [currentEnemy]="(this.currentEnemy$ | async) || emptyMob"
       [questCardStatus]="(this.currentQuestStatus$ | async) || false"
     ></app-enemy>
   `,
-  styles: [``],
+    styles: [``],
+    standalone: false
 })
 export class EnemyContainerComponent implements OnInit {
   @Select(CurrentGameSelectors.currentGameState)

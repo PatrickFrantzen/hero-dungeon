@@ -2,9 +2,10 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-dialog-heropower',
-  templateUrl: './dialog-heropower.component.html',
-  styleUrls: ['./dialog-heropower.component.scss']
+    selector: 'app-dialog-heropower',
+    templateUrl: './dialog-heropower.component.html',
+    styleUrls: ['./dialog-heropower.component.scss'],
+    standalone: false
 })
 export class DialogHeropowerComponent {
   selectedValue: { playerName: string; playerId: string; playerHero: string; } = { playerName: '', playerId: '', playerHero: '' }
