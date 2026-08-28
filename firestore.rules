@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// Data model (from src/app/components/game/game.component.ts, src/models/user.class.ts):
+//   games/{gameId}                       -> { choosenHeros: [{ playerId, playerName, playerHero }], ... }
+//   games/{gameId}/player/{playerId}     -> per-player save state (handstack, deliveryStack, cardstack, ...)
+//   users/{userId}                       -> { userId, userNickname, ... } (see current-user.service.ts)
+//
+// Everything here is written by an authenticated player acting on their own game/player
+// documents. There is no admin/server role in this app (no Cloud Functions, no Admin SDK) -
+// every write goes through the client SDK, so these rules are the only access control.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // users/{userId}: only the owning user may read or write their own profile.
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /games/{gameId} {
+      // GameComponent.checkIfPlayerIsAlreadyPartOfGame() reads this document *before* knowing
+      // whether the caller is already a listed player (that's the whole point of the read), so
+      // read access can't be restricted to "already listed players" without breaking the join
+      // flow. There's no invite-code/secrecy model for game IDs in this app, so any signed-in
+      // user may read/write the top-level game document (player list, difficulty, ...).
+      // The actual sensitive data - each player's hand/deck/delivery stack - lives in the
+      // player subcollection below, which IS locked to its owner.
+      //
+      // This can't be tightened further (e.g. "player list only grows by the caller's own uid")
+      // with pure security-rules field validation given the current client-driven
+      // read-modify-write pattern (client reads the whole array, appends, writes it back) - see
+      // Issue tracking further hardening once writes go through a server layer.
+      allow read, write: if isSignedIn();
+
+      match /player/{playerId} {
+        // Only the owning player may read/write their own save state
+        // (handstack, deliveryStack, cardstack, choosenHero, ...).
+        allow read, write: if isSignedIn() && request.auth.uid == playerId;
+      }
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
