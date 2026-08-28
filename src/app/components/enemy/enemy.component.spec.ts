@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { EnemyComponent } from './enemy.component';
 
@@ -8,12 +9,14 @@ describe('EnemyComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ EnemyComponent ]
+      declarations: [ EnemyComponent ],
+      schemas: [ NO_ERRORS_SCHEMA ],
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(EnemyComponent);
     component = fixture.componentInstance;
+    component.currentEnemy = { name: '', token: [], type: '' };
     fixture.detectChanges();
   });
 

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { NgxsModule } from '@ngxs/store';
 
 import { CurrentUserService } from './current-user.service';
 
@@ -6,7 +7,9 @@ describe('CurrentUserService', () => {
   let service: CurrentUserService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [NgxsModule.forRoot([])],
+    });
     service = TestBed.inject(CurrentUserService);
   });
 
