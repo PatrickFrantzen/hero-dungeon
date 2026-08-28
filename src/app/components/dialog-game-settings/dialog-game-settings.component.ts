@@ -9,9 +9,10 @@ interface Difficulty {
 }
 
 @Component({
-  selector: 'app-dialog-game-settings',
-  templateUrl: './dialog-game-settings.component.html',
-  styleUrls: ['./dialog-game-settings.component.scss']
+    selector: 'app-dialog-game-settings',
+    templateUrl: './dialog-game-settings.component.html',
+    styleUrls: ['./dialog-game-settings.component.scss'],
+    standalone: false
 })
 export class DialogGameSettings {
   playerValidation = new FormControl('', [Validators.required, Validators.min(2), Validators.max(5)]);

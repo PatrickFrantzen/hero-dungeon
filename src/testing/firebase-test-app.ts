@@ -6,9 +6,10 @@ import { environment } from 'src/environments/environment';
 /**
  * Every service/component in this codebase calls `getFirestore()`/`getAuth()` directly
  * (no constructor-injected Firestore/Auth), which resolves against Firebase's global default
- * app rather than Angular's DI tree. Firebase apps are page-global, not per-TestBed, so which
- * spec ran first in the shared Karma browser page determines whether one exists yet - making
- * specs order-dependent without this guard.
+ * app rather than Angular's DI tree. TestBed's per-test teardown (stricter since Angular 16)
+ * tears down `@angular/fire`'s DI-registered app between tests, so relying on
+ * `provideFirebaseApp()` alone is order-dependent - a test can pass or fail depending on which
+ * spec ran immediately before it in the shared Karma browser page.
  *
  * Call this before creating the component/service under test in any spec that (transitively)
  * calls `getFirestore()`/`getAuth()`.

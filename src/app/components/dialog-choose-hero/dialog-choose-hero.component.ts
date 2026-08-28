@@ -18,9 +18,10 @@ interface Heros {
 }
 
 @Component({
-  selector: 'app-dialog-choose-hero',
-  templateUrl: './dialog-choose-hero.component.html',
-  styleUrls: ['./dialog-choose-hero.component.scss']
+    selector: 'app-dialog-choose-hero',
+    templateUrl: './dialog-choose-hero.component.html',
+    styleUrls: ['./dialog-choose-hero.component.scss'],
+    standalone: false
 })
 export class DialogChooseHeroComponent {
 

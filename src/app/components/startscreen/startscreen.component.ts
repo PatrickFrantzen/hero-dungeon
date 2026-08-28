@@ -16,9 +16,10 @@ import { CreateNewMobAction, UpdateMobAction } from 'src/app/actions/MonsterStac
 import { LoadGameService } from 'src/app/services/load-game.service';
 
 @Component({
-  selector: 'app-startscreen',
-  templateUrl: './startscreen.component.html',
-  styleUrls: ['./startscreen.component.scss']
+    selector: 'app-startscreen',
+    templateUrl: './startscreen.component.html',
+    styleUrls: ['./startscreen.component.scss'],
+    standalone: false
 })
 export class StartscreenComponent implements OnInit, OnDestroy{
   numberOfPlayers:number = 0;

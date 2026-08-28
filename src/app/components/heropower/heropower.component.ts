@@ -9,9 +9,10 @@ import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { Mob } from 'src/models/monster/monster.class';
 
 @Component({
-  selector: 'app-heropower',
-  templateUrl: './heropower.component.html',
-  styleUrls: ['./heropower.component.scss']
+    selector: 'app-heropower',
+    templateUrl: './heropower.component.html',
+    styleUrls: ['./heropower.component.scss'],
+    standalone: false
 })
 export class HeropowerComponent implements OnInit, OnDestroy{
   @Input() currentGameId: string = '';
