@@ -2,10 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { NgxsModule } from '@ngxs/store';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
-import { ɵAngularFireSchedulers } from '@angular/fire';
-import { environment } from 'src/environments/environment';
+import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
 
 import { GameComponent } from './game.component';
 
@@ -14,19 +11,16 @@ describe('GameComponent', () => {
   let fixture: ComponentFixture<GameComponent>;
 
   beforeEach(async () => {
+    ensureFirebaseTestAppInitialized();
+
     await TestBed.configureTestingModule({
       declarations: [ GameComponent ],
-      imports: [
-        MatDialogModule,
-        NgxsModule.forRoot([]),
-        provideFirebaseApp(() => initializeApp(environment.firebase)),
-        provideFirestore(() => getFirestore()),
-      ],
+      imports: [ MatDialogModule, NgxsModule.forRoot([]) ],
       schemas: [ NO_ERRORS_SCHEMA ],
     })
     .compileComponents();
 
-    TestBed.inject(ɵAngularFireSchedulers);
+    ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(GameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
