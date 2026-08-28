@@ -3,10 +3,8 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Auth } from '@angular/fire/auth';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { NgxsModule } from '@ngxs/store';
-import { ɵAngularFireSchedulers } from '@angular/fire';
-import { environment } from 'src/environments/environment';
+import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
 
 import { SigninComponent } from './signin.component';
 
@@ -15,14 +13,11 @@ describe('SigninComponent', () => {
   let fixture: ComponentFixture<SigninComponent>;
 
   beforeEach(async () => {
+    ensureFirebaseTestAppInitialized();
+
     await TestBed.configureTestingModule({
       declarations: [ SigninComponent ],
-      imports: [
-        ReactiveFormsModule,
-        RouterTestingModule,
-        NgxsModule.forRoot([]),
-        provideFirebaseApp(() => initializeApp(environment.firebase)),
-      ],
+      imports: [ ReactiveFormsModule, RouterTestingModule, NgxsModule.forRoot([]) ],
       schemas: [ NO_ERRORS_SCHEMA ],
       providers: [
         { provide: Auth, useValue: {} },
@@ -30,7 +25,7 @@ describe('SigninComponent', () => {
     })
     .compileComponents();
 
-    TestBed.inject(ɵAngularFireSchedulers);
+    ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(SigninComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

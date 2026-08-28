@@ -4,10 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { Auth } from '@angular/fire/auth';
 import { NgxsModule } from '@ngxs/store';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
-import { ɵAngularFireSchedulers } from '@angular/fire';
-import { environment } from 'src/environments/environment';
+import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
 
 import { StartscreenComponent } from './startscreen.component';
 
@@ -16,15 +13,11 @@ describe('StartscreenComponent', () => {
   let fixture: ComponentFixture<StartscreenComponent>;
 
   beforeEach(async () => {
+    ensureFirebaseTestAppInitialized();
+
     await TestBed.configureTestingModule({
       declarations: [ StartscreenComponent ],
-      imports: [
-        RouterTestingModule,
-        MatDialogModule,
-        NgxsModule.forRoot([]),
-        provideFirebaseApp(() => initializeApp(environment.firebase)),
-        provideFirestore(() => getFirestore()),
-      ],
+      imports: [ RouterTestingModule, MatDialogModule, NgxsModule.forRoot([]) ],
       schemas: [ NO_ERRORS_SCHEMA ],
       providers: [
         { provide: Auth, useValue: {} },
@@ -32,7 +25,7 @@ describe('StartscreenComponent', () => {
     })
     .compileComponents();
 
-    TestBed.inject(ɵAngularFireSchedulers);
+    ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(StartscreenComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
