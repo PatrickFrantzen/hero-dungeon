@@ -62,9 +62,6 @@ import { HeropowerContainerComponent } from './components/heropower/heropower-co
   imports: [
     BrowserModule,
     AppRoutingModule,
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => getFirestore()),
-    provideAuth(() => getAuth()),
     MatDialogModule,
     FormsModule,
     MatFormFieldModule,
@@ -75,9 +72,15 @@ import { HeropowerContainerComponent } from './components/heropower/heropower-co
     MatCardModule,
     MatButtonModule,
     NgxsModule.forRoot([cardsInHandState, CardStackState, CurrentGameState, CurrentUserState, DeliveryStackState, heropowerState], {developmentMode: !environment.production}),
-    NgxsStoragePluginModule.forRoot(),
+    NgxsStoragePluginModule.forRoot({ keys: '*' }),
   ],
-  providers: [CurrentGameService, CurrentUserService, ],
+  providers: [
+    CurrentGameService,
+    CurrentUserService,
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirestore(() => getFirestore()),
+    provideAuth(() => getAuth()),
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

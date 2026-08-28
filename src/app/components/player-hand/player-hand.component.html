@@ -1,13 +1,17 @@
 <div class="card-area">
-    <div class="card-stack">
-        <img [ngStyle]="{'left.px': i * 5}" *ngFor="let c of [0,1,2,3]; let i = index;"
-            src="./assets/img/cards/monster.png">
+  <div class="card-stack">
+    @for (c of [0,1,2,3]; track c; let i = $index) {
+      <img [ngStyle]="{'left.px': i * 5}"
+        src="./assets/img/cards/monster.png">
+      }
     </div>
 
     <div class="currentHandStack">
+      @for (card of this.currentHand ; track card; let x = $index) {
         <img (click)="chooseCard(card)"
-        [ngStyle]="{'left.px': x * 170}" *ngFor="let card of this.currentHand , let x = index "  src="./assets/img/cards/{{card}}.png">
-    </div>
+          [ngStyle]="{'left.px': x * 170}"  src="./assets/img/cards/{{card}}.png">
+        }
+      </div>
 
-    <app-heropower-container></app-heropower-container>
-</div>
+      <app-heropower-container></app-heropower-container>
+    </div>

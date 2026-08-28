@@ -33,8 +33,8 @@ import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 
 @Component({
-  selector: 'app-heropower-container',
-  template: `
+    selector: 'app-heropower-container',
+    template: `
     <app-heropower
       [currentGameId]="(this.gameId$ | async) || ''"
       [currentPlayerId]="(this.playerId$ | async) || ''"
@@ -42,7 +42,8 @@ import { Mob } from 'src/models/monster/monster.class';
       [currentDeliveryStack]="(this.deliveryStack$ | async) || []"
     ></app-heropower>
   `,
-  styles: [``],
+    styles: [``],
+    standalone: false
 })
 export class HeropowerContainerComponent implements OnInit, OnDestroy {
   @Select(CurrentGameSelectors.currentGameState)
