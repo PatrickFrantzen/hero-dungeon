@@ -1,21 +1,41 @@
 <div class="heropower-position">
 
-    <mat-card [ngClass]="{'color-effect': this.heropowerActivated}">
-        <div style="display: flex; flex-direction: column; align-items: center;">
-            <span style="color: white;">{{ this.heropower }}</span>
-            <img *ngIf="this.heroName == 'Gladiator'" (click)="heroPowerGladiator()" src="../../../assets/img/icons/person_icon.png">
-            <img *ngIf="this.heroName == 'Barbar'" (click)="heroPowerBarbar()" src="../../../assets/img/icons/monster_icon.png">
-            <img *ngIf="this.heroName == 'Zauberin'" (click)="heroPowerZauberin()" src="../../../assets/img/icons/hindernis_icon.png">
-            <img *ngIf="this.heroName == 'Magier'" (click)="heroPowerMagier()" src="../../../assets/img/icons/heilkräuter_icon.png">
-            <img *ngIf="this.heroName == 'Jägerin'" (click)="heroPowerJaegerin()" src="../../../assets/img/icons/heiltrank_icon.png">
-            <img *ngIf="this.heroName == 'Waldläufer'" (click)="heroPowerWaldlaeufer()" src="../../../assets/img/icons/person_icon.png">
-            <img *ngIf="this.heroName == 'Dieb'" (click)="heroPowerDieb()" src="../../../assets/img/icons/stehlen_icon.png">
-            <img *ngIf="this.heroName == 'Ninja'" (click)="heroPowerNinja()" src="../../../assets/img/icons/hindernis_icon.png">
-            <img *ngIf="this.heroName == 'Paladin'" (click)="heroPowerPaladin()" src="../../../assets/img/icons/monster_icon.png">
-            <img *ngIf="this.heroName == 'Walküre'" (click)="heroPowerWalkuere()" src="../../../assets/img/icons/heilig_icon.png">
-        </div>
-        <span style="color: white;">{{this.description}}</span>
-    </mat-card>
+  <mat-card [ngClass]="{'color-effect': this.heropowerActivated}">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <span style="color: white;">{{ this.heropower }}</span>
+      @if (this.heroName == 'Gladiator') {
+        <img (click)="heroPowerGladiator()" src="../../../assets/img/icons/person_icon.png">
+      }
+      @if (this.heroName == 'Barbar') {
+        <img (click)="heroPowerBarbar()" src="../../../assets/img/icons/monster_icon.png">
+      }
+      @if (this.heroName == 'Zauberin') {
+        <img (click)="heroPowerZauberin()" src="../../../assets/img/icons/hindernis_icon.png">
+      }
+      @if (this.heroName == 'Magier') {
+        <img (click)="heroPowerMagier()" src="../../../assets/img/icons/heilkräuter_icon.png">
+      }
+      @if (this.heroName == 'Jägerin') {
+        <img (click)="heroPowerJaegerin()" src="../../../assets/img/icons/heiltrank_icon.png">
+      }
+      @if (this.heroName == 'Waldläufer') {
+        <img (click)="heroPowerWaldlaeufer()" src="../../../assets/img/icons/person_icon.png">
+      }
+      @if (this.heroName == 'Dieb') {
+        <img (click)="heroPowerDieb()" src="../../../assets/img/icons/stehlen_icon.png">
+      }
+      @if (this.heroName == 'Ninja') {
+        <img (click)="heroPowerNinja()" src="../../../assets/img/icons/hindernis_icon.png">
+      }
+      @if (this.heroName == 'Paladin') {
+        <img (click)="heroPowerPaladin()" src="../../../assets/img/icons/monster_icon.png">
+      }
+      @if (this.heroName == 'Walküre') {
+        <img (click)="heroPowerWalkuere()" src="../../../assets/img/icons/heilig_icon.png">
+      }
+    </div>
+    <span style="color: white;">{{this.description}}</span>
+  </mat-card>
 
 </div>
 
