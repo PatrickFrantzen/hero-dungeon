@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { DialogGameSettings } from './dialog-game-settings.component';
 
@@ -8,7 +10,12 @@ describe('DialogChooseHeroComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DialogGameSettings ]
+      declarations: [ DialogGameSettings ],
+      schemas: [ NO_ERRORS_SCHEMA ],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+        { provide: MatDialogRef, useValue: { close: () => {} } },
+      ],
     })
     .compileComponents();
 

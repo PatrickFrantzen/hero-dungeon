@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgxsModule } from '@ngxs/store';
 
 import { HeropowerComponent } from './heropower.component';
 
@@ -8,7 +10,9 @@ describe('HeropowerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ HeropowerComponent ]
+      declarations: [ HeropowerComponent ],
+      imports: [ NgxsModule.forRoot([]) ],
+      schemas: [ NO_ERRORS_SCHEMA ],
     })
     .compileComponents();
 

@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { DialogHeropowerComponent } from './dialog-heropower.component';
 
@@ -8,7 +10,12 @@ describe('DialogHeropowerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DialogHeropowerComponent ]
+      declarations: [ DialogHeropowerComponent ],
+      schemas: [ NO_ERRORS_SCHEMA ],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: [] },
+        { provide: MatDialogRef, useValue: { close: () => {} } },
+      ],
     })
     .compileComponents();
 
