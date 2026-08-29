@@ -3,14 +3,10 @@ import { Action, State, StateContext } from '@ngxs/store';
 import {
   CurrentGameAction,
   CurrentGameData,
-  SetNewEnemy,
-  UpdateMonsterTokenArray,
   updateQuestCardActivated,
 } from '../actions/currentGame-action';
 import { Game } from 'src/models/game';
 import { ToJSONService } from '../services/to-json.service';
-import { Mob } from 'src/models/monster/monster.class';
-import { UpdateMobAction } from '../actions/MonsterStack-action';
 
 export interface CurrentGameModel {
   items: string;
@@ -69,63 +65,6 @@ export class CurrentGameState {
     ctx.setState({
       ...state,
       game: gameData,
-    });
-  }
-
-  @Action(UpdateMonsterTokenArray)
-  updateMonsterTokenArray(
-    ctx: StateContext<CurrentGameModel>,
-    action: UpdateMonsterTokenArray
-  ) {
-    const { currentEnemyToken } = action;
-    if (!currentEnemyToken) return;
-
-    const state = ctx.getState();
-    const enemyTokenArray: string[] = currentEnemyToken;
-
-    ctx.patchState({
-      ...state,
-      game: {
-        ...state.game,
-        currentEnemy: {
-          ...state.game.currentEnemy,
-          token: enemyTokenArray,
-        },
-      },
-    });
-  }
-
-  @Action(SetNewEnemy)
-  updateNewEnemy(ctx: StateContext<CurrentGameModel>, action: SetNewEnemy) {
-    const { newEnemy } = action;
-    if (!newEnemy) {
-      return;
-    }
-    const state = ctx.getState();
-    const enemy: Mob = newEnemy;
-    ctx.patchState({
-      ...state,
-      game: {
-        ...state.game,
-        currentEnemy: enemy,
-      },
-    });
-  }
-
-  @Action(UpdateMobAction)
-  updateMob(ctx: StateContext<CurrentGameModel>, action: UpdateMobAction) {
-    const { mob } = action;
-    if (!mob) {
-      return;
-    }
-    const state = ctx.getState();
-    const newMob: Mob[] = mob;
-    ctx.patchState({
-      ...state,
-      game: {
-        ...state.game,
-        Mob: newMob,
-      },
     });
   }
 

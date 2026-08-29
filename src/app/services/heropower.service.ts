@@ -3,11 +3,11 @@ import { DocumentData, where } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { UpdateMonsterTokenArray } from 'src/app/actions/currentGame-action';
+import { UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
-import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
+import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
 import { FirestoreRepositoryService } from './firestore-repository.service';
@@ -39,7 +39,7 @@ export type ReportWriteFailure = (write: Promise<void>) => void;
 export class HeropowerService {
   private currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
   private currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
-  private currentEnemy = this.store.selectSignal(CurrentGameSelectors.currentEnemy);
+  private currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
 
   constructor(

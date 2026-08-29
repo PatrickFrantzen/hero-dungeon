@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, effect } from '@a
 import { Store } from '@ngxs/store';
 import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
+import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { Mob } from 'src/models/monster/monster.class';
 import { EnemyComponent } from '../enemy.component';
@@ -20,7 +21,8 @@ import { EnemyComponent } from '../enemy.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EnemyContainerComponent implements OnInit {
-  game = this.store.selectSignal(CurrentGameSelectors.currentGameState);
+  gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
+  encounterEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   currentQuestStatus = this.store.selectSignal(CurrentGameSelectors.currentQuestCardStatus);
 
   public emptyMob: Mob = {
@@ -29,8 +31,7 @@ export class EnemyContainerComponent implements OnInit {
     token: [],
   };
 
-  gameId = computed(() => this.game().gameId ?? '');
-  currentEnemy = computed(() => this.game().currentEnemy ?? this.emptyMob);
+  currentEnemy = computed(() => this.encounterEnemy() ?? this.emptyMob);
 
   constructor(private store: Store, private gameRepo: GameRepositoryService) {
     // Dispatches whether the "quest card" is active whenever the current enemy changes,
