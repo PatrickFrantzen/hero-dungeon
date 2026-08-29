@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 
 // OnPush: the routed branch (GameComponent -> PlayerHandComponent) no longer relies on
@@ -10,16 +10,10 @@ import { Router, RouterOutlet } from '@angular/router';
     imports: [RouterOutlet],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements OnInit{
+export class AppComponent {
   title = 'hero-dungeon';
 
   constructor(
     public router: Router,
   ) {}
-
-ngOnInit(): void {
-  
-}
-
-
 }

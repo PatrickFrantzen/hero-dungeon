@@ -34,19 +34,11 @@ export class DiebServiceService {
       currHand.splice(indexOfHandCard, 1);
       this.store.dispatch(new UpdateCurrentHandAction(currHand));
     });
-    for (let i = 0; i < 5; i++) {
-      if (currCardStack.length > 0) {
-        const getCardForHand = currCardStack.shift()!;
-        currHand.push(getCardForHand);
-
-        this.saveGame.updateHandstack(gameId, playerId, currHand);
-        this.saveGame.updateCardstack(gameId, playerId, currCardStack);
-      } else {
-        this.saveGame.updateHandstack(gameId, playerId, currHand);
-        this.saveGame.updateCardstack(gameId, playerId, currCardStack);
-      }
+    for (let i = 0; i < 5 && currCardStack.length > 0; i++) {
+      currHand.push(currCardStack.shift()!);
     }
-    console.warn('Success');
+    this.saveGame.updateHandstack(gameId, playerId, currHand);
+    this.saveGame.updateCardstack(gameId, playerId, currCardStack);
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
   }
