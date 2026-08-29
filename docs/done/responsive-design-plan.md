@@ -17,6 +17,31 @@ daher nicht möglich. Sollte vor dem Merge in einer Umgebung mit Firebase-Zugrif
 werden, insbesondere: Heropower-Overlay darf Handkarten auf schmalen Screens nicht verdecken,
 Kartenstapel-Deko unten links darf mit Handkarten nicht kollidieren.
 
+### Nachtrag (2026-08-29) — Heropower-Overlay verdeckte Enemy-Card auf echtem Gerät
+
+Genau das oben als offen markierte Risiko trat auf einem echten Pixel 8 Pro ein: das
+Heropower-Overlay lag über der Enemy-/Aktionskarte, deren Text dadurch unlesbar war. Ursache:
+`.heropower-position` (`bottom: clamp(120px, 30vh, 300px)`) hatte keinen positionierten
+Vorfahren, war also relativ zum gesamten (scrollbaren) Dokument statt zum sichtbaren
+Handkarten-Bereich positioniert — bei einer Dokumenthöhe, die deutlich über die Viewporthöhe
+hinausgeht, landete das Overlay dadurch mitten auf der Enemy-Card statt über den Handkarten.
+
+Fix: `.card-area` (`player-hand.component.scss`) bekommt `position: relative`, wodurch es zum
+Containing Block für `.heropower-position` wird; dessen `bottom` wurde auf
+`calc(100% + clamp(8px, 2vh, 24px))` geändert — das Overlay dockt jetzt deterministisch direkt
+über der Handkarten-Reihe an, unabhängig von der Gesamtdokumenthöhe. Zusätzlich wurden in
+`enemy.component.html`/`.scss` die Token-Icons auf `clamp(28px, 6vw, 44px)` verkleinert (vorher
+unskaliert/zu groß) und Name/Icon-Reihe/Beschreibung klarer als eigene Blöcke (`.enemy-name`,
+`.enemy-tokens`, `.enemy-description`) strukturiert, damit die Icon-Reihe erst bei vielen Icons
+(z.B. Boss) umbricht statt bei jeder Encounter-Karte.
+
+Verifiziert: `ng build` grün, `ng test --watch=false --browsers=ChromeHeadlessCI` 45/45 grün,
+plus eine aus den echten CSS-Regeln nachgebaute statische Testseite (Playwright/Chromium,
+412×915 und 375×812) zeigt keine Überlappung von Heropower-Overlay und Enemy-Card mehr. Der
+volle Multiplayer-Smoke-Test mit echtem Firebase-Backend steht weiterhin aus (siehe oben) —
+insbesondere sollte auf einem echten Gerät nochmal geprüft werden, ob das Overlay bei sehr
+langem Enemy-Beschreibungstext oder bei aktivem `color-effect`-Rahmen weiterhin sauber andockt.
+
 Kontext: Die App hat aktuell keinerlei Responsive-Verhalten — kein einziges `@media` im ganzen
 Projekt, Layout basiert auf `100vw`/`100vh` plus absoluter Pixel-Positionierung, die auf ein
 festes Desktop-Viewport-Seitenverhältnis ausgelegt ist. Auf schmalen/mobilen Viewports laufen

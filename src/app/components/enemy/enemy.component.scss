@@ -1,14 +1,38 @@
 .current-Enemy {
     min-height: 120px;
     max-height: clamp(120px, 30vh, 250px);
+    overflow-y: auto;
     display: flex;
-    flex-wrap: wrap;
-    justify-content:space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
+    gap: clamp(4px, 1.2vh, 10px);
     max-width: 100%;
     box-sizing: border-box;
+    padding: clamp(8px, 2vw, 16px);
+    text-align: center;
+}
 
-    img{
-        padding:10px
+.enemy-name {
+    font-weight: 700;
+}
+
+.enemy-tokens {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(4px, 1vw, 10px);
+    width: 100%;
+
+    img {
+        width: clamp(28px, 6vw, 44px);
+        height: clamp(28px, 6vw, 44px);
+        padding: 0;
     }
+}
+
+.enemy-description {
+    font-size: clamp(0.85rem, 2.3vw, 1rem);
+    line-height: 1.35;
 }
