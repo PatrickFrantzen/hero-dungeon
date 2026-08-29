@@ -1,43 +1,36 @@
 import { Injectable } from '@angular/core';
-import { Firestore, doc, getFirestore, updateDoc } from '@angular/fire/firestore';
 import { Mob } from 'src/models/monster/monster.class';
+import { FirestoreRepositoryService } from './firestore-repository.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SaveGameService {
 
-  db = getFirestore();
-  constructor() { }
+  constructor(private repo: FirestoreRepositoryService) { }
 
   updateHandstack(gameId: string, playerId: string, update: string[]) {
-    const docPlayer = doc(this.db, 'games', gameId, 'player', playerId);
-    return updateDoc(docPlayer, { handstack: update });
+    return this.repo.updateFields(['games', gameId, 'player', playerId], { handstack: update });
   }
 
   updateCardstack(gameId: string, playerId: string, update: string[]) {
-    const docPlayer = doc(this.db, 'games', gameId, 'player', playerId);
-    return updateDoc(docPlayer, { cardstack: update });
+    return this.repo.updateFields(['games', gameId, 'player', playerId], { cardstack: update });
   }
 
   updateDeliveryStack(gameId: string, playerId: string, update: string[]) {
-    const docPlayer = doc(this.db, 'games', gameId, 'player', playerId);
-    return updateDoc(docPlayer, { deliveryStack: update });
+    return this.repo.updateFields(['games', gameId, 'player', playerId], { deliveryStack: update });
   }
 
   updateCurrentEnemyToken(gameId: string, update: Mob | Mob[]) {
-    const docServer = doc(this.db, 'games', gameId);
-    return updateDoc(docServer, { currentEnemy: update });
+    return this.repo.updateFields(['games', gameId], { currentEnemy: update });
   }
 
   updateNewMob(gameId: string, update: Mob | Mob[]) {
-    const docServer = doc(this.db, 'games', gameId);
-    return updateDoc(docServer, { Mob: update });
+    return this.repo.updateFields(['games', gameId], { Mob: update });
   }
 
   updateQuestStatus(gameId: string, update: boolean) {
-    const docServer = doc(this.db, 'games', gameId);
-    return updateDoc(docServer, { questCardActivated: update });
+    return this.repo.updateFields(['games', gameId], { questCardActivated: update });
   }
 
 }

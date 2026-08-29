@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
-import { environment } from 'src/environments/environment';
-import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
+import {
+  ensureAngularFireSchedulersInitialized,
+  ensureFirebaseTestAppInitialized,
+  firestoreTestProviders,
+} from 'src/testing/firebase-test-app';
 
 import { FirestoreOperationError, FirestoreRepositoryService } from './firestore-repository.service';
 
@@ -12,7 +13,7 @@ describe('FirestoreRepositoryService', () => {
   beforeEach(() => {
     ensureFirebaseTestAppInitialized();
     TestBed.configureTestingModule({
-      providers: [provideFirebaseApp(() => initializeApp(environment.firebase)), provideFirestore(() => getFirestore())],
+      providers: firestoreTestProviders(),
     });
     ensureAngularFireSchedulersInitialized();
     service = TestBed.inject(FirestoreRepositoryService);

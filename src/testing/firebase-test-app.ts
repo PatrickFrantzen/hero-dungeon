@@ -1,5 +1,8 @@
+import { EnvironmentProviders, Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ɵAngularFireSchedulers } from '@angular/fire';
+import { initializeApp as initializeAngularFireApp, provideFirebaseApp } from '@angular/fire/app';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getApps, initializeApp } from 'firebase/app';
 import { environment } from 'src/environments/environment';
 
@@ -30,4 +33,16 @@ export function ensureFirebaseTestAppInitialized(): void {
  */
 export function ensureAngularFireSchedulersInitialized(): void {
   TestBed.inject(ɵAngularFireSchedulers);
+}
+
+/**
+ * Providers for any spec whose service under test injects `Firestore` via DI (`inject(Firestore)`
+ * or a constructor parameter) instead of calling `getFirestore()` itself - mirrors the
+ * `provideFirebaseApp()`/`provideFirestore()` registration in `app.config.ts`.
+ */
+export function firestoreTestProviders(): (Provider | EnvironmentProviders)[] {
+  return [
+    provideFirebaseApp(() => initializeAngularFireApp(environment.firebase)),
+    provideFirestore(() => getFirestore()),
+  ];
 }
