@@ -11,12 +11,19 @@ ersetzt (alle drei alten Service-Klassen entfernt), `CurrentUserService` auf inj
 keine Aufrufer und wurden nicht migriert. `ng build`/`ng test --watch=false
 --browsers=ChromeHeadlessCI` grün nach jedem Schritt.
 
-**TODO 5 ist bewusst offen**: awaiten/Fehler-Feedback für `PlayerHandComponent`s
-Firestore-Writes gehört mit `docs/planned/player-hand-decomposition-plan.md`s
-`FirestoreSyncService`-Extraktion (TODO 1 dort) in dieselbe Session — beide Pläne fassen
-dieselben Zeilen an. `PlayerHandComponent` ist in diesem PR nur mechanisch auf die neuen
-Repository-Services umgestellt (Methodennamen/Aufrufer), ohne await/Error-Handling zu
-ergänzen.
+**TODO 5 umgesetzt** (zusammen mit TODO 1 aus
+`docs/planned/player-hand-decomposition-plan.md`, wie hier vorgesehen): `onSnapshot` bekommt
+jetzt einen Error-Callback (über `FirestoreSyncService.watchPlayerDoc()`), alle
+`playerRepo`/`gameRepo`-Schreibaufrufe in `PlayerHandComponent` sind über ein neues
+`reportWriteFailure()` abgesichert, das einen fehlgeschlagenen Write auf einem `loadError`-Signal
+sichtbar macht (Template-Banner analog zu `GameComponent`). Bewusste Abweichung von der
+wörtlichen Formulierung "awaiten": die Schreibaufrufe bleiben "fire and forget" (lokales
+NGXS-Update passiert weiterhin sofort, die Live-Subscription synchronisiert den echten
+Serverstand nachträglich) statt jede Spielregel-Methode auf ein Await vor dem nächsten Schritt
+umzustellen — Letzteres hätte die Reihenfolge/das Timing des Kernspielloops verändert, was ohne
+echten Multiplayer-Test nicht verantwortbar zu verifizieren war.
+
+Damit ist dieser Plan vollständig umgesetzt.
 
 Kontext: Punkt 3 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefunde in
