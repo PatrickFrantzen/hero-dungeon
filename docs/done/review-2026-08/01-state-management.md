@@ -1,5 +1,19 @@
 # Code-Review: State-Management (NGXS Actions/Selectors/States)
 
+## Status (2026-08-29, PR #21)
+
+Umgesetzt: `MobState`/`monsterStack-state.ts` entfernt (Befund 1), die drei Reducer in
+`currentGame-state.ts` auf `...state.game`-Spread umgestellt (Befund 3), Datei-Tippfehler
+`currentUser-selectos.ts` → `currentUser-selectors.ts` korrigiert (Teil von Befund 5), toter
+Import in `currentHand-selector.ts` entfernt (Befund 6), `console.warn`-Reste entfernt
+(Befund 9).
+
+Offen, siehe [`../currentGame-state-split-plan.md`](../currentGame-state-split-plan.md):
+`currentGame-state.ts` in mehrere States aufteilen (Befund 2/2b). Nicht umgesetzt, nice-to-have
+und noch nicht neu geplant: restliche Klassen-Casing-Inkonsistenzen (Befund 5, Teil 2/3),
+Boilerplate-Vereinheitlichung (Befund 4), Variablen-Shadowing (Befund 7), `ResetHeropowerAction`
+(Befund 8).
+
 ## Überblick
 
 Geprüft wurden alle Dateien unter `src/app/actions/` (7), `src/app/selectors/` (6) und

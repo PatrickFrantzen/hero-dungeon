@@ -1,5 +1,25 @@
 # Code-Review: Services (Firestore-Zugriff, Business-Logik)
 
+## Status (2026-08-29, PR #21)
+
+Umgesetzt: `updateCurrentEnemyToken`/`updateNewEnemy` in `SaveGameService` gemergt (Teil von
+Befund 1), `SaveGameService`-Methoden geben jetzt das `updateDoc`-Promise zurück statt es
+fire-and-forget zu verschlucken (Teil von Befund 4), `DiebService`s Firestore-Writes aus der
+Schleife auf einen Write danach reduziert (Befund 6), `CurrentGameService` gelöscht (toter
+Code, Teil von Befund 8), `LoadGameService`-Geisterimport in `PlayerHandComponent` entfernt und
+`loadNewEnemy`/`loadNewMob`/`loadCurrentEnemyToken` (ungenutzt) entfernt, dabei die
+`collectionData`-Race-Condition in `loadPlayerCollectionData`/`loadGameCollectionData` behoben
+(Befund 2), `DiebServiceService` → `DiebService` umbenannt (Befund 7), `console.warn`-Reste
+entfernt (Befund 5).
+
+Offen, siehe [`../firestore-repository-service-plan.md`](../firestore-repository-service-plan.md):
+generischer `FirestoreRepositoryService` mit zentralem Error-Handling (Befund 1/2/4 vollständig,
+inkl. `await`/try-catch an den Aufrufstellen), Konsolidierung von `SaveGameService`/
+`GamePlayerService`/`LoadGameService` auf Repository-Services pro Aggregat (Befund 8), Firestore
+per DI statt `getFirestore()`/`initializeApp()` (Befund 3), Verhaltens-Tests statt „should
+create" (Befund 10). Nicht umgesetzt, nice-to-have und noch nicht neu geplant: `any`/`Object`-
+Typisierung durch Firestore-Converter ersetzen (Befund 9).
+
 ## Überblick
 
 Scope: `src/app/services/{current-game,current-user,dieb-service,game-player,load-game,save-game,to-json}.service.ts`
