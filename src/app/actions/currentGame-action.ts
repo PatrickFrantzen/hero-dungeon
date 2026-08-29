@@ -26,6 +26,11 @@ export class updateChoosenHeros{
     constructor(public hero: {playerName:string, playerId: string, playerHero:string }) {}
 }
 
+export class SetChoosenHeros{
+    static readonly type = "[Player Hand page] setting the full choosen Heros list"
+    constructor(public choosenHeros: {playerName:string, playerId: string, playerHero:string }[]) {}
+}
+
 export class updateQuestCardActivated {
     static readonly type = "[Game page, Monster Page] updating quest card activation"
     constructor(public questCardActivated: boolean){}

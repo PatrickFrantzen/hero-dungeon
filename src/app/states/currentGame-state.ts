@@ -4,6 +4,7 @@ import {
   CurrentGameAction,
   CurrentGameData,
   SetNewEnemy,
+  SetChoosenHeros,
   UpdateMonsterTokenArray,
   updateChoosenHeros,
   updateQuestCardActivated,
@@ -188,6 +189,26 @@ export class CurrentGameState {
       game: {
         ...state.game,
         choosenHeros: updatedChoosenHeros,
+      },
+    });
+  }
+
+  @Action(SetChoosenHeros)
+  setChoosenHeros(
+    ctx: StateContext<CurrentGameModel>,
+    action: SetChoosenHeros
+  ) {
+    const { choosenHeros } = action;
+    if (!choosenHeros) {
+      return;
+    }
+
+    const state = ctx.getState();
+    ctx.patchState({
+      ...state,
+      game: {
+        ...state.game,
+        choosenHeros,
       },
     });
   }

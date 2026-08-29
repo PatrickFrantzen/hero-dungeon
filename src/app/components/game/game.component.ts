@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { User } from 'src/models/user.class';
@@ -20,16 +20,15 @@ interface ChoosenPlayer {
   playerHero: string;
 }
 
-// Not OnPush: its child PlayerHandComponent still mutates plain fields from raw Firestore
-// onSnapshot callbacks (not via input()/signal/markForCheck), so an OnPush GameComponent
-// would prune change detection before it ever reaches PlayerHandComponent whenever those
-// callbacks fire outside a click/event. Revisit once PlayerHandComponent's Firestore-vs-store
-// dual-write pattern is untangled the same way this component's Firestore access was.
+// OnPush: PlayerHandComponent no longer mutates plain fields from raw Firestore onSnapshot
+// callbacks - it reads all state via store.selectSignal(), so the OnPush ancestor no longer
+// blocks change detection from reaching it.
 @Component({
     selector: 'app-game',
     templateUrl: './game.component.html',
     styleUrls: ['./game.component.scss'],
-    imports: [EnemyContainerComponent, PlayerHandComponent]
+    imports: [EnemyContainerComponent, PlayerHandComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GameComponent implements OnInit {
 
