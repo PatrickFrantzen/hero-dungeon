@@ -39,7 +39,6 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
-import { LoadGameService } from 'src/app/services/load-game.service';
 import { SaveGameService } from 'src/app/services/save-game.service';
 import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
