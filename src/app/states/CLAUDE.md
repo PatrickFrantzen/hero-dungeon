@@ -22,7 +22,11 @@ einem State. Davon sind bereits herausgelöst:
 - **`encounter-state.ts`** (`EncounterState`) — `currentEnemy`/`currentBoss`/`currentMob`/
   `allBosses`.
 - **`currentGame-state.ts`** (`CurrentGameState`) — der Rest: `{ items, numberOfPlayers,
-  gameId, difficulty, isLost, questCardActivated }`.
+  gameId, difficulty, isLost, questCardActivated, timerStartedAt, timerDurationSeconds }`.
+  Die beiden Timer-Felder gehören zum Dungeon-Countdown-Timer — Details zum kompletten Feature
+  (Start-Trigger, Anzeige, Firestore-Sync) in `src/app/components/game/CLAUDE.md`, hier nur der
+  State-Teil: `StartGameTimer`-Action, Reducer-Guard `timerStartedAt !== null` (setzt den Timer
+  nur einmal, ein späterer Dispatch überschreibt einen bereits laufenden Timer nicht).
 
 Weitere States: `cardStack-state.ts`/`cardsInHand-state.ts`/`deliveryStack-state.ts` (die drei
 Kartenstapel: Nachziehstapel, Hand, Ablage), `currentUser-state.ts` (eingeloggter Nutzer),

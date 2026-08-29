@@ -17,7 +17,8 @@ Repository-Services unten gebündelt.
   werden, bleibt in der Komponente.
 - **`game-repository.service.ts`** / **`player-repository.service.ts`** — Lesen/Schreiben von
   Spiel- bzw. Spieler-Dokumenten. Ersetzen die früheren `SaveGameService`/`LoadGameService`/
-  `GamePlayerService` (konsolidiert, siehe Plan oben).
+  `GamePlayerService` (konsolidiert, siehe Plan oben). `updateTimerStartedAt()` ist der
+  Firestore-Write für den Dungeon-Timer (`src/app/components/game/CLAUDE.md`).
 - **`current-user.service.ts`** — Auth-State (`@angular/fire/auth`) + zugehöriges
   Firestore-Nutzerdokument.
 
@@ -25,7 +26,9 @@ Repository-Services unten gebündelt.
 
 - **`card-play.service.ts`** — Karten-/Encounter-Regeln (Karte ausspielen, Encounter-Auflösung
   inkl. Singleplayer-Sonderfälle). `chooseCard()` ist der einzige öffentliche Einstiegspunkt —
-  neue Kartenregeln hier einhängen, nicht an der Komponente vorbei.
+  neue Kartenregeln hier einhängen, nicht an der Komponente vorbei. Startet außerdem per
+  `ensureGameTimerStarted()` den Dungeon-Timer bei der ersten wirksam gespielten Karte — Details
+  zum Gesamt-Feature in `src/app/components/game/CLAUDE.md`.
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,

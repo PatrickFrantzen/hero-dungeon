@@ -23,6 +23,7 @@ diesem Verzeichnis gelesen/bearbeitet wird — dafür ist diese Tabelle da, nich
 |---|---|
 | `docs/` | `done/`- vs. `planned/`-Konvention, wie ein neuer Plan aufgebaut wird |
 | `src/app/components/` | Smart/Dumb-Muster, OnPush-Voraussetzung, Migrationsstand, Dialog-Basisklasse |
+| `src/app/components/game/` | GameComponent (Host) + Dungeon-Timer-Feature (über mehrere Verzeichnisse verteilt) |
 | `src/app/components/player-hand/` | Hotspot-Komponente — vor Änderungen lesen |
 | `src/app/components/enemy/` | Container/Presenter-Paar für den Gegner-Screen |
 | `src/app/components/heropower/` | Container/Presenter-Paar für Heldenfähigkeiten |

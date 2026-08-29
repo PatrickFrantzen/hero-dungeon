@@ -28,7 +28,8 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
 - **`game.ts`** — Spiel-Datenstruktur, wie sie in Firestore unter `games/{gameId}` liegt
   (Felder decken sich mit dem, was die States unter `src/app/states/` verwalten — bei einer
   Feld-Änderung hier auch `firestore.rules`/`firestore.rules.test.js` und den betroffenen State
-  mitziehen).
+  mitziehen). Enthält u.a. `timerStartedAt`/`timerDurationSeconds` für den Dungeon-Timer —
+  Gesamt-Feature in `src/app/components/game/CLAUDE.md` beschrieben.
 - **`user.class.ts`** — Nutzer-Datenstruktur (`CurrentUserService`/`CurrentUserState`).
 - **`shuffle.util.ts`** — reine Shuffle-Funktion, von `Hero.buildCardstack()` genutzt.
 

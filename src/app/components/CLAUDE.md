@@ -39,6 +39,13 @@ Code ansehen, nicht diesen Text zitieren.
 `player-hand/` ist der größte verbleibende Ausreißer vom Smart/Dumb-Muster — eigene
 `CLAUDE.md` dort lesen, bevor diese Komponente angefasst wird.
 
+## game/
+
+`game/CLAUDE.md` beschreibt neben `GameComponent` als Host auch den Dungeon-Countdown-Timer,
+dessen Umsetzung sich über State/Action/Selector, `CardPlayService`, Repository-Services und
+`game.ts` zieht — vor jeder Timer-Änderung dort lesen, unabhängig davon, welche der beteiligten
+Dateien konkret angefasst wird.
+
 ## Dialoge
 
 `dialog-choose-hero/`, `dialog-game-settings/`, `dialog-heropower/` teilen sich
