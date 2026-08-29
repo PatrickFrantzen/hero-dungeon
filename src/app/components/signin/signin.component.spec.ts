@@ -4,7 +4,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Auth } from '@angular/fire/auth';
 import { NgxsModule } from '@ngxs/store';
-import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
+import {
+  ensureAngularFireSchedulersInitialized,
+  ensureFirebaseTestAppInitialized,
+  firestoreTestProviders,
+} from 'src/testing/firebase-test-app';
 
 import { SigninComponent } from './signin.component';
 
@@ -20,6 +24,7 @@ describe('SigninComponent', () => {
     schemas: [NO_ERRORS_SCHEMA],
     providers: [
         { provide: Auth, useValue: {} },
+        ...firestoreTestProviders(),
     ],
 })
     .compileComponents();
