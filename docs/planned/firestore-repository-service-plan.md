@@ -1,5 +1,23 @@
 # Refactoring-Plan: FirestoreRepositoryService einführen, Services konsolidieren
 
+## Status (2026-08-29)
+
+TODO 1-4 umgesetzt: `FirestoreRepositoryService` (`FirestoreOperationError`, DI-injiziertes
+`Firestore`), `SaveGameService` darauf umgestellt und anschließend zusammen mit
+`LoadGameService`/`GamePlayerService` durch `GameRepositoryService`/`PlayerRepositoryService`
+ersetzt (alle drei alten Service-Klassen entfernt), `CurrentUserService` auf injiziertes
+`Auth`/`Firestore` umgestellt, Non-null-Assertions durch Fallback ersetzt. Zwei tote Methoden
+(`SaveGameService.updateDeliveryStack()`, `LoadGameService.loadPlayerCollectionData()`) hatten
+keine Aufrufer und wurden nicht migriert. `ng build`/`ng test --watch=false
+--browsers=ChromeHeadlessCI` grün nach jedem Schritt.
+
+**TODO 5 ist bewusst offen**: awaiten/Fehler-Feedback für `PlayerHandComponent`s
+Firestore-Writes gehört mit `docs/planned/player-hand-decomposition-plan.md`s
+`FirestoreSyncService`-Extraktion (TODO 1 dort) in dieselbe Session — beide Pläne fassen
+dieselben Zeilen an. `PlayerHandComponent` ist in diesem PR nur mechanisch auf die neuen
+Repository-Services umgestellt (Methodennamen/Aufrufer), ohne await/Error-Handling zu
+ergänzen.
+
 Kontext: Punkt 3 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefunde in
 `docs/done/review-2026-08/02-services.md`. PR #21 hat aus diesem Bereich bereits die
