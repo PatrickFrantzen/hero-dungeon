@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
+import { updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
@@ -39,6 +39,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   currentPlayerId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
   currentPlayerName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
+  currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
 
   currentPlayers = this.store.selectSignal(LobbySelectors.currentPlayers);
 
@@ -115,6 +116,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new UpdateMobAction(data['Mob']));
     this.store.dispatch(new SetChoosenHeros(data['choosenHeros']));
     this.store.dispatch(new updateQuestCardActivated(data['questCardActivated']));
+    this.store.dispatch(new UpdateGameStatus(data['gameStatus'] ?? (data['isLost'] ? 'lost' : 'playing')));
   }
 
   onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere') {
@@ -146,6 +148,26 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
       this.reportWriteFailure(write)
     );
+  }
+
+  restCard(card: string) {
+    this.cardPlayService.restCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
+      this.reportWriteFailure(write)
+    );
+  }
+
+  resolveSoloEvent() {
+    this.cardPlayService.resolveSoloEvent(this.currentGameId(), this.currentPlayerId(), (write) =>
+      this.reportWriteFailure(write)
+    );
+  }
+
+  isSoloEventActive(): boolean {
+    return this.currentNumberOfPlayers() === 1 && this.store.selectSnapshot(CurrentGameSelectors.currentQuestCardStatus);
+  }
+
+  isSingleplayer(): boolean {
+    return this.currentNumberOfPlayers() === 1;
   }
 
   openDialog() {

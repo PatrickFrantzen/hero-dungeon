@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { createHero } from 'src/models/helden/hero.class';
 import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
 import { CdkScrollable } from '@angular/cdk/scrolling';
@@ -24,13 +24,16 @@ interface Heros {
 })
 export class DialogChooseHeroComponent extends BaseDialogComponent<ChooseHeroDialogResult> {
 
+  private dialogData = inject<{ singleplayerMode?: boolean } | null>(MAT_DIALOG_DATA, { optional: true });
   numberOfPlayer!:number;
   selectedValue!: Heros;
 
-  heros: Heros[] = HERO_DEFINITIONS.map((def) => ({
-    value: createHero(def.id).toJSON(),
-    viewValue: def.heroName,
-  }));
+  heros: Heros[] = HERO_DEFINITIONS
+    .filter((def) => !this.dialogData?.singleplayerMode || ['dieb', 'waldläufer'].includes(def.id))
+    .map((def) => ({
+      value: createHero(def.id).toJSON(),
+      viewValue: def.heroName,
+    }));
 
   constructor(dialogRef: MatDialogRef<DialogChooseHeroComponent, { data: ChooseHeroDialogResult }>) {
     super(dialogRef);

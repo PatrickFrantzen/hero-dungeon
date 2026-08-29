@@ -3,6 +3,10 @@
     <div class="player-hand-error">{{ loadError() }}</div>
   }
 
+  @if (isSoloEventActive()) {
+    <button class="solo-event-button" (click)="resolveSoloEvent()">Event ausführen</button>
+  }
+
   <div class="card-stack">
     @for (c of [0,1,2,3]; track c; let i = $index) {
       <img [ngStyle]="{'left.px': i * 5}"
@@ -12,8 +16,12 @@
 
     <div class="currentHandStack">
       @for (card of currentHand() ; track card; let x = $index) {
-        <img (click)="chooseCard(card)"
-          [ngStyle]="{'left.px': x * 170}"  src="./assets/img/cards/{{card}}.png">
+        <div class="hand-card" [ngStyle]="{'left.px': x * 170}">
+          <img (click)="chooseCard(card)" src="./assets/img/cards/{{card}}.png">
+          @if (isSingleplayer()) {
+            <button class="rest-button" (click)="restCard(card)">Rasten</button>
+          }
+        </div>
         }
       </div>
 

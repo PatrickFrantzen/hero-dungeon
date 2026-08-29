@@ -74,6 +74,10 @@ export class Monster {
     questFive: number
   ) {
     switch (numberOfPlayers) {
+      case 1:
+        this.loadMonster(5);
+        this.loadSoloQuests(1);
+        break;
       case 2:
         this.loadMonster(monsterTwo);
         this.loadQuests(questTwo);
@@ -109,6 +113,17 @@ export class Monster {
 
   loadQuests(numberOfQuestCards: number) {
     let questCollectionCopy = [...this.questCollection];
+    for (let i = 0; i < numberOfQuestCards; i++) {
+      const randomIndex = Math.floor(
+        Math.random() * questCollectionCopy.length
+      );
+      const removedElement = questCollectionCopy.splice(randomIndex, 1)[0];
+      this.Mob.push(removedElement);
+    }
+  }
+
+  loadSoloQuests(numberOfQuestCards: number) {
+    let questCollectionCopy = this.questCollection.filter((quest) => quest.name !== 'Chaos');
     for (let i = 0; i < numberOfQuestCards; i++) {
       const randomIndex = Math.floor(
         Math.random() * questCollectionCopy.length

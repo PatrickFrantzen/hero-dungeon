@@ -1,14 +1,16 @@
 <div class="dialog">
-  <h1 mat-dialog-title>Spieleinstellungen</h1>
+  <h1 mat-dialog-title>{{ singleplayerMode ? 'Singleplayer starten' : 'Spieleinstellungen' }}</h1>
   <div mat-dialog-content class="settings">
 
-    <mat-form-field appearance="fill">
-      <mat-label>Anzahl der Spieler</mat-label>
-      <input id="playerNumber" type="number" #playerNumber matInput placeholder="Gib hier eine Zahl zwischen 1 und 5 ein." [formControl]="playerValidation" required>
-      @if (playerValidation.invalid) {
-        <mat-error>Gib eine Zahl zwischen 2 und 5 ein.</mat-error>
-      }
-    </mat-form-field>
+    @if (!singleplayerMode) {
+      <mat-form-field appearance="fill">
+        <mat-label>Anzahl der Spieler</mat-label>
+        <input id="playerNumber" type="number" matInput placeholder="Gib hier eine Zahl zwischen 1 und 5 ein." [formControl]="playerValidation" required>
+        @if (playerValidation.invalid) {
+          <mat-error>Gib eine Zahl zwischen 1 und 5 ein.</mat-error>
+        }
+      </mat-form-field>
+    }
 
     <mat-form-field appearance="fill">
       <mat-label>Schwierigkeitsgrad</mat-label>
@@ -21,18 +23,25 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Spiele-ID</mat-label>
-      <input id="gameId" type="text" #gameId matInput placeholder="Gib dem Spiel einen Namen" [formControl]="idValidation" required>
-      @if (idValidation.invalid) {
-        <mat-error>Gib dem Spiel einen eindeutigen Namen.</mat-error>
-      }
-    </mat-form-field>
+    @if (!singleplayerMode) {
+      <mat-form-field appearance="fill">
+        <mat-label>Spiele-ID</mat-label>
+        <input id="gameId" type="text" matInput placeholder="Gib dem Spiel einen Namen" [formControl]="idValidation" required>
+        @if (idValidation.invalid) {
+          <mat-error>Gib dem Spiel einen eindeutigen Namen.</mat-error>
+        }
+      </mat-form-field>
+    }
 
   </div>
 
   <div mat-dialog-actions>
-    <button mat-button mat-dialog-close cdkFocusInitial [disabled]="playerValidation.invalid || idValidation.invalid" (click)="getGameSettings(playerNumber.valueAsNumber, selectedValue, gameId.value)">Ok</button>
+    <button
+      mat-button
+      mat-dialog-close
+      cdkFocusInitial
+      [disabled]="!singleplayerMode && (playerValidation.invalid || idValidation.invalid)"
+      (click)="getGameSettings(playerValidation.value ?? 1, selectedValue, idValidation.value)"
+    >Ok</button>
   </div>
 </div>
-

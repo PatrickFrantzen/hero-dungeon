@@ -37,4 +37,8 @@ export class GameRepositoryService {
   updateQuestStatus(gameId: string, update: boolean): Promise<void> {
     return this.repo.updateFields(['games', gameId], { questCardActivated: update });
   }
+
+  updateGameStatus(gameId: string, gameStatus: 'playing' | 'won' | 'lost'): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { gameStatus, isLost: gameStatus === 'lost' });
+  }
 }

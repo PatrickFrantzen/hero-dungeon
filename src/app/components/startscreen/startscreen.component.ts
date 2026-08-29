@@ -49,12 +49,17 @@ export class StartscreenComponent implements OnInit {
   }
 
   newGame() {
-      this.openDialog();
+      this.openDialog(false);
   }
 
-  openDialog() {
-    let dialogRef = this.dialog.open<DialogGameSettingsComponent, undefined, { data: GameSettingsDialogResult }>(
-      DialogGameSettingsComponent
+  newSingleplayerGame() {
+      this.openDialog(true);
+  }
+
+  openDialog(singleplayerMode = false) {
+    let dialogRef = this.dialog.open<DialogGameSettingsComponent, { singleplayerMode: boolean }, { data: GameSettingsDialogResult }>(
+      DialogGameSettingsComponent,
+      { data: { singleplayerMode } }
     );
 
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -62,20 +67,24 @@ export class StartscreenComponent implements OnInit {
         return;
       }
       const { numberOfPlayer, difficulty, gameId } = result.data;
-      const game = this.gameFactory.buildNewGame(numberOfPlayer, difficulty, gameId);
-
-      this.currentGameId = gameId;
-      this.store.dispatch(new CurrentGameAction(gameId));
-      this.store.dispatch(new CurrentGameData(game));
-      this.store.dispatch(new CreateNewMobAction(game.Mob));
-
-      try {
-        await this.gameRepo.createGame(gameId, this.JSON.gameToJSON(game));
-        this.route.navigate(['/game/' + gameId]);
-      } catch {
-        this.startscreenError = 'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
-      }
+      await this.createGame(numberOfPlayer, difficulty, gameId);
     });
+  }
+
+  private async createGame(numberOfPlayer: number, difficulty: string, gameId: string) {
+    const game = this.gameFactory.buildNewGame(numberOfPlayer, difficulty, gameId);
+
+    this.currentGameId = gameId;
+    this.store.dispatch(new CurrentGameAction(gameId));
+    this.store.dispatch(new CurrentGameData(game));
+    this.store.dispatch(new CreateNewMobAction(game.Mob));
+
+    try {
+      await this.gameRepo.createGame(gameId, this.JSON.gameToJSON(game));
+      this.route.navigate(['/game/' + gameId]);
+    } catch {
+      this.startscreenError = 'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
+    }
   }
 
   logout() {
