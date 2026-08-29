@@ -1,36 +1,26 @@
-import { Component, OnInit } from '@angular/core';
-import { Select, Store } from '@ngxs/store';
-import {
-  Observable,
-  distinctUntilChanged,
-  map
-} from 'rxjs';
+import { Component, OnInit, computed, effect } from '@angular/core';
+import { Store } from '@ngxs/store';
 import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { SaveGameService } from 'src/app/services/save-game.service';
-import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 import { EnemyComponent } from '../enemy.component';
-import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'app-enemy-container',
     template: `
     <app-enemy
-      [gameId]="(this.gameId$ | async) || ''"
-      [currentEnemy]="(this.currentEnemy$ | async) || emptyMob"
-      [questCardStatus]="(this.currentQuestStatus$ | async) || false"
+      [gameId]="gameId()"
+      [currentEnemy]="currentEnemy()"
+      [questCardStatus]="currentQuestStatus()"
     ></app-enemy>
   `,
     styles: [``],
-    imports: [EnemyComponent, AsyncPipe]
+    imports: [EnemyComponent]
 })
 export class EnemyContainerComponent implements OnInit {
-  @Select(CurrentGameSelectors.currentGameState)
-  game$!: Observable<Game>;
-
-  @Select(CurrentGameSelectors.currentQuestCardStatus)
-  questStatus$!: Observable<boolean>;
+  game = this.store.selectSignal(CurrentGameSelectors.currentGameState);
+  currentQuestStatus = this.store.selectSignal(CurrentGameSelectors.currentQuestCardStatus);
 
   public emptyMob: Mob = {
     name: '',
@@ -38,43 +28,20 @@ export class EnemyContainerComponent implements OnInit {
     token: [],
   };
 
-  gameId$: Observable<string> = new Observable<string>();
-  currentEnemy$: Observable<Mob> = new Observable<Mob>();
-  currentQuestStatus$: Observable<boolean> = new Observable<boolean>();
+  gameId = computed(() => this.game().gameId ?? '');
+  currentEnemy = computed(() => this.game().currentEnemy ?? this.emptyMob);
 
-  constructor(private store: Store, private saveGame: SaveGameService) {}
+  constructor(private store: Store, private saveGame: SaveGameService) {
+    // Dispatches whether the "quest card" is active whenever the current enemy changes,
+    // mirroring the previous @Select-based pipe(map(...dispatch...)) exactly.
+    effect(() => {
+      const currentEnemy = this.currentEnemy();
+      const questCardStatus = currentEnemy.token.includes('event');
+      this.store.dispatch(new updateQuestCardActivated(questCardStatus));
+    });
+  }
 
   ngOnInit(): void {
-    this.gameId$ = this.game$.pipe(
-      map((data) => {
-        return data.gameId;
-      })
-    );
-
-    this.currentEnemy$ = this.game$.pipe(
-      map((data) => {
-        return data.currentEnemy;
-      })
-    );
-
-    this.currentQuestStatus$ = this.currentEnemy$.pipe(
-      distinctUntilChanged(),
-      map((data) => {
-        let currentEnemy = data;
-        let questCardStatus = this.store.selectSnapshot(
-          CurrentGameSelectors.currentQuestCardStatus
-        );
-        if (currentEnemy.token.includes('event')) {
-          questCardStatus = true;
-          this.store.dispatch(new updateQuestCardActivated(questCardStatus));
-          return questCardStatus;
-        } else {
-          questCardStatus = false;
-          this.store.dispatch(new updateQuestCardActivated(questCardStatus));
-          return questCardStatus;
-        }
-      })
-    );
     let gameId = this.store.selectSnapshot(CurrentGameSelectors.currentGame);
     let questCardStatus = this.store.selectSnapshot(
       CurrentGameSelectors.currentQuestCardStatus

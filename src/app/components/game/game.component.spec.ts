@@ -3,6 +3,11 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { NgxsModule, Store } from '@ngxs/store';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
+import { CardStackState } from 'src/app/states/cardStack-state';
+import { cardsInHandState } from 'src/app/states/cardsInHand-state';
+import { DeliveryStackState } from 'src/app/states/deliveryStack-state';
+import { CurrentUserState } from 'src/app/states/currentUser-state';
+import { heropowerState } from 'src/app/states/heropower-state';
 import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
 
 import { GameComponent } from './game.component';
@@ -15,7 +20,7 @@ describe('GameComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState]), GameComponent],
+    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState]), GameComponent],
     schemas: [NO_ERRORS_SCHEMA],
 })
     .compileComponents();
