@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Store} from '@ngxs/store';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
@@ -11,7 +11,8 @@ import { NgClass } from '@angular/common';
     selector: 'app-heropower',
     templateUrl: './heropower.component.html',
     styleUrls: ['./heropower.component.scss'],
-    imports: [MatCard, NgClass]
+    imports: [MatCard, NgClass],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeropowerComponent {
   readonly currentGameId = input<string>('');
