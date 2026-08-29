@@ -9,7 +9,7 @@ wird jetzt awaited (Befund 2); Ok-Button im Settings-Dialog bei ungültigem Form
 validiert die Eingabe und zeigt „Spiel nicht gefunden" statt einer unhandled rejection
 (Befund 6); `DialogGameSettings` → `DialogGameSettingsComponent` umbenannt (Teil von Befund 7).
 
-Offen, siehe [`../dialog-auth-unification-plan.md`](../dialog-auth-unification-plan.md):
+Offen, siehe [`docs/planned/dialog-auth-unification-plan.md`](../../planned/dialog-auth-unification-plan.md):
 `AuthFormService`-Extraktion aus Signin/Signup (Befund 3), `BaseDialogComponent`/typisierte
 `MAT_DIALOG_DATA` für die drei Dialoge (Befund 4), `StartscreenComponent` entflechten in
 `GameFactoryService`/Firestore-Service/Angular-Forms statt `getElementById` (Befund 5).

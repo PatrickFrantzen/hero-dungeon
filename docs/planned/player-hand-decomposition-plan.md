@@ -58,7 +58,7 @@ Output entgegennimmt — dieser Teil der Verdrahtung ist bereits korrekt, siehe 
 `getDocs`): `ngOnInit()` (`:117-121`), `getAllPlayerDatatoGivePlayersCards()` (`:196-200`),
 `getOtherPlayerDataTogivePlayerCards()` (`:233-238`) — dieselbe Pfad-Konstruktion
 `games/{gameId}/player` wie in den Services (siehe
-`docs/done/firestore-repository-service-plan.md`).
+`docs/planned/firestore-repository-service-plan.md`).
 
 **Kein Error-Handling**: kein `try/catch` um `getDoc`/`getDocs`/`onSnapshot` in dieser Datei
 (anders als `GameComponent.checkIfPlayerIsAlreadyPartOfGame()`, das bereits sauber
@@ -84,7 +84,7 @@ konzentrieren).
     `Observable<Game>`/`Observable<PlayerDoc>`-Streams statt roher `DocumentData`.
   - `PlayerHandComponent.ngOnInit()` reduziert sich auf Abonnieren + Dispatchen (Zielbild:
     `GameComponent`, das dieses Muster bereits mit `GamePlayerService` vorlebt).
-  - Sinnvoll direkt mit TODO 5 aus `docs/done/firestore-repository-service-plan.md`
+  - Sinnvoll direkt mit TODO 5 aus `docs/planned/firestore-repository-service-plan.md`
     zusammenzulegen (Error-Callback für `onSnapshot`, sichtbares Fehler-Signal) — beide Pläne
     fassen dieselben Zeilen an, nacheinander in einer Session abarbeiten.
   - Verifikation: `ng build`, `ng test`, manueller Test „Spiel laden, Handkarten/Gegner
@@ -138,7 +138,7 @@ konzentrieren).
     `HeropowerContainerComponent` (`heropower-container.component.ts:57-77`).
   - Die Aktivierungsregel (`type === 'Person'` etc.) wandert als Konfiguration in die
     jeweilige Heldenklasse — **erst sinnvoll nach**
-    `docs/done/hero-data-model-plan.md`, das die Heldenklassen ohnehin auf ein
+    `docs/planned/hero-data-model-plan.md`, das die Heldenklassen ohnehin auf ein
     Konfigurationsobjekt umstellt; dort ließe sich `activatesOn` als weiteres Datenfeld
     ergänzen, statt eine zusätzliche Klassenhierarchie für Strategien einzuführen.
   - Template `heropower.component.html`: zehn `@if`-Blöcke durch eine `@for`-Schleife über
@@ -159,11 +159,11 @@ konzentrieren).
 ## Nicht im Scope
 
 - `FirestoreRepositoryService`-Einführung selbst (paralleler Plan,
-  `docs/done/firestore-repository-service-plan.md`) — dieser Plan nutzt, was dort entsteht,
+  `docs/planned/firestore-repository-service-plan.md`) — dieser Plan nutzt, was dort entsteht,
   führt es aber nicht selbst ein. Reihenfolge zwischen beiden Plänen ist nicht zwingend fest,
   aber TODO 1 hier und TODO 5 dort überschneiden sich in `ngOnInit()` — in einer Session
   abarbeiten, nicht parallel in zwei Sessions am selben Code.
-- Datengetriebenes Heldenmodell (`docs/done/hero-data-model-plan.md`) — TODO 5 hier setzt
+- Datengetriebenes Heldenmodell (`docs/planned/hero-data-model-plan.md`) — TODO 5 hier setzt
   darauf auf, ist aber unabhängig durchführbar (mit etwas mehr Duplikation, falls zuerst
   umgesetzt).
 

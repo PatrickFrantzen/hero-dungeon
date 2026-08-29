@@ -12,7 +12,7 @@ Code, Teil von Befund 8), `LoadGameService`-Geisterimport in `PlayerHandComponen
 (Befund 2), `DiebServiceService` → `DiebService` umbenannt (Befund 7), `console.warn`-Reste
 entfernt (Befund 5).
 
-Offen, siehe [`../firestore-repository-service-plan.md`](../firestore-repository-service-plan.md):
+Offen, siehe [`docs/planned/firestore-repository-service-plan.md`](../../planned/firestore-repository-service-plan.md):
 generischer `FirestoreRepositoryService` mit zentralem Error-Handling (Befund 1/2/4 vollständig,
 inkl. `await`/try-catch an den Aufrufstellen), Konsolidierung von `SaveGameService`/
 `GamePlayerService`/`LoadGameService` auf Repository-Services pro Aggregat (Befund 8), Firestore

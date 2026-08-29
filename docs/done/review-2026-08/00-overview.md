@@ -14,11 +14,11 @@ Die sechs großen, bewusst zurückgestellten strukturellen Umbauten (siehe „Em
 Reihenfolge" unten, Punkte 3–7) sind **nicht** Teil von PR #21 und liegen jetzt als eigene,
 für neue Sessions umsetzbare Pläne vor:
 
-- [`../firestore-repository-service-plan.md`](../firestore-repository-service-plan.md) — Punkt 3, Services konsolidieren
-- [`../currentGame-state-split-plan.md`](../currentGame-state-split-plan.md) — Punkt 4, `currentGame-state.ts` aufteilen
-- [`../player-hand-decomposition-plan.md`](../player-hand-decomposition-plan.md) — Punkt 5, `PlayerHandComponent` entflechten (inkl. Heropower-Strategy-Pattern als Stretch-Goal)
-- [`../hero-data-model-plan.md`](../hero-data-model-plan.md) — Punkt 6, Helden-Datenmodell umstellen
-- [`../dialog-auth-unification-plan.md`](../dialog-auth-unification-plan.md) — Punkt 7, Dialog-/Auth-Komponenten vereinheitlichen
+- [`docs/planned/firestore-repository-service-plan.md`](../../planned/firestore-repository-service-plan.md) — Punkt 3, Services konsolidieren
+- [`docs/planned/currentGame-state-split-plan.md`](../../planned/currentGame-state-split-plan.md) — Punkt 4, `currentGame-state.ts` aufteilen
+- [`docs/planned/player-hand-decomposition-plan.md`](../../planned/player-hand-decomposition-plan.md) — Punkt 5, `PlayerHandComponent` entflechten (inkl. Heropower-Strategy-Pattern als Stretch-Goal)
+- [`docs/planned/hero-data-model-plan.md`](../../planned/hero-data-model-plan.md) — Punkt 6, Helden-Datenmodell umstellen
+- [`docs/planned/dialog-auth-unification-plan.md`](../../planned/dialog-auth-unification-plan.md) — Punkt 7, Dialog-/Auth-Komponenten vereinheitlichen
 
 Dieses Dokument bleibt unverändert als historische Referenz für die Befunde erhalten; die
 Zeilenangaben unten spiegeln den Stand zum Zeitpunkt des Reviews, nicht den aktuellen Code.

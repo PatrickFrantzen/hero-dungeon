@@ -108,7 +108,7 @@ Services umgestellt werden. Stand der Diagnose: 2026-08-29, nach PR #21.
   - `ngOnInit()`s `onSnapshot`-Callback (`player-hand.component.ts:111-129`) bekommt den
     `error`-Callback von `onSnapshot(query, next, error)` (aktuell nicht übergeben).
   - Dieser TODO ist am ehesten Teil von — oder direkt im Anschluss an —
-    `docs/done/player-hand-decomposition-plan.md`s `FirestoreSyncService`-Extraktion; beide
+    `docs/planned/player-hand-decomposition-plan.md`s `FirestoreSyncService`-Extraktion; beide
     Pläne fassen dieselbe Datei an derselben Stelle an, deshalb nacheinander abarbeiten, nicht
     parallel in zwei Sessions.
   - Verifikation: `ng build`, `ng test`, manueller Smoke-Test mit absichtlich getrenntem Netz
@@ -129,7 +129,7 @@ Services umgestellt werden. Stand der Diagnose: 2026-08-29, nach PR #21.
   9 in `docs/done/review-2026-08/02-services.md`) — eigenständiger, unabhängiger
   Typisierungs-Schritt, keine Voraussetzung für die Repository-Konsolidierung.
 - Die eigentliche Entflechtung von `PlayerHandComponent` (Firestore-Zugriff ist nur einer von
-  vier Verantwortungsbereichen dort) — siehe `docs/done/player-hand-decomposition-plan.md`.
+  vier Verantwortungsbereichen dort) — siehe `docs/planned/player-hand-decomposition-plan.md`.
 
 ## Referenzen
 

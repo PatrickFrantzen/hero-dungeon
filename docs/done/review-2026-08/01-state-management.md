@@ -8,7 +8,7 @@ Umgesetzt: `MobState`/`monsterStack-state.ts` entfernt (Befund 1), die drei Redu
 Import in `currentHand-selector.ts` entfernt (Befund 6), `console.warn`-Reste entfernt
 (Befund 9).
 
-Offen, siehe [`../currentGame-state-split-plan.md`](../currentGame-state-split-plan.md):
+Offen, siehe [`docs/planned/currentGame-state-split-plan.md`](../../planned/currentGame-state-split-plan.md):
 `currentGame-state.ts` in mehrere States aufteilen (Befund 2/2b). Nicht umgesetzt, nice-to-have
 und noch nicht neu geplant: restliche Klassen-Casing-Inkonsistenzen (Befund 5, Teil 2/3),
 Boilerplate-Vereinheitlichung (Befund 4), Variablen-Shadowing (Befund 7), `ResetHeropowerAction`

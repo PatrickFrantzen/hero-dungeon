@@ -86,20 +86,23 @@ src/app/
 src/models/
   helden/        Eine Klasse pro Heldentyp (barbar, dieb, gladiator, ...) + hero.class.ts,
                  card.class.ts — der Konstruktor-Rumpf ist über `Hero.buildCardstack()`
-                 dedupliziert (siehe docs/done/hero-data-model-plan.md), aber weiterhin
+                 dedupliziert (siehe docs/planned/hero-data-model-plan.md), aber weiterhin
                  zehn Klassen mit teils identischen Kartendaten statt einem Datenmodell
   monster/       monster.class.ts (Auswahl-/Schwierigkeitslogik, ~130 Zeilen) +
                  monster-collection.data.ts (Datenliterale, ausgelagert)
   game.ts, user.class.ts
 src/assets/img/  Karten-, Icon-, Monster-Token-Grafiken
 docs/
-  done/          Abgeschlossene/laufende Refactoring-Pläne im gleichen Stil wie diese Datei,
-                 u.a. das vollständige Code-Review vom 2026-08 (jetzt unter
-                 `done/review-2026-08/`, 00-overview.md als Einstieg) und die daraus
-                 hervorgegangenen Pläne für die noch offenen strukturellen Umbauten
+  done/          Abgeschlossene Refactoring-Pläne im gleichen Stil wie diese Datei, u.a. das
+                 vollständige Code-Review vom 2026-08 (jetzt unter `done/review-2026-08/`,
+                 00-overview.md als Einstieg) — Befunde sind entweder umgesetzt (siehe
+                 Status-Abschnitt je Datei) oder als Plan nach `planned/` verwiesen
+  planned/       Noch nicht umgesetzte, aber ausgearbeitete Umsetzungspläne (gleicher Stil:
+                 Diagnose → nummerierte TODOs → Verifikation) für die aus dem 2026-08-Review
+                 hervorgegangenen größeren strukturellen Umbauten
                  (`firestore-repository-service-plan.md`, `currentGame-state-split-plan.md`,
                  `player-hand-decomposition-plan.md`, `hero-data-model-plan.md`,
-                 `dialog-auth-unification-plan.md`)
+                 `dialog-auth-unification-plan.md`) — Einstieg für eine neue Session
 ```
 
 ## Bekannte Baustellen (Ist-Zustand, nicht normativ)
@@ -107,30 +110,30 @@ docs/
 Ein vollständiges, datei-für-Datei-Review mit `datei.ts:Zeile`-Belegen liegt unter
 `docs/done/review-2026-08/` (Einstieg: `docs/done/review-2026-08/00-overview.md`). Die
 klein-/mittelgroßen Befunde daraus sind bereits umgesetzt (PR #21, siehe Status-Abschnitt in
-jeder Einzeldatei); die verbleibenden Punkte unten sind als eigene Umsetzungspläne unter
-`docs/done/*-plan.md` vorbereitet — Einstieg für eine neue Session ist jeweils der verlinkte
-Plan, nicht mehr das ursprüngliche Review.
+jeder Einzeldatei); die verbleibenden, noch nicht umgesetzten Punkte unten sind als eigene
+Umsetzungspläne unter `docs/planned/*-plan.md` vorbereitet — Einstieg für eine neue Session ist
+jeweils der verlinkte Plan, nicht mehr das ursprüngliche Review.
 
 - `PlayerHandComponent` (`src/app/components/player-hand/player-hand.component.ts`, >580
   Zeilen) mischt weiterhin Firestore-Zugriff, NGXS-Dispatch, Spielregeln und UI in einer Klasse
   — der zentrale Hotspot im Projekt, bewusst nicht Teil des OnPush-Refactors
   (`docs/done/onpush-refactor-plan.md`), da eigenständiges größeres Vorhaben. Plan:
-  `docs/done/player-hand-decomposition-plan.md` (inkl. Heropower-Strategy-Pattern für die
+  `docs/planned/player-hand-decomposition-plan.md` (inkl. Heropower-Strategy-Pattern für die
   redundanten Heropower-Check-Methoden als Stretch-Goal).
 - Kein Interceptor/Repository-Layer um Firestore-Fehler — `getDoc`/`updateDoc`-Aufrufe
-  größtenteils ohne try/catch. Plan: `docs/done/firestore-repository-service-plan.md`.
+  größtenteils ohne try/catch. Plan: `docs/planned/firestore-repository-service-plan.md`.
 - `currentGame-state.ts` bündelt vier fachlich unabhängige Verantwortlichkeiten (Spiel-
   Identität, Gegner/Encounter, Lobby/Spieler, Quest-Flag) in einem NGXS-State. Plan:
-  `docs/done/currentGame-state-split-plan.md`.
+  `docs/planned/currentGame-state-split-plan.md`.
 - Die zehn Heldenklassen unter `src/models/helden/` haben identische Kartendaten in mehreren
   Paaren (z.B. Barbar/Gladiator) und tragen keine unterscheidbare Verhaltenslogik — ein
   datengetriebener Ansatz (Konfigurationsobjekte + Factory) wäre SOLID-konformer als zehn
   Klassen. Der Konstruktor-Rumpf selbst ist bereits über `Hero.buildCardstack()` dedupliziert.
-  Plan: `docs/done/hero-data-model-plan.md`.
+  Plan: `docs/planned/hero-data-model-plan.md`.
 - `StartscreenComponent`, die drei Dialog-Komponenten und Signin/Signup haben überlappende
   Verantwortung (Spiellogik/Firestore-Zugriff in der Komponente statt im Service, dupliziertes
   `MatDialogRef`-Boilerplate, kein gemeinsamer Auth-Fehler-Mapper). Plan:
-  `docs/done/dialog-auth-unification-plan.md`.
+  `docs/planned/dialog-auth-unification-plan.md`.
 - Deutsche und englische Bezeichner gemischt (`heropower-selector.ts` vs. `Heldenfähigkeiten`
   in Commit-Messages) — beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit
   beauftragt.
@@ -146,7 +149,7 @@ Plan, nicht mehr das ursprüngliche Review.
   --browsers=ChromeHeadlessCI` grün halten, nicht in einem Rutsch alles umstellen. Der Stil aus
   `docs/done/onpush-refactor-plan.md` (Diagnose → nummerierte TODOs → Verifikation) ist die
   Referenz für neue Refactoring-Pläne.
-- Vor einem größeren Refactoring lohnt ein Blick in `docs/done/*-plan.md` bzw.
+- Vor einem größeren Refactoring lohnt ein Blick in `docs/planned/*-plan.md` bzw.
   `docs/done/review-2026-08/`, ob der betroffene Codeteil dort bereits mit konkreten Befunden,
   einer Diagnose und nummerierten TODOs dokumentiert ist — dann darauf aufbauen statt neu zu
   analysieren.

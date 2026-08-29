@@ -9,7 +9,7 @@ Umgesetzt in PR #21: komplett auskommentierte, nirgends aufgerufene `checkDiebHe
 entfernt, `console.warn`-Rest entfernt, leeres `AppComponent.ngOnInit()` entfernt (Teil von
 Befund 9).
 
-Offen, siehe [`../player-hand-decomposition-plan.md`](../player-hand-decomposition-plan.md):
+Offen, siehe [`docs/planned/player-hand-decomposition-plan.md`](../../planned/player-hand-decomposition-plan.md):
 die eigentliche Entflechtung von `PlayerHandComponent` (Befund 2/3/4/5/7 — `CardPlayService`/
 `HeropowerService`/`FirestoreSyncService`-Extraktion, Error-Handling für Firestore-Zugriffe) und
 das Heropower-Strategy-Pattern (Befund 6) als Stretch-Goal desselben Plans. Nicht umgesetzt,

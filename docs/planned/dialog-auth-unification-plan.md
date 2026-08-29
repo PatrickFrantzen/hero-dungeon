@@ -24,7 +24,7 @@ Plan behandelt die verbleibende strukturelle Vereinheitlichung. Stand der Diagno
 - `SignupComponent` baut zusätzlich eine eigene `db = getFirestore()`-Instanz
   (`signup.component.ts:25`) für den `setDoc`-Write des Nutzerprofils (`:52-53`) — dieselbe
   Art direkter Firestore-Zugriff, die
-  `docs/done/firestore-repository-service-plan.md` für die übrigen Komponenten/Services
+  `docs/planned/firestore-repository-service-plan.md` für die übrigen Komponenten/Services
   konsolidiert; gehört fachlich dorthin, wird hier nur als Konsument mit erwähnt.
 
 **Dupliziertes `MatDialogRef`-Boilerplate in allen drei Dialog-Komponenten:**
@@ -66,7 +66,7 @@ Plan behandelt die verbleibende strukturelle Vereinheitlichung. Stand der Diagno
     Stelle statt potenziell zweimal, falls Signin/Signup künftig auseinanderdriften).
   - Der User-Dokument-Write aus `SignupComponent.register()` (`:48-53`) wandert ebenfalls in
     diesen Service (oder in den `PlayerRepositoryService`/`GameRepositoryService` aus
-    `docs/done/firestore-repository-service-plan.md`, falls der zu diesem Zeitpunkt schon
+    `docs/planned/firestore-repository-service-plan.md`, falls der zu diesem Zeitpunkt schon
     existiert — dann dort statt in `AuthFormService`, um Firestore-Zugriff an einer Stelle zu
     bündeln).
   - `SigninComponent`/`SignupComponent` rufen nur noch die Service-Methode auf, setzen
@@ -98,7 +98,7 @@ Plan behandelt die verbleibende strukturelle Vereinheitlichung. Stand der Diagno
     (`buildNewGame(numberOfPlayer, difficulty, gameId): Game`, reine Funktion ohne
     Komponentenzustand) auslagern.
   - Firestore-Schreibzugriff (`setDoc` für neue Spiele, `:73-74`) in den `GameRepositoryService`
-    aus `docs/done/firestore-repository-service-plan.md` verschieben, falls der zu diesem
+    aus `docs/planned/firestore-repository-service-plan.md` verschieben, falls der zu diesem
     Zeitpunkt existiert — sonst vorerst in einen neuen, eigenständigen Service, der später dort
     aufgeht.
   - `joinGame()`s `document.getElementById('joinGame')`-Zugriff (`:121`) durch ein
@@ -126,7 +126,7 @@ Plan behandelt die verbleibende strukturelle Vereinheitlichung. Stand der Diagno
 - Reactive-Forms- vs. Template-Ref-Mischung im Settings-Dialog (Befund 8) — unabhängig von
   diesem Plan, kein Blocker für TODO 1-3.
 - `FirestoreRepositoryService`-Einführung selbst (paralleler Plan,
-  `docs/done/firestore-repository-service-plan.md`) — TODO 1 und TODO 3 hier verweisen darauf,
+  `docs/planned/firestore-repository-service-plan.md`) — TODO 1 und TODO 3 hier verweisen darauf,
   führen ihn aber nicht selbst ein; falls dieser Plan zuerst umgesetzt wird, vorerst einen
   eigenständigen kleinen Service für den jeweiligen Firestore-Zugriff schreiben und später auf
   das Repository-Pattern migrieren.
@@ -135,7 +135,7 @@ Plan behandelt die verbleibende strukturelle Vereinheitlichung. Stand der Diagno
 
 - `docs/done/review-2026-08/04-components-dialogs-auth.md` — vollständige Befundliste
   (Befund 1/2/6/9 bereits in PR #21 erledigt; Befund 3/4/5 sind hier relevant).
-- `docs/done/firestore-repository-service-plan.md` — Zielbild für den Firestore-Zugriff, den
+- `docs/planned/firestore-repository-service-plan.md` — Zielbild für den Firestore-Zugriff, den
   TODO 1 und TODO 3 hier voraussetzen.
 - `src/app/components/dialog-heropower/dialog-heropower.component.ts` — bereits das am
   saubersten typisierte der drei Dialog-`data`-Interfaces (`{ playerName, playerId, playerHero

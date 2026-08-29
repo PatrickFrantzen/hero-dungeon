@@ -12,7 +12,7 @@ Heldenklassen von ~10 auf ~1 Zeile Konstruktor-Rumpf; Befund 4 (`shuffle`-Duplik
 ausgelagert, `monster.class.ts` von 474 auf ~130 Zeilen reduziert — die `createMob`-Kaskade
 selbst ist noch nicht tabellarisiert).
 
-Offen, siehe [`../hero-data-model-plan.md`](../hero-data-model-plan.md): Befund 2 (Karten-Deck-
+Offen, siehe [`docs/planned/hero-data-model-plan.md`](../../planned/hero-data-model-plan.md): Befund 2 (Karten-Deck-
 Duplikate) und Befund 3 (datengetriebener Helden-Ansatz statt 10 Klassen) — Befund 1 aus diesem
 Plan war die risikoarme Vorstufe dazu und ist bereits erledigt. Nicht umgesetzt, nice-to-have
 und noch nicht neu geplant: `createMob`-Kaskade tabellarisieren und 9-Positionsparameter von

@@ -120,7 +120,7 @@ nutzen `extends Hero`, nicht `implements Herointerface` — und hat auch andere 
 - Karten-Namen als Enum/Const statt freier Strings (Befund 7 in
   `docs/done/review-2026-08/05-models.md`, „wichtig", aber unabhängig von der
   Klassen-zu-Config-Umstellung — kann vorher, nachher oder separat passieren).
-- Das Heropower-Strategy-Pattern (`docs/done/player-hand-decomposition-plan.md`, TODO 5,
+- Das Heropower-Strategy-Pattern (`docs/planned/player-hand-decomposition-plan.md`, TODO 5,
   Stretch-Goal) — dieser Plan schafft die Datengrundlage dafür (`HeroDefinition` ließe sich um
   ein `activatesOn`-Feld erweitern), setzt sie aber nicht selbst um.
 - `monster.class.ts`s `createMob`-Kaskade tabellarisieren (Rest von Befund 5 in
