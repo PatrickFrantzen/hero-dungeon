@@ -1,5 +1,20 @@
 # Refactoring-Plan: Dialog- und Auth-Komponenten vereinheitlichen
 
+## Status (2026-08-29)
+
+Vollständig umgesetzt: `AuthFormService` (Login/Register + Firebase-Error-Code-Mapping auf
+deutsche Meldungen), `BaseDialogComponent<TResult>`/`dialog-results.ts` für alle drei Dialoge
+(inkl. Entfernen der beiden ungenutzten `MAT_DIALOG_DATA`-Injektionen bei ChooseHero/
+GameSettings, verifiziert per grep), `GameFactoryService`/`GameRepositoryService.createGame()`
+für `StartscreenComponent`s Domänenlogik/Firestore-Write, `joinGame()` auf `[(ngModel)]` statt
+`document.getElementById` umgestellt.
+
+`ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI` (38/38) und `npm run
+test:rules` (9/9) grün. **Kein manueller Test des kompletten Onboarding-Flows durchgeführt**
+(Login → Spiel erstellen → zweiter Spieler tritt bei → Helden-Auswahl-Dialog → Spiel startet)
+— kein laufendes Firebase-Emulator-/Browser-Setup in dieser Session verfügbar. Vor dem Merge
+nachholen.
+
 Kontext: Punkt 7 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefunde 3/4/5 in
 `docs/done/review-2026-08/04-components-dialogs-auth.md`. Die kritischen Befunde aus dieser
