@@ -1,4 +1,4 @@
-import { Hero, shuffle } from "./hero.class";
+import { Hero } from "./hero.class";
 
 export class Zauberin extends Hero {
     public override heroName: string = 'Zauberin';
@@ -9,7 +9,7 @@ export class Zauberin extends Hero {
 
     constructor() {
         super();
-        const heroCards = new Map([
+        this.cardstack = this.buildCardstack(new Map([
             ['red', 3],
             ['yellow', 5],
             ['green', 7],
@@ -19,14 +19,7 @@ export class Zauberin extends Hero {
             ['verhinderung_event', 1],
             ['feuerball_monster', 4],
             ['magischeBombe', 3]
-        ])
-        heroCards.forEach((value, key) => {
-            for (let i = 0; i < value; i++) {
-                this.cardstack.push(key);
-                
-            }
-        })
-        shuffle(this.cardstack)
+        ]));
     }
 }
 
