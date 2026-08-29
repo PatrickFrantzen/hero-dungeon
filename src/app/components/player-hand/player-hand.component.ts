@@ -1,21 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, Input } from '@angular/core';
-import {
-  DocumentData,
-  QuerySnapshot,
-  collection,
-  collectionData,
-  doc,
-  getDoc,
-  getDocs,
-  getFirestore,
-  onSnapshot,
-  query,
-  updateDoc,
-  where,
-} from '@angular/fire/firestore';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, Input, inject, signal } from '@angular/core';
+import { DocumentData, Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
@@ -39,6 +26,8 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
+import { FirestoreOperationError } from 'src/app/services/firestore-repository.service';
+import { FirestoreSyncService } from 'src/app/services/firestore-sync.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { Game } from 'src/models/game';
@@ -90,43 +79,61 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   playerNameForHeropowerAction: string = '';
   playerHeroForHeropowerAction: string = '';
 
-  db = getFirestore();
+  db = inject(Firestore);
   loadedCollectionData!: DocumentData;
   collectionData!: DocumentData;
   allPlayerDataFromServer: DocumentData[] = [];
 
-  game$: Observable<any>;
+  loadError = signal<string | null>(null);
+
   gameSubscr!: Subscription;
-  playerSubsc!: Subscription;
-  // player$:Observable<any>;
-  // -------------------------------------
+  playerSubsc?: Subscription;
 
   constructor(
     private store: Store,
     private gameRepo: GameRepositoryService,
     private playerRepo: PlayerRepositoryService,
+    private firestoreSync: FirestoreSyncService,
     public dialog: MatDialog
-  ) {
-    this.game$ = collectionData(collection(this.db, 'games'));
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.gameSubscr = this.game$.subscribe(async () => {
-      const docRef = doc(this.db, 'games', this.currentGameId());
-      const docSnap = await getDoc(docRef);
-      const data = docSnap.data();
+    this.gameSubscr = this.firestoreSync.watchGamesCollection().subscribe(async () => {
+      let data: DocumentData | undefined;
+      try {
+        data = await this.gameRepo.getGame(this.currentGameId());
+      } catch {
+        this.loadError.set('Der Spielstand konnte nicht geladen werden. Bitte Seite neu laden.');
+        return;
+      }
       this.updateFromDatabase(data!);
-      const currentPlayerData = query(
-        collection(this.db, 'games', this.currentGameId(), 'player'),
-        where('userId', '==', this.currentPlayerId())
-      );
-      const getPlayerData = onSnapshot(currentPlayerData, (querySnapshot) => {
-        const player: DocumentData[] = [];
-        querySnapshot.forEach((doc) => {
-          player.push(doc.data());
-          this.updatePlayerFromDatabase(doc.data());
+
+      this.playerSubsc?.unsubscribe();
+      this.playerSubsc = this.firestoreSync
+        .watchPlayerDoc(this.currentGameId(), this.currentPlayerId())
+        .subscribe({
+          next: (data) => this.updatePlayerFromDatabase(data),
+          error: () => {
+            this.loadError.set('Die Verbindung zum Spiel wurde unterbrochen. Bitte Seite neu laden.');
+          },
         });
-      });
+    });
+  }
+
+  /**
+   * Firestore-Writes in dieser Komponente laufen "fire and forget" (das lokale NGXS-Update
+   * passiert sofort, unabhängig vom Schreib-Ergebnis - die Live-Subscription oben synchronisiert
+   * ohnehin den tatsächlichen Serverstand zurück). Bisher wurde ein fehlgeschlagener Write
+   * überhaupt nicht beobachtet; jetzt wird der Fehler wenigstens sichtbar gemacht statt still zu
+   * verschwinden.
+   */
+  private reportWriteFailure(write: Promise<void>): void {
+    write.catch((error: unknown) => {
+      const message =
+        error instanceof FirestoreOperationError
+          ? `Änderung konnte nicht gespeichert werden (${error.operation}).`
+          : 'Änderung konnte nicht gespeichert werden.';
+      this.loadError.set(message);
     });
   }
 
@@ -174,16 +181,16 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         let currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
-        this.playerRepo.updateHandstack(
+        this.reportWriteFailure(this.playerRepo.updateHandstack(
           this.currentGameId(),
           this.currentPlayerId(),
           currHand
-        );
-        this.playerRepo.updateCardstack(
+        ));
+        this.reportWriteFailure(this.playerRepo.updateCardstack(
           this.currentGameId(),
           this.currentPlayerId(),
           currCardStack
-        );
+        ));
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));
       }
@@ -218,12 +225,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
 
-        this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand);
-        this.playerRepo.updateCardstack(
+        this.reportWriteFailure(this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand));
+        this.reportWriteFailure(this.playerRepo.updateCardstack(
           this.currentGameId(),
           userId,
           currCardStack
-        );
+        ));
 
         currentCardStack = currCardStack;
         currentHand = currHand;
@@ -259,12 +266,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           const getCardForHand = currCardStack.shift()!;
           currHand.push(getCardForHand);
 
-          this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand);
-          this.playerRepo.updateCardstack(
+          this.reportWriteFailure(this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand));
+          this.reportWriteFailure(this.playerRepo.updateCardstack(
             this.currentGameId(),
             userId,
             currCardStack
-          );
+          ));
 
           this.store.dispatch(new UpdateCardStackAction(currCardStack));
           this.store.dispatch(new UpdateCurrentHandAction(currHand));
@@ -279,12 +286,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           const getCardForHand = currCardStack.shift()!;
           currHand.push(getCardForHand);
 
-          this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand);
-          this.playerRepo.updateCardstack(
+          this.reportWriteFailure(this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand));
+          this.reportWriteFailure(this.playerRepo.updateCardstack(
             this.currentGameId(),
             userId,
             currCardStack
-          );
+          ));
 
           currentCardStack = currCardStack;
           currentHand = currHand;
@@ -307,16 +314,16 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         let currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
-        this.playerRepo.updateHandstack(
+        this.reportWriteFailure(this.playerRepo.updateHandstack(
           this.currentGameId(),
           this.currentPlayerId(),
           currHand
-        );
-        this.playerRepo.updateCardstack(
+        ));
+        this.reportWriteFailure(this.playerRepo.updateCardstack(
           this.currentGameId(),
           this.currentPlayerId(),
           currCardStack
-        );
+        ));
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));
       }
@@ -361,10 +368,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         if (isEventCard || isMatchingType) {
           currEne.length = 0;
           this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-          this.gameRepo.updateCurrentEnemyToken(
+          this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(
             this.currentGameId(),
             this.currentEnemy()
-          );
+          ));
           this.checkForNextEnemy(this.currentEnemy());
           this.saveHand(card, currHand);
         }
@@ -411,12 +418,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
     const updatedHand = this.checkHandsize(currHand)!;
 
-    this.playerRepo.updateHandstack(
+    this.reportWriteFailure(this.playerRepo.updateHandstack(
       this.currentGameId(),
       this.currentPlayerId(),
       updatedHand
-    );
-    this.gameRepo.updateCurrentEnemyToken(this.currentGameId(), currMob);
+    ));
+    this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(this.currentGameId(), currMob));
 
     this.store.dispatch(new UpdateCurrentHandAction(updatedHand));
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
@@ -433,16 +440,16 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       const getCardForHand = changedCardStack.shift()!;
       currHand.push(getCardForHand);
       // this.store.dispatch(new UpdateCardStackAction(currCardStack));
-      this.playerRepo.updateHandstack(
+      this.reportWriteFailure(this.playerRepo.updateHandstack(
         this.currentGameId(),
         this.currentPlayerId(),
         currHand
-      );
-      this.playerRepo.updateCardstack(
+      ));
+      this.reportWriteFailure(this.playerRepo.updateCardstack(
         this.currentGameId(),
         this.currentPlayerId(),
         changedCardStack
-      );
+      ));
     }
     return currHand;
   }
@@ -464,10 +471,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     const indexOfEnemyToken = currEne.indexOf(card);
     currEne.splice(indexOfEnemyToken, 1);
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    this.gameRepo.updateCurrentEnemyToken(
+    this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(
       this.currentGameId(),
       this.currentEnemy()
-    );
+    ));
     this.checkForNextEnemy(this.currentEnemy());
   }
 
@@ -476,10 +483,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     currEne.splice(firstIndexOfEnemyToken, 1);
 
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    this.gameRepo.updateCurrentEnemyToken(
+    this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(
       this.currentGameId(),
       this.currentEnemy()
-    );
+    ));
 
     if (currEne.includes(cardTwo)) {
       const secCurrEne = [...currEne];
@@ -487,10 +494,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       secCurrEne.splice(secondIndexOfEnemyToken, 1);
 
       this.store.dispatch(new UpdateMonsterTokenArray(secCurrEne));
-      this.gameRepo.updateCurrentEnemyToken(
+      this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(
         this.currentGameId(),
         this.currentEnemy()
-      );
+      ));
       this.checkForNextEnemy(this.currentEnemy());
     }
   }
@@ -498,15 +505,15 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   getNextEnemy() {
     const currMob = [...this.currentMob()];
     const newCurrentEnemy: Mob = currMob.shift()!;
-    this.gameRepo.updateCurrentEnemyToken(this.currentGameId(), newCurrentEnemy);
-    this.gameRepo.updateNewMob(this.currentGameId(), currMob);
+    this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(this.currentGameId(), newCurrentEnemy));
+    this.reportWriteFailure(this.gameRepo.updateNewMob(this.currentGameId(), currMob));
     this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
     this.store.dispatch(new UpdateMobAction(currMob));
   }
 
   getNextBoss() {
     const newCurrentEnemy: Mob = this.currentBoss();
-    this.gameRepo.updateCurrentEnemyToken(this.currentGameId(), newCurrentEnemy);
+    this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(this.currentGameId(), newCurrentEnemy));
     this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
   }
 
@@ -518,10 +525,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       currEnemyToken.length = 0;
 
       this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
-      this.gameRepo.updateCurrentEnemyToken(
+      this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(
         this.currentGameId(),
         this.currentEnemy()
-      );
+      ));
       this.checkForNextEnemy(this.currentEnemy());
 
       this.heropowerArray().forEach((card) => {
@@ -534,16 +541,16 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           const getCardForHand = currCardStack.shift()!;
           currHand.push(getCardForHand);
 
-          this.playerRepo.updateHandstack(
+          this.reportWriteFailure(this.playerRepo.updateHandstack(
             this.currentGameId(),
             this.currentPlayerId(),
             currHand
-          );
-          this.playerRepo.updateCardstack(
+          ));
+          this.reportWriteFailure(this.playerRepo.updateCardstack(
             this.currentGameId(),
             this.currentPlayerId(),
             currCardStack
-          );
+          ));
 
           this.store.dispatch(new UpdateCardStackAction(currCardStack));
           this.store.dispatch(new UpdateCurrentHandAction(currHand));
@@ -559,11 +566,11 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     let indexOfHandCard = this.currentHand().indexOf(card);
     currHand.splice(indexOfHandCard, 1);
     currHand = this.checkHandsize(currHand)!;
-    this.playerRepo.updateHandstack(
+    this.reportWriteFailure(this.playerRepo.updateHandstack(
       this.currentGameId(),
       this.currentPlayerId(),
       currHand
-    );
+    ));
     this.store.dispatch(new UpdateCurrentHandAction(currHand));
     this.store.dispatch(new UpdateCardStackAction(this.currentCardStack()));
   }
@@ -584,5 +591,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.gameSubscr.unsubscribe();
+    this.playerSubsc?.unsubscribe();
   }
 }

@@ -1,4 +1,8 @@
 <div class="card-area">
+  @if (loadError()) {
+    <div class="player-hand-error">{{ loadError() }}</div>
+  }
+
   <div class="card-stack">
     @for (c of [0,1,2,3]; track c; let i = $index) {
       <img [ngStyle]="{'left.px': i * 5}"
