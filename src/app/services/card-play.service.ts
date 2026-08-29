@@ -138,7 +138,10 @@ export class CardPlayService {
     return currHand;
   }
 
-  private checkForNextEnemy(gameId: string, currentEnemy: Mob, reportWriteFailure: ReportWriteFailure): void {
+  /** Public: also used directly by PlayerHandComponent as the "array" heropower group's
+   * onEnemyTokenCleared callback (HeropowerService clears the token, this decides what enemy
+   * comes next). */
+  checkForNextEnemy(gameId: string, currentEnemy: Mob, reportWriteFailure: ReportWriteFailure): void {
     if (Array.isArray(currentEnemy.token) && !currentEnemy.token.length) {
       if (this.currentMob().length > 0) {
         this.getNextEnemy(gameId, reportWriteFailure);
