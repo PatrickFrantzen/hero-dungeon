@@ -4,9 +4,7 @@ import {
   CurrentGameAction,
   CurrentGameData,
   SetNewEnemy,
-  SetChoosenHeros,
   UpdateMonsterTokenArray,
-  updateChoosenHeros,
   updateQuestCardActivated,
 } from '../actions/currentGame-action';
 import { Game } from 'src/models/game';
@@ -127,63 +125,6 @@ export class CurrentGameState {
       game: {
         ...state.game,
         Mob: newMob,
-      },
-    });
-  }
-
-  @Action(updateChoosenHeros)
-  updateChoosenHero(
-    ctx: StateContext<CurrentGameModel>,
-    action: updateChoosenHeros
-  ) {
-    const { hero } = action;
-    if (!hero) {
-      return;
-    }
-
-    const state = ctx.getState();
-    const newHero: {
-      playerName: string;
-      playerId: string;
-      playerHero: string;
-    } = hero;
-
-    let updatedChoosenHeros: Array<{
-      playerName: string;
-      playerId: string;
-      playerHero: string;
-    }>;
-
-    if (state.game.choosenHeros.length > 0) {
-      updatedChoosenHeros = [...state.game.choosenHeros, newHero];
-    } else {
-      updatedChoosenHeros = [newHero];
-    }
-    ctx.setState({
-      ...state,
-      game: {
-        ...state.game,
-        choosenHeros: updatedChoosenHeros,
-      },
-    });
-  }
-
-  @Action(SetChoosenHeros)
-  setChoosenHeros(
-    ctx: StateContext<CurrentGameModel>,
-    action: SetChoosenHeros
-  ) {
-    const { choosenHeros } = action;
-    if (!choosenHeros) {
-      return;
-    }
-
-    const state = ctx.getState();
-    ctx.patchState({
-      ...state,
-      game: {
-        ...state.game,
-        choosenHeros,
       },
     });
   }

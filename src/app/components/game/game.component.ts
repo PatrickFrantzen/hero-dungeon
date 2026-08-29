@@ -9,7 +9,7 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
 import { CurrentDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { CurrentUserHeroAction } from 'src/app/actions/currentUser-action';
-import { updateChoosenHeros } from 'src/app/actions/currentGame-action';
+import { updateChoosenHeros } from 'src/app/actions/lobby-action';
 import { EnemyContainerComponent } from '../enemy/enemy-container/enemy-container.component';
 import { PlayerHandComponent } from '../player-hand/player-hand.component';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';

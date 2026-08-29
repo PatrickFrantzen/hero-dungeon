@@ -6,16 +6,14 @@ import { Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import {
-  SetChoosenHeros,
-  updateQuestCardActivated,
-} from 'src/app/actions/currentGame-action';
-import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/currentGame-action';
+import { updateQuestCardActivated, SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/currentGame-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
+import { SetChoosenHeros } from 'src/app/actions/lobby-action';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
+import { LobbySelectors } from 'src/app/selectors/lobby-selector';
 import { CardPlayService } from 'src/app/services/card-play.service';
 import { FirestoreOperationError } from 'src/app/services/firestore-repository.service';
 import { FirestoreSyncService } from 'src/app/services/firestore-sync.service';
@@ -40,7 +38,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   currentPlayerName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
 
-  currentPlayers = this.store.selectSignal(CurrentGameSelectors.currentPlayers);
+  currentPlayers = this.store.selectSignal(LobbySelectors.currentPlayers);
 
   currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
 
