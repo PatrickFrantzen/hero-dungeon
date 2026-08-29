@@ -1,16 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { Inject } from '@angular/core';
-import { Barbar } from 'src/models/helden/barbar.class';
-import { Dieb } from 'src/models/helden/dieb.class';
-import { Gladiator } from 'src/models/helden/gladiator.class';
-import { Jägerin } from 'src/models/helden/jägerin.class';
-import { Magier } from 'src/models/helden/magier.class';
-import { Ninja } from 'src/models/helden/ninja.class';
-import { Paladin } from 'src/models/helden/paladin.class';
-import { Waldläufer } from 'src/models/helden/waldläufer.class';
-import { Walküre } from 'src/models/helden/walküre.class';
-import { Zauberin } from 'src/models/helden/zauberin.class';
+import { createHero } from 'src/models/helden/hero.class';
+import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatSelect, MatOption } from '@angular/material/select';
@@ -34,30 +26,10 @@ export class DialogChooseHeroComponent {
   numberOfPlayer!:number;
   selectedValue!:string;
 
-  barbar:Barbar = new Barbar;
-  dieb: Dieb = new Dieb;
-  gladiator: Gladiator = new Gladiator;
-  jägerin: Jägerin = new Jägerin;
-  magier: Magier = new Magier;
-  ninja: Ninja = new Ninja;
-  paladin: Paladin = new Paladin;
-  waldläufer: Waldläufer = new Waldläufer;
-  walküre: Walküre = new Walküre;
-  zauberin: Zauberin = new Zauberin;
-
-
-  heros: Heros[] = [
-    {value: this.barbar.toJSON(), viewValue: 'Barbar'},
-    {value: this.dieb.toJSON(), viewValue: 'Dieb'},
-    {value: this.gladiator.toJSON(), viewValue: 'Gladiator'},
-    {value: this.jägerin.toJSON(), viewValue: 'Jägerin'},
-    {value: this.magier.toJSON(), viewValue: 'Magier'},
-    {value: this.ninja.toJSON(), viewValue: 'Ninja'},
-    {value: this.paladin.toJSON(), viewValue: 'Paladin'},
-    {value: this.waldläufer.toJSON(), viewValue: 'Waldläufer'},
-    {value: this.walküre.toJSON(), viewValue: 'Walküre'},
-    {value: this.zauberin.toJSON(), viewValue: 'Zauberin'},
-  ];
+  heros: Heros[] = HERO_DEFINITIONS.map((def) => ({
+    value: createHero(def.id).toJSON(),
+    viewValue: def.heroName,
+  }));
 
   constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogChooseHeroComponent>) {}
 
