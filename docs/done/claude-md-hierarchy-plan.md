@@ -1,5 +1,21 @@
 # Plan: Hierarchische CLAUDE.md-Struktur
 
+## Status (2026-08-29)
+
+Vollständig umgesetzt: TODO 1–8 (`docs/CLAUDE.md`, `src/app/states/CLAUDE.md`,
+`src/app/services/CLAUDE.md`, `src/app/components/CLAUDE.md`,
+`src/app/components/player-hand/CLAUDE.md`, `src/app/components/enemy/CLAUDE.md`,
+`src/app/components/heropower/CLAUDE.md`, `src/models/CLAUDE.md`, Root-`CLAUDE.md` gekürzt +
+Index ergänzt). Beim Schreiben der einzelnen Dateien fiel auf, dass mehrere in der alten
+Root-`CLAUDE.md` als "offen" beschriebene Punkte im Code bereits umgesetzt waren
+(Helden-Datenmodell, Firestore-Repository-Layer, Dialog-/Auth-Vereinheitlichung, Teile der
+`currentGame-state`-Aufteilung, Player-Hand von >580 auf ~195 Zeilen) — die neuen Dateien
+beschreiben den tatsächlichen Code-Stand, nicht mehr den veralteten Root-Text. Zusätzlich in die
+Root-`CLAUDE.md` aufgenommen: die Pflicht, betroffene `CLAUDE.md`-Dateien bei jeder Änderung
+mitzupflegen.
+
+Kein `ng build`/`ng test`-Lauf nötig (reine Dokumentationsänderung, kein Code betroffen).
+
 Kontext: Die einzige `CLAUDE.md` im Repo-Root ist mit jedem Refactoring gewachsen (Tech-Stack,
 Struktur, bekannte Baustellen, Arbeitsweise) und beschreibt inzwischen Details aus fast jedem
 Bereich des Codes auf einmal. Ein Agent, der z.B. nur `firestore-sync.service.ts` anfassen soll,
@@ -93,12 +109,12 @@ pflegen.
 
 ## TODOs
 
-- [ ] **TODO 1 — `docs/CLAUDE.md` anlegen**
+- [x] **TODO 1 — `docs/CLAUDE.md` anlegen**
   - Erklärt die `done/`- vs. `planned/`-Konvention und den Aufbau eines Plans (Diagnose →
     nummerierte TODOs → Verifikation), aktuell nur implizit in der Root-`CLAUDE.md` beschrieben.
   - Kleinster, risikofreier erster Schritt — reine Ergänzung, keine bestehende Datei ändert sich.
 
-- [ ] **TODO 2 — `src/app/states/CLAUDE.md`**
+- [x] **TODO 2 — `src/app/states/CLAUDE.md`**
   - Welche States unter `src/app/states/` existieren, welche davon in `app.config.ts` via
     `provideStore([...])` registriert sind (mit dem Hinweis, dass `app.config.ts` die einzige
     Quelle der Wahrheit bleibt und diese Liste veralten kann — Beispiel: der entfernte
@@ -108,7 +124,7 @@ pflegen.
   - Verifikation: Datei liegt unter 200 Zeilen, keine Aussage widerspricht dem aktuellen Inhalt
     von `app.config.ts` (gegenlesen).
 
-- [ ] **TODO 3 — `src/app/services/CLAUDE.md`**
+- [x] **TODO 3 — `src/app/services/CLAUDE.md`**
   - Kurzüberblick, welcher Service wofür zuständig ist (Repository-Services vs.
     Business-Logik-Services wie `card-play.service.ts`, `heropower.service.ts`).
   - Bekannte Lücke: kein einheitlicher Error-Interceptor, Verweis auf
@@ -116,7 +132,7 @@ pflegen.
   - Verifikation: jeder Service aus `ls src/app/services/*.ts` (ohne `.spec.ts`) kommt mindestens
     einmal namentlich vor.
 
-- [ ] **TODO 4 — `src/app/components/CLAUDE.md`**
+- [x] **TODO 4 — `src/app/components/CLAUDE.md`**
   - Smart/Dumb-Container-Konvention (`enemy-container`, `heropower-container`) inkl. Regel, wann
     ein neues Feature diesem Muster folgen soll.
   - OnPush-Voraussetzung ("nur wenn alle Vorfahren auf dem Pfad zur Wurzel OnPush oder
@@ -126,25 +142,25 @@ pflegen.
     pauschal migriert annehmen).
   - Verweis auf die eigene `CLAUDE.md` unter `player-hand/` für den Hotspot.
 
-- [ ] **TODO 5 — `src/app/components/player-hand/CLAUDE.md`**
+- [x] **TODO 5 — `src/app/components/player-hand/CLAUDE.md`**
   - Explizite Hotspot-Warnung (>580 Zeilen, mischt Firestore/NGXS/Spielregeln/UI) direkt an der
     Stelle, wo ein Agent sie am ehesten braucht — bevor er die Datei überhaupt öffnet.
   - Link auf `docs/planned/player-hand-decomposition-plan.md` als Einstiegspunkt für jede
     größere Änderung hier, statt die Diagnose zu duplizieren.
 
-- [ ] **TODO 6 — `src/app/components/enemy/CLAUDE.md`** und
+- [x] **TODO 6 — `src/app/components/enemy/CLAUDE.md`** und
       **`src/app/components/heropower/CLAUDE.md`**
   - Je 10–20 Zeilen: was der Container liest (Store/Firestore) und was die Presenter-Komponente
     rein darstellt, plus das jeweils konkrete Beispiel-File als Referenz für neue
     Container/Presenter-Paare (`heropower-container.component.ts` wird in der Root-`CLAUDE.md`
     bereits als Signal-Pattern-Beispiel genannt — hierher verschieben/verlinken statt duplizieren).
 
-- [ ] **TODO 7 — `src/models/CLAUDE.md`**
+- [x] **TODO 7 — `src/models/CLAUDE.md`**
   - Helden-Klassen (`src/models/helden/`), `Hero.buildCardstack()`-Dedupliziernug, Monster-Klasse
     + `monster-collection.data.ts`.
   - Link auf `docs/planned/hero-data-model-plan.md` statt erneuter Diagnose der Duplikate.
 
-- [ ] **TODO 8 — Root-`CLAUDE.md` kürzen und Index ergänzen**
+- [x] **TODO 8 — Root-`CLAUDE.md` kürzen und Index ergänzen**
   - Erst nachdem TODO 1–7 stehen (sonst zeigt der Index auf nicht existierende Dateien).
   - "Struktur"- und "Bekannte Baustellen"-Abschnitte auf Verweise auf die neuen
     verzeichnis-lokalen Dateien reduzieren, Index-Tabelle (siehe oben) einfügen.
