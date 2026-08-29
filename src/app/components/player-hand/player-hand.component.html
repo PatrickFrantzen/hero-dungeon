@@ -15,8 +15,8 @@
     </div>
 
     <div class="currentHandStack">
-      @for (card of currentHand() ; track card; let x = $index) {
-        <div class="hand-card" [ngStyle]="{'left.px': x * 170}">
+      @for (card of currentHand() ; track card) {
+        <div class="hand-card">
           <img (click)="chooseCard(card)" src="./assets/img/cards/{{card}}.png">
           @if (isSingleplayer()) {
             <button class="rest-button" (click)="restCard(card)">Rasten</button>
