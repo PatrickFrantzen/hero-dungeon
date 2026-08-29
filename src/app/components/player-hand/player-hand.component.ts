@@ -37,7 +37,7 @@ import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-sel
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
-import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { LoadGameService } from 'src/app/services/load-game.service';
 import { SaveGameService } from 'src/app/services/save-game.service';

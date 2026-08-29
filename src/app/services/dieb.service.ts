@@ -3,7 +3,7 @@ import { Store } from '@ngxs/store';
 import { CurrentHandSelector } from '../selectors/currentHand-selector';
 import { CurrentCardStackSelector } from '../selectors/currentCardStack-selector';
 import { CurrentGameSelectors } from '../selectors/currentGame-selector';
-import { CurrentUserSelectors } from '../selectors/currentUser-selectos';
+import { CurrentUserSelectors } from '../selectors/currentUser-selectors';
 import { UpdateCurrentHandAction } from '../actions/cardsInHand-action';
 import { SaveGameService } from './save-game.service';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/heropower-action';
@@ -11,7 +11,7 @@ import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/herop
 @Injectable({
   providedIn: 'root'
 })
-export class DiebServiceService {
+export class DiebService {
 
   constructor(private store: Store, private saveGame: SaveGameService) { }
 

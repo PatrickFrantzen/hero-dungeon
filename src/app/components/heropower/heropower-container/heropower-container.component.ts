@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, effect, output } from '@a
 import { Store } from '@ngxs/store';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
-import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
-import { DiebServiceService } from 'src/app/services/dieb-service.service';
+import { DiebService } from 'src/app/services/dieb.service';
 import { SaveGameService } from 'src/app/services/save-game.service';
 import { Mob } from 'src/models/monster/monster.class';
 import { HeropowerComponent } from '../heropower.component';
@@ -46,7 +46,7 @@ export class HeropowerContainerComponent {
   // *when* a heropower resolves and delegates the *how* back up to its parent.
   readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere'>();
 
-  constructor(private store: Store, private saveGame: SaveGameService, private diebService: DiebServiceService) {
+  constructor(private store: Store, private saveGame: SaveGameService, private diebService: DiebService) {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
     effect(() => {
       const enemy = this.enemy();

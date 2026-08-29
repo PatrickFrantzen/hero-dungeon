@@ -2,15 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { DialogGameSettings } from './dialog-game-settings.component';
+import { DialogGameSettingsComponent } from './dialog-game-settings.component';
 
 describe('DialogChooseHeroComponent', () => {
-  let component: DialogGameSettings;
-  let fixture: ComponentFixture<DialogGameSettings>;
+  let component: DialogGameSettingsComponent;
+  let fixture: ComponentFixture<DialogGameSettingsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [DialogGameSettings],
+    imports: [DialogGameSettingsComponent],
     schemas: [NO_ERRORS_SCHEMA],
     providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
@@ -19,7 +19,7 @@ describe('DialogChooseHeroComponent', () => {
 })
     .compileComponents();
 
-    fixture = TestBed.createComponent(DialogGameSettings);
+    fixture = TestBed.createComponent(DialogGameSettingsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

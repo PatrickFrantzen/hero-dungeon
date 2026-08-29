@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
-import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
+import { DialogGameSettingsComponent } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
 import { getFirestore, doc, setDoc, DocumentData} from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { Mob, Monster } from 'src/models/monster/monster.class';
 import { Store } from '@ngxs/store';
-import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameAction, CurrentGameData, SetNewEnemy } from 'src/app/actions/currentGame-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
@@ -59,7 +59,7 @@ export class StartscreenComponent implements OnInit {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open(DialogGameSettings, {
+    let dialogRef = this.dialog.open(DialogGameSettingsComponent, {
       data: {numberOfPlayer: this.numberOfPlayers,
               difficulty: this.difficulty,
               gameId: this.gameId,
