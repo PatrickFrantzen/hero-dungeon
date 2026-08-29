@@ -16,5 +16,50 @@
     text-align: center;
 }
 
+.game-success {
+    background-color: #0f7b2f;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+}
+
+.game-timer {
+    align-self: center;
+    margin-top: 16px;
+    min-width: 220px;
+    padding: 12px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.72);
+    color: white;
+    text-align: center;
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.5);
+}
+
+.game-timer--running {
+    border-color: #ffe066;
+}
+
+.game-timer--danger {
+    border-color: #ff4d4f;
+    color: #ffb3b3;
+}
+
+.game-timer__label,
+.game-timer__hint {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.game-timer__time {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 4px 0;
+}
+
 
 

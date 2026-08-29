@@ -21,6 +21,7 @@ import { GameComponent } from './game.component';
 describe('GameComponent', () => {
   let component: GameComponent;
   let fixture: ComponentFixture<GameComponent>;
+  let store: Store;
 
   beforeEach(async () => {
     ensureFirebaseTestAppInitialized();
@@ -39,7 +40,7 @@ describe('GameComponent', () => {
     // doc() throw synchronously ("Invalid document reference"). Seed a non-empty id so the
     // path is valid; see Issue #8 for untangling GameComponent's Firestore access from its
     // lifecycle.
-    const store = TestBed.inject(Store);
+    store = TestBed.inject(Store);
     const snapshot = store.snapshot();
     store.reset({ ...snapshot, currentGame: { ...snapshot['currentGame'], items: 'test-game-id' } });
 
@@ -50,5 +51,29 @@ describe('GameComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows the full five-minute countdown before the first card is played', () => {
+    expect(component.formattedRemainingTime()).toBe('05:00');
+  });
+
+  it('formats the remaining countdown from the stored timer start', () => {
+    const now = Date.now();
+    const snapshot = store.snapshot();
+    store.reset({
+      ...snapshot,
+      currentGame: {
+        ...snapshot['currentGame'],
+        timerStartedAt: now - 125_000,
+        timerDurationSeconds: 300,
+      },
+    });
+    component.now.set(now);
+
+    expect(component.formattedRemainingTime()).toBe('02:55');
+  });
+
+  afterEach(() => {
+    fixture.destroy();
   });
 });

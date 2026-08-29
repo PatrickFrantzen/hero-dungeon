@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, OnDestroy, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { User } from 'src/models/user.class';
@@ -15,6 +15,7 @@ import { PlayerHandComponent } from '../player-hand/player-hand.component';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { ChooseHeroDialogResult } from 'src/app/components/dialog-results';
+import { UpdateGameStatus } from 'src/app/actions/currentGame-action';
 
 interface ChoosenPlayer {
   playerName: string;
@@ -32,20 +33,38 @@ interface ChoosenPlayer {
     imports: [EnemyContainerComponent, PlayerHandComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GameComponent implements OnInit {
+export class GameComponent implements OnInit, OnDestroy {
 
   currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
   currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
   currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
   currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
+  timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
+  timerDurationSeconds = this.store.selectSignal(CurrentGameSelectors.currentTimerDurationSeconds);
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
 
   loadError = signal<string | null>(null);
+  now = signal(Date.now());
+  remainingSeconds = computed(() => {
+    const startedAt = this.timerStartedAt();
+    if (startedAt === null) return this.timerDurationSeconds();
+
+    const elapsedSeconds = Math.floor((this.now() - startedAt) / 1000);
+    return Math.max(0, this.timerDurationSeconds() - elapsedSeconds);
+  });
+  formattedRemainingTime = computed(() => {
+    const remaining = this.remainingSeconds();
+    const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const seconds = (remaining % 60).toString().padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  });
 
   user = new User();
   currentHero: Object = {};
   players: ChoosenPlayer[] = [];
+  private timerInterval?: ReturnType<typeof setInterval>;
+  private timeoutReported = false;
 
   constructor(
     public dialog: MatDialog,
@@ -56,6 +75,33 @@ export class GameComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkIfPlayerIsAlreadyPartOfGame();
+    this.timerInterval = setInterval(() => {
+      this.now.set(Date.now());
+      this.markGameLostWhenTimerRunsOut();
+    }, 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+  }
+
+  private markGameLostWhenTimerRunsOut(): void {
+    if (
+      this.timeoutReported ||
+      this.timerStartedAt() === null ||
+      this.remainingSeconds() > 0 ||
+      this.currentGameStatus() !== 'playing'
+    ) {
+      return;
+    }
+
+    this.timeoutReported = true;
+    this.store.dispatch(new UpdateGameStatus('lost'));
+    this.gameRepo.updateGameStatus(this.currentGameId(), 'lost').catch(() => {
+      this.loadError.set('Zeit abgelaufen, aber der Spielstand konnte nicht gespeichert werden.');
+    });
   }
 
   async checkIfPlayerIsAlreadyPartOfGame() {

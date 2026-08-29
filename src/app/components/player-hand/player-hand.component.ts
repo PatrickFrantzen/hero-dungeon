@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
@@ -117,6 +117,9 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new SetChoosenHeros(data['choosenHeros']));
     this.store.dispatch(new updateQuestCardActivated(data['questCardActivated']));
     this.store.dispatch(new UpdateGameStatus(data['gameStatus'] ?? (data['isLost'] ? 'lost' : 'playing')));
+    if (typeof data['timerStartedAt'] === 'number') {
+      this.store.dispatch(new StartGameTimer(data['timerStartedAt']));
+    }
   }
 
   onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere') {

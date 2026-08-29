@@ -24,4 +24,14 @@ export class CurrentGameSelectors {
   static currentNumberOfPlayers(state: CurrentGameModel): number {
     return state.numberOfPlayers;
   }
+
+  @Selector([CurrentGameState])
+  static currentTimerStartedAt(state: CurrentGameModel): number | null {
+    return state.timerStartedAt;
+  }
+
+  @Selector([CurrentGameState])
+  static currentTimerDurationSeconds(state: CurrentGameModel): number {
+    return state.timerDurationSeconds;
+  }
 }
