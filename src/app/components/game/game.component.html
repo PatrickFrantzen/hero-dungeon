@@ -1,8 +1,12 @@
 <div class="mainfield">
 
+    @if (loadError()) {
+        <div class="game-error">{{ loadError() }}</div>
+    }
+
     <app-enemy-container></app-enemy-container>
-   
-   
+
+
     <app-player-hand></app-player-hand>
 
 
