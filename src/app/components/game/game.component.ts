@@ -37,6 +37,8 @@ export class GameComponent implements OnInit {
   currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
   currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
+  currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
+  currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
 
   loadError = signal<string | null>(null);
@@ -100,8 +102,9 @@ export class GameComponent implements OnInit {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open<DialogChooseHeroComponent, undefined, { data: ChooseHeroDialogResult }>(
-      DialogChooseHeroComponent
+    let dialogRef = this.dialog.open<DialogChooseHeroComponent, { singleplayerMode: boolean }, { data: ChooseHeroDialogResult }>(
+      DialogChooseHeroComponent,
+      { data: { singleplayerMode: this.currentNumberOfPlayers() === 1 } }
     );
 
     dialogRef.afterClosed().subscribe(async (result) => {

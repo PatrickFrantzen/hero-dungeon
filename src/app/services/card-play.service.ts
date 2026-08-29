@@ -3,13 +3,17 @@ import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
+import { UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
+import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
+import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
+import { shuffle } from 'src/models/shuffle.util';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
 
@@ -27,6 +31,7 @@ export type ReportWriteFailure = (write: Promise<void>) => void;
 export class CardPlayService {
   private currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
   private currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
+  private currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
   private currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   private currentMob = this.store.selectSignal(EncounterSelectors.currentMob);
   private currentBoss = this.store.selectSignal(EncounterSelectors.currentBoss);
@@ -92,6 +97,58 @@ export class CardPlayService {
     }
   }
 
+  /** Singleplayer-Deadlock-Schutz: ausgewählte Karte ablegen und eine Ersatzkarte ziehen. */
+  restCard(gameId: string, playerId: string, card: string, reportWriteFailure: ReportWriteFailure): void {
+    const currHand = [...this.currentHand()];
+    const cardIndex = currHand.indexOf(card);
+    if (cardIndex < 0) return;
+
+    currHand.splice(cardIndex, 1);
+    const deliveryStack = [...this.currentDeliveryStack(), card];
+    const drawResult = this.drawCards(currHand, [...this.currentCardStack()], deliveryStack, 1);
+
+    this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
+  }
+
+  /** Löst die solo-tauglichen Eventkarten aus und lädt danach den nächsten Encounter. */
+  resolveSoloEvent(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
+    const event = this.currentEnemy();
+    if (!event.token.includes('event')) return;
+
+    const currHand = [...this.currentHand()];
+    let cardsToDiscard = 0;
+    let cardsToDraw = 0;
+
+    switch (event.name) {
+      case 'Plötzliche Krankheit':
+        cardsToDiscard = currHand.length;
+        cardsToDraw = 5;
+        break;
+      case 'Ein Wehweh':
+        cardsToDiscard = Math.min(1, currHand.length);
+        cardsToDraw = cardsToDiscard;
+        break;
+      case 'Falltür':
+        cardsToDiscard = Math.min(3, currHand.length);
+        cardsToDraw = cardsToDiscard;
+        break;
+      default:
+        cardsToDiscard = currHand.length;
+        cardsToDraw = 5;
+        break;
+    }
+
+    const discardedCards = currHand.splice(0, cardsToDiscard);
+    const deliveryStack = [...this.currentDeliveryStack(), ...discardedCards];
+    const drawResult = this.drawCards(currHand, [...this.currentCardStack()], deliveryStack, cardsToDraw);
+    this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
+
+    const clearedEvent: Mob = { ...event, token: [] };
+    this.store.dispatch(new SetNewEnemy(clearedEvent));
+    reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, clearedEvent));
+    this.checkForNextEnemy(gameId, clearedEvent, reportWriteFailure);
+  }
+
   private playCardfromHandAndUpdateEnemyToken(
     gameId: string,
     playerId: string,
@@ -113,7 +170,7 @@ export class CardPlayService {
     currHand.splice(indexOfHandCard, 1);
     currEne.splice(indexOfEnemyToken, 1);
 
-    const updatedHand = this.checkHandsize(gameId, playerId, currHand, reportWriteFailure);
+    const updatedHand = this.checkHandsize(gameId, playerId, currHand, [card], reportWriteFailure);
 
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, updatedHand));
     reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, currMob));
@@ -124,18 +181,23 @@ export class CardPlayService {
     this.checkForNextEnemy(gameId, this.currentEnemy(), reportWriteFailure);
   }
 
-  private checkHandsize(gameId: string, playerId: string, handsize: string[], reportWriteFailure: ReportWriteFailure): string[] {
-    const currHand = [...handsize];
-    const currCardStack = [...this.currentCardStack()];
+  private checkHandsize(
+    gameId: string,
+    playerId: string,
+    handsize: string[],
+    discardedCards: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): string[] {
+    const drawCount = Math.max(0, 5 - handsize.length);
+    const drawResult = this.drawCards(
+      [...handsize],
+      [...this.currentCardStack()],
+      [...this.currentDeliveryStack(), ...discardedCards],
+      drawCount
+    );
 
-    while (currHand.length < 5 && currCardStack.length > 0) {
-      const changedCardStack = [...currCardStack];
-      const getCardForHand = changedCardStack.shift()!;
-      currHand.push(getCardForHand);
-      reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, currHand));
-      reportWriteFailure(this.playerRepo.updateCardstack(gameId, playerId, changedCardStack));
-    }
-    return currHand;
+    this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
+    return drawResult.hand;
   }
 
   /** Public: also used directly by PlayerHandComponent as the "array" heropower group's
@@ -143,7 +205,10 @@ export class CardPlayService {
    * comes next). */
   checkForNextEnemy(gameId: string, currentEnemy: Mob, reportWriteFailure: ReportWriteFailure): void {
     if (Array.isArray(currentEnemy.token) && !currentEnemy.token.length) {
-      if (this.currentMob().length > 0) {
+      if (currentEnemy.type === 'Boss') {
+        reportWriteFailure(this.gameRepo.updateGameStatus(gameId, 'won'));
+        this.store.dispatch(new UpdateGameStatus('won'));
+      } else if (this.currentMob().length > 0) {
         this.getNextEnemy(gameId, reportWriteFailure);
       } else {
         this.getNextBoss(gameId, reportWriteFailure);
@@ -208,9 +273,42 @@ export class CardPlayService {
   ): void {
     let indexOfHandCard = this.currentHand().indexOf(card);
     currHand.splice(indexOfHandCard, 1);
-    currHand = this.checkHandsize(gameId, playerId, currHand, reportWriteFailure);
+    currHand = this.checkHandsize(gameId, playerId, currHand, [card], reportWriteFailure);
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, currHand));
     this.store.dispatch(new UpdateCurrentHandAction(currHand));
     this.store.dispatch(new UpdateCardStackAction(this.currentCardStack()));
+  }
+
+  private drawCards(hand: string[], cardStack: string[], deliveryStack: string[], drawCount: number) {
+    for (let i = 0; i < drawCount; i++) {
+      if (cardStack.length === 0 && deliveryStack.length > 0) {
+        cardStack = shuffle([...deliveryStack]);
+        deliveryStack = [];
+      }
+
+      if (cardStack.length === 0) {
+        break;
+      }
+
+      hand.push(cardStack.shift()!);
+    }
+
+    return { hand, cardStack, deliveryStack };
+  }
+
+  private persistPlayerStacks(
+    gameId: string,
+    playerId: string,
+    hand: string[],
+    cardStack: string[],
+    deliveryStack: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    this.store.dispatch(new UpdateCurrentHandAction(hand));
+    this.store.dispatch(new UpdateCardStackAction(cardStack));
+    this.store.dispatch(new UpdateDeliveryStack(deliveryStack));
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, hand));
+    reportWriteFailure(this.playerRepo.updateCardstack(gameId, playerId, cardStack));
+    reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, playerId, deliveryStack));
   }
 }

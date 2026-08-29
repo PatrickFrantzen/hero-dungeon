@@ -1,4 +1,4 @@
-import { Game } from "src/models/game"
+import { Game, GameStatus } from "src/models/game"
 
 export class CurrentGameAction {
     static readonly type = '[Startscreen page] Generating new Game ID'
@@ -13,4 +13,9 @@ export class CurrentGameData {
 export class updateQuestCardActivated {
     static readonly type = "[Game page, Monster Page] updating quest card activation"
     constructor(public questCardActivated: boolean){}
+}
+
+export class UpdateGameStatus {
+    static readonly type = "[Game page] updating game status"
+    constructor(public gameStatus: GameStatus){}
 }

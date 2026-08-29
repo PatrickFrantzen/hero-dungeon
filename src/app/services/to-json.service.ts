@@ -15,6 +15,7 @@ export class ToJSONService {
             currentEnemy: game.currentEnemy,
             currentBoss: game.currentBoss,
             isLost: game.isLost,
+            gameStatus: game.gameStatus,
             gameId: game.gameId,
             difficulty: game.difficulty,
             Mob: game.Mob,

@@ -3,8 +3,10 @@ import { Action, State, StateContext } from '@ngxs/store';
 import {
   CurrentGameAction,
   CurrentGameData,
+  UpdateGameStatus,
   updateQuestCardActivated,
 } from '../actions/currentGame-action';
+import { GameStatus } from 'src/models/game';
 
 export interface CurrentGameModel {
   items: string;
@@ -12,6 +14,7 @@ export interface CurrentGameModel {
   gameId: string;
   difficulty: string;
   isLost: boolean;
+  gameStatus: GameStatus;
   questCardActivated: boolean;
 }
 
@@ -23,6 +26,7 @@ export interface CurrentGameModel {
     gameId: '',
     difficulty: '',
     isLost: false,
+    gameStatus: 'playing',
     questCardActivated: false,
   },
 })
@@ -49,6 +53,7 @@ export class CurrentGameState {
       gameId: game.gameId,
       difficulty: game.difficulty,
       isLost: game.isLost,
+      gameStatus: game.gameStatus ?? (game.isLost ? 'lost' : 'playing'),
       questCardActivated: game.questCardActivated,
     });
   }
@@ -60,5 +65,11 @@ export class CurrentGameState {
   ) {
     const { questCardActivated } = action;
     ctx.patchState({ questCardActivated });
+  }
+
+  @Action(UpdateGameStatus)
+  updateGameStatus(ctx: StateContext<CurrentGameModel>, action: UpdateGameStatus) {
+    const { gameStatus } = action;
+    ctx.patchState({ gameStatus, isLost: gameStatus === 'lost' });
   }
 }

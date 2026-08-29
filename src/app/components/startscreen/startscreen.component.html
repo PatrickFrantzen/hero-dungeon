@@ -2,7 +2,8 @@
     <h1>Willkommen {{ currentUserName() }}</h1>
     <div class="start-label-box">
         
-            <button (click)="newGame()">Neues Spiel</button>
+            <button (click)="newSingleplayerGame()">Singleplayer starten</button>
+            <button (click)="newGame()">Neues Multiplayer-Spiel</button>
             <input type="text" [(ngModel)]="joinGameId" placeholder="Name eines existierenden Spiels eingeben">
             <button (click)="joinGame()">Join Game</button>
             <button (click)="logout()">Logout</button>

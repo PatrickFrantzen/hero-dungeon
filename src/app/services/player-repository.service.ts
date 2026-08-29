@@ -41,4 +41,8 @@ export class PlayerRepositoryService {
   updateCardstack(gameId: string, playerId: string, update: string[]): Promise<void> {
     return this.repo.updateFields(['games', gameId, 'player', playerId], { cardstack: update });
   }
+
+  updateDeliveryStack(gameId: string, playerId: string, update: string[]): Promise<void> {
+    return this.repo.updateFields(['games', gameId, 'player', playerId], { deliveryStack: update });
+  }
 }

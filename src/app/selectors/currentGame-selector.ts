@@ -14,4 +14,14 @@ export class CurrentGameSelectors {
   static currentQuestCardStatus(state: CurrentGameModel): boolean {
     return state.questCardActivated;
   }
+
+  @Selector([CurrentGameState])
+  static currentGameStatus(state: CurrentGameModel): string {
+    return state.gameStatus;
+  }
+
+  @Selector([CurrentGameState])
+  static currentNumberOfPlayers(state: CurrentGameModel): number {
+    return state.numberOfPlayers;
+  }
 }

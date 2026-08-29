@@ -17,6 +17,13 @@
     z-index: 1;
 }
 
+.solo-event-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+}
+
 .card-stack {
     img {
         position: absolute;
@@ -29,13 +36,23 @@
 .currentHandStack {
     position: relative;
     right: 25%;
+}
+
+.hand-card {
+    position: absolute;
+    bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
     img {
-        position: absolute;
-        bottom: 15px;
         width: 150px;
         &:hover {
             cursor: pointer;
         }
     }
+}
+
+.rest-button {
+    margin-top: 8px;
 }

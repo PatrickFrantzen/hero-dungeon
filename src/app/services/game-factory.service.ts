@@ -29,6 +29,7 @@ export class GameFactoryService {
         type: 'Boss',
       },
       isLost: false,
+      gameStatus: 'playing',
       gameId,
       difficulty,
       Mob: mob,

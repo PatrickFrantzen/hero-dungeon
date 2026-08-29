@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
@@ -22,11 +22,12 @@ interface Difficulty {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DialogGameSettingsComponent extends BaseDialogComponent<GameSettingsDialogResult> {
-  playerValidation = new FormControl('', [Validators.required, Validators.min(2), Validators.max(5)]);
-  idValidation = new FormControl('', Validators.required);
+  private dialogData = inject<{ singleplayerMode?: boolean } | null>(MAT_DIALOG_DATA, { optional: true });
+  singleplayerMode = this.dialogData?.singleplayerMode ?? false;
+  playerValidation = new FormControl<number | null>(1, [Validators.required, Validators.min(1), Validators.max(5)]);
+  idValidation = new FormControl<string>('', { nonNullable: true, validators: [Validators.required] });
 
-  numberOfPlayer!:number;
-  selectedValue!:string;
+  selectedValue:string = 'easy';
   difficulties: Difficulty[] = [
     {value: 'easy', viewValue: 'easy'},
     {value: 'medium', viewValue: 'medium'},
@@ -38,6 +39,11 @@ export class DialogGameSettingsComponent extends BaseDialogComponent<GameSetting
   }
 
   getGameSettings(numberOfPlayer:number, difficulty: string, gameId: string) {
+    if (this.singleplayerMode) {
+      this.closeWith({ numberOfPlayer: 1, difficulty, gameId: `solo-${Date.now()}` });
+      return;
+    }
+
     this.closeWith({ numberOfPlayer, difficulty, gameId });
   }
 }

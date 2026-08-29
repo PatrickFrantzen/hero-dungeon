@@ -6,6 +6,9 @@
 
     <app-enemy-container></app-enemy-container>
 
+    @if (currentGameStatus() === 'won') {
+        <div class="game-success">Du hast Baby-Barbar besiegt!</div>
+    }
 
     <app-player-hand></app-player-hand>
 

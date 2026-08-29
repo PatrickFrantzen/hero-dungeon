@@ -1,5 +1,7 @@
 import { Mob } from "./monster/monster.class";
 
+export type GameStatus = 'playing' | 'won' | 'lost';
+
 export interface Game {
     numberOfPlayers: number ;
     choosenHeros: {
@@ -10,6 +12,7 @@ export interface Game {
     currentEnemy: Mob;
     currentBoss: Mob;
     isLost:boolean;
+    gameStatus: GameStatus;
     gameId: string;
     difficulty: string;
     Mob: Mob[];
