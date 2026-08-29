@@ -19,3 +19,8 @@ export class UpdateGameStatus {
     static readonly type = "[Game page] updating game status"
     constructor(public gameStatus: GameStatus){}
 }
+
+export class StartGameTimer {
+    static readonly type = "[Game page] starting dungeon timer"
+    constructor(public timerStartedAt: number){}
+}

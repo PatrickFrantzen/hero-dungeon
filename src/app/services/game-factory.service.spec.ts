@@ -24,6 +24,8 @@ describe('GameFactoryService', () => {
     expect(game.isLost).toBeFalse();
     expect(game.gameStatus).toBe('playing');
     expect(game.questCardActivated).toBeFalse();
+    expect(game.timerStartedAt).toBeNull();
+    expect(game.timerDurationSeconds).toBe(300);
     expect(game.currentBoss.name).toBe('Baby-Barbar');
     expect(game.currentEnemy).toBeTruthy();
     expect(Array.isArray(game.Mob)).toBeTrue();

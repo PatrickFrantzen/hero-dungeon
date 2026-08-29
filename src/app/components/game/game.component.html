@@ -4,10 +4,22 @@
         <div class="game-error">{{ loadError() }}</div>
     }
 
+    <div class="game-timer" [class.game-timer--running]="timerStartedAt() !== null" [class.game-timer--danger]="remainingSeconds() <= 30">
+        <span class="game-timer__label">Dungeon-Timer</span>
+        <span class="game-timer__time">{{ formattedRemainingTime() }}</span>
+        @if (timerStartedAt() === null) {
+            <span class="game-timer__hint">Startet mit der ersten gespielten Karte</span>
+        }
+    </div>
+
     <app-enemy-container></app-enemy-container>
 
     @if (currentGameStatus() === 'won') {
         <div class="game-success">Du hast Baby-Barbar besiegt!</div>
+    }
+
+    @if (currentGameStatus() === 'lost') {
+        <div class="game-error">Die Zeit ist abgelaufen. Der Dungeon ist verloren.</div>
     }
 
     <app-player-hand></app-player-hand>
