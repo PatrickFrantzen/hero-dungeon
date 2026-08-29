@@ -9,11 +9,8 @@ export class Monster {
 
   constructor() {}
 
-  createMob(numberOfPlayers: number, currentBoss: any, difficulty: string) {
-    if (
-      currentBoss.bossname == 'Baby-Barbar' ||
-      (currentBoss = 'Baby-barbar')
-    ) {
+  createMob(numberOfPlayers: number, currentBossName: string, difficulty: string) {
+    if (currentBossName == 'Baby-Barbar') {
       if (difficulty == 'easy') {
         this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
         // this.getMonsterForGame(numberOfPlayers, 1, 0, 12, 6, 14, 8, 16, 10); // zum testen
@@ -22,7 +19,7 @@ export class Monster {
       } else {
         this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
       }
-    } else if (currentBoss.bossname == 'Der Flecken-Schrecken') {
+    } else if (currentBossName == 'Der Flecken-Schrecken') {
       if (difficulty == 'easy') {
         this.getMonsterForGame(numberOfPlayers, 14, 4, 16, 6, 18, 8, 20, 10);
       } else if (difficulty == 'medium') {
@@ -30,7 +27,7 @@ export class Monster {
       } else {
         this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
       }
-    } else if (currentBoss.bossname == 'Zola, die Gorgone') {
+    } else if (currentBossName == 'Zola, die Gorgone') {
       if (difficulty == 'easy') {
         this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
       } else if (difficulty == 'medium') {
@@ -38,7 +35,7 @@ export class Monster {
       } else {
         this.getMonsterForGame(numberOfPlayers, 26, 4, 28, 6, 30, 8, 32, 10);
       }
-    } else if (currentBoss.bossname == 'Verdammt, ein Drache!!!') {
+    } else if (currentBossName == 'Verdammt, ein Drache!!!') {
       if (difficulty == 'easy') {
         this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
       } else if (difficulty == 'medium') {

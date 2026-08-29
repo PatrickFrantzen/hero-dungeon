@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, output } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -41,6 +41,11 @@ export class HeropowerContainerComponent {
   playerId = computed(() => this.user().items.id ?? '');
   enemy = computed(() => this.game().currentEnemy ?? this.emptyMob);
 
+  // PlayerHandComponent owns the actual card-/handstack logic for these heropowers (it holds
+  // the hand/cardstack signals this container does not have) — this container only detects
+  // *when* a heropower resolves and delegates the *how* back up to its parent.
+  readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere'>();
+
   constructor(private store: Store, private saveGame: SaveGameService, private diebService: DiebServiceService) {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
     effect(() => {
@@ -56,27 +61,21 @@ export class HeropowerContainerComponent {
           case 'Waldläufer':
           case 'Ninja':
           case 'Paladin':
-            this.checkheropowerArray();
+            this.heropowerResolved.emit('array');
             break;
           case 'Magier':
             break;
           case 'Jägerin':
-            this.checkJaegerinHeropower();
+            this.heropowerResolved.emit('jaegerin');
             break;
           case 'Dieb':
             this.diebService.heropower(heropowerArray)
             break;
           case 'Walküre':
-            this.checkWalkuereHeropower();
+            this.heropowerResolved.emit('walkuere');
             break;
         }
       }
     });
   }
-
-  checkheropowerArray() {}
-
-  checkJaegerinHeropower() {}
-
-  checkWalkuereHeropower() {}
 }
