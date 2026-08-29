@@ -3,13 +3,14 @@ import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
+import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
@@ -35,6 +36,7 @@ export class CardPlayService {
   private currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   private currentMob = this.store.selectSignal(EncounterSelectors.currentMob);
   private currentBoss = this.store.selectSignal(EncounterSelectors.currentBoss);
+  private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
   private heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
   private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
 
@@ -70,6 +72,7 @@ export class CardPlayService {
         const isMatchingType = currMob.type.toLocaleLowerCase().includes(doubleCard[1]);
 
         if (isEventCard || isMatchingType) {
+          this.ensureGameTimerStarted(gameId, reportWriteFailure);
           currEne.length = 0;
           this.store.dispatch(new UpdateMonsterTokenArray(currEne));
           reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
@@ -80,6 +83,7 @@ export class CardPlayService {
           card.includes('_') &&
           (this.currentEnemy().token.includes(doubleCard[0]) || this.currentEnemy().token.includes(doubleCard[1]))
         ) {
+          this.ensureGameTimerStarted(gameId, reportWriteFailure);
           if (this.currentEnemy().token.includes(doubleCard[0]) && this.currentEnemy().token.includes(doubleCard[1])) {
             this.playAsTwoCards(gameId, doubleCard[0], doubleCard[1], currEne, reportWriteFailure);
           } else if (this.currentEnemy().token.includes(doubleCard[0])) {
@@ -92,6 +96,7 @@ export class CardPlayService {
       }
 
       if (this.currentEnemy().token.includes(card)) {
+        this.ensureGameTimerStarted(gameId, reportWriteFailure);
         this.playCardfromHandAndUpdateEnemyToken(gameId, playerId, card, reportWriteFailure);
       }
     }
@@ -179,6 +184,13 @@ export class CardPlayService {
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
 
     this.checkForNextEnemy(gameId, this.currentEnemy(), reportWriteFailure);
+  }
+
+  private ensureGameTimerStarted(gameId: string, reportWriteFailure: ReportWriteFailure): void {
+    if (this.timerStartedAt() !== null) return;
+    const startedAt = Date.now();
+    this.store.dispatch(new StartGameTimer(startedAt));
+    reportWriteFailure(this.gameRepo.updateTimerStartedAt(gameId, startedAt));
   }
 
   private checkHandsize(

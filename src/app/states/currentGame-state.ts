@@ -3,6 +3,7 @@ import { Action, State, StateContext } from '@ngxs/store';
 import {
   CurrentGameAction,
   CurrentGameData,
+  StartGameTimer,
   UpdateGameStatus,
   updateQuestCardActivated,
 } from '../actions/currentGame-action';
@@ -16,6 +17,8 @@ export interface CurrentGameModel {
   isLost: boolean;
   gameStatus: GameStatus;
   questCardActivated: boolean;
+  timerStartedAt: number | null;
+  timerDurationSeconds: number;
 }
 
 @State<CurrentGameModel>({
@@ -28,6 +31,8 @@ export interface CurrentGameModel {
     isLost: false,
     gameStatus: 'playing',
     questCardActivated: false,
+    timerStartedAt: null,
+    timerDurationSeconds: 300,
   },
 })
 @Injectable()
@@ -55,6 +60,8 @@ export class CurrentGameState {
       isLost: game.isLost,
       gameStatus: game.gameStatus ?? (game.isLost ? 'lost' : 'playing'),
       questCardActivated: game.questCardActivated,
+      timerStartedAt: game.timerStartedAt ?? null,
+      timerDurationSeconds: game.timerDurationSeconds ?? 300,
     });
   }
 
@@ -71,5 +78,11 @@ export class CurrentGameState {
   updateGameStatus(ctx: StateContext<CurrentGameModel>, action: UpdateGameStatus) {
     const { gameStatus } = action;
     ctx.patchState({ gameStatus, isLost: gameStatus === 'lost' });
+  }
+
+  @Action(StartGameTimer)
+  startGameTimer(ctx: StateContext<CurrentGameModel>, action: StartGameTimer) {
+    if (ctx.getState().timerStartedAt !== null) return;
+    ctx.patchState({ timerStartedAt: action.timerStartedAt });
   }
 }

@@ -41,4 +41,8 @@ export class GameRepositoryService {
   updateGameStatus(gameId: string, gameStatus: 'playing' | 'won' | 'lost'): Promise<void> {
     return this.repo.updateFields(['games', gameId], { gameStatus, isLost: gameStatus === 'lost' });
   }
+
+  updateTimerStartedAt(gameId: string, timerStartedAt: number): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { timerStartedAt });
+  }
 }

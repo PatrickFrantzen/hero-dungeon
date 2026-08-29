@@ -35,6 +35,8 @@ export class GameFactoryService {
       Mob: mob,
       allBosses,
       questCardActivated: false,
+      timerStartedAt: null,
+      timerDurationSeconds: 300,
     };
   }
 }

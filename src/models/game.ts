@@ -18,4 +18,6 @@ export interface Game {
     Mob: Mob[];
     allBosses: Mob[];
     questCardActivated: boolean;
+    timerStartedAt: number | null;
+    timerDurationSeconds: number;
 }

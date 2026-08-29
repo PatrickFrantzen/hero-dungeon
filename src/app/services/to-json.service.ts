@@ -20,7 +20,9 @@ export class ToJSONService {
             difficulty: game.difficulty,
             Mob: game.Mob,
             allBosses: game.allBosses,
-            questCardActivated: game.questCardActivated
+            questCardActivated: game.questCardActivated,
+            timerStartedAt: game.timerStartedAt,
+            timerDurationSeconds: game.timerDurationSeconds
         }
   }
 }

@@ -4,6 +4,7 @@ import { CardStackState } from 'src/app/states/cardStack-state';
 import { cardsInHandState } from 'src/app/states/cardsInHand-state';
 import { DeliveryStackState } from 'src/app/states/deliveryStack-state';
 import { EncounterState } from 'src/app/states/encounter-state';
+import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { heropowerState } from 'src/app/states/heropower-state';
 import {
   ensureAngularFireSchedulersInitialized,
@@ -22,7 +23,7 @@ describe('CardPlayService', () => {
   beforeEach(() => {
     ensureFirebaseTestAppInitialized();
     TestBed.configureTestingModule({
-      imports: [NgxsModule.forRoot([EncounterState, CardStackState, cardsInHandState, DeliveryStackState, heropowerState])],
+      imports: [NgxsModule.forRoot([EncounterState, CardStackState, cardsInHandState, DeliveryStackState, heropowerState, CurrentGameState])],
       providers: firestoreTestProviders(),
     });
     ensureAngularFireSchedulersInitialized();
@@ -55,14 +56,17 @@ describe('CardPlayService', () => {
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const updateSpy = spyOn(gameRepo, 'updateCurrentEnemyToken');
+    const timerSpy = spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
     const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
     service.chooseCard('game-1', 'player-1', 'red', reportWriteFailure);
 
     expect(updateSpy).not.toHaveBeenCalled();
+    expect(timerSpy).not.toHaveBeenCalled();
   });
 
-  it('chooseCard clears the matching enemy token and reports the write when a single card matches', () => {
+  it('chooseCard starts the five-minute timer and clears the matching enemy token when a single card matches', () => {
+    spyOn(Date, 'now').and.returnValue(123456);
     seedGameState({
       hand: ['red'],
       cardStack: ['blue', 'green', 'yellow', 'purple', 'red_purple'],
@@ -71,6 +75,7 @@ describe('CardPlayService', () => {
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
@@ -78,6 +83,8 @@ describe('CardPlayService', () => {
 
     service.chooseCard('game-1', 'player-1', 'red', reportWriteFailure);
 
+    expect(gameRepo.updateTimerStartedAt).toHaveBeenCalledWith('game-1', 123456);
+    expect(store.selectSnapshot((state) => state.currentGame.timerStartedAt)).toBe(123456);
     expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith(
       'game-1',
       jasmine.objectContaining({ token: [] })
@@ -132,6 +139,7 @@ describe('CardPlayService', () => {
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
     spyOn(gameRepo, 'updateGameStatus').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
