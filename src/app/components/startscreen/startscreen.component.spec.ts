@@ -5,7 +5,11 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { Auth } from '@angular/fire/auth';
 import { NgxsModule } from '@ngxs/store';
 import { CurrentUserState } from 'src/app/states/currentUser-state';
-import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
+import {
+  ensureAngularFireSchedulersInitialized,
+  ensureFirebaseTestAppInitialized,
+  firestoreTestProviders,
+} from 'src/testing/firebase-test-app';
 
 import { StartscreenComponent } from './startscreen.component';
 
@@ -21,6 +25,7 @@ describe('StartscreenComponent', () => {
     schemas: [NO_ERRORS_SCHEMA],
     providers: [
         { provide: Auth, useValue: {} },
+        ...firestoreTestProviders(),
     ],
 })
     .compileComponents();

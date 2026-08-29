@@ -1,27 +1,22 @@
 import { TestBed } from '@angular/core/testing';
-import { getAuth, provideAuth } from '@angular/fire/auth';
-import { NgxsModule } from '@ngxs/store';
 import {
   ensureAngularFireSchedulersInitialized,
   ensureFirebaseTestAppInitialized,
   firestoreTestProviders,
 } from 'src/testing/firebase-test-app';
 
-import { CurrentUserService } from './current-user.service';
+import { FirestoreSyncService } from './firestore-sync.service';
 
-describe('CurrentUserService', () => {
-  let service: CurrentUserService;
+describe('FirestoreSyncService', () => {
+  let service: FirestoreSyncService;
 
   beforeEach(() => {
     ensureFirebaseTestAppInitialized();
-
     TestBed.configureTestingModule({
-      imports: [NgxsModule.forRoot([])],
-      providers: [...firestoreTestProviders(), provideAuth(() => getAuth())],
+      providers: firestoreTestProviders(),
     });
-
     ensureAngularFireSchedulersInitialized();
-    service = TestBed.inject(CurrentUserService);
+    service = TestBed.inject(FirestoreSyncService);
   });
 
   it('should be created', () => {

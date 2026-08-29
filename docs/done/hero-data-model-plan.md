@@ -1,5 +1,16 @@
 # Refactoring-Plan: Helden-Datenmodell statt zehn Klassen
 
+## Status (2026-08-29)
+
+Vollständig umgesetzt: `src/models/helden/hero-definitions.ts` (TODO 1),
+`Hero.createHero()`/`buildCardstack()` public (TODO 2),
+`DialogChooseHeroComponent` auf `HERO_DEFINITIONS`/`createHero()` umgestellt (TODO 3), die
+zehn Heldenklassen entfernt (TODO 4). `Herointerface` wurde entgegen der ursprünglichen
+Diagnose **nicht** gelöscht — es wird tatsächlich von `CurrentUserState`/
+`CurrentUserSelectors` verwendet (per `grep` vor dem Löschen verifiziert), ist aber unabhängig
+von den zehn Heldenklassen. `ng build` und `ng test --watch=false --browsers=ChromeHeadlessCI`
+grün nach jedem Schritt.
+
 Kontext: Punkt 6 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefunde 2/3 in
 `docs/done/review-2026-08/05-models.md`. Befund 1 aus derselben Datei (identischer

@@ -1,5 +1,26 @@
 # Refactoring-Plan: `currentGame-state.ts` in fachliche States aufteilen
 
+## Status (2026-08-29)
+
+TODO 1-3 umgesetzt, jeweils build-/testgrün, in eigenen Commits: `LobbyState` (choosenHeros),
+`EncounterState` (currentEnemy/currentBoss/Mob/allBosses), `CurrentGameState` auf
+`{ items, numberOfPlayers, gameId, difficulty, isLost, questCardActivated }` reduziert.
+
+TODO 3s offene Entscheidung (Race Condition durch `CurrentGameData.setGameData()`s
+Wholesale-Replace von `state.game`) ist strukturell aufgelöst, nicht nur verlagert: jedes der
+drei States hat einen eigenen `@Action(CurrentGameData)`-Handler, der nur seine eigene
+Teilmenge der Felder aus dem dispatchten `Game`-Objekt patcht (NGXS unterstützt mehrere
+Handler für dieselbe Action-Klasse über mehrere States) — ein späterer, gezielter Dispatch
+(`SetNewEnemy`, `SetChoosenHeros`, ...) kann nicht mehr versehentlich von einem nachfolgenden
+`CurrentGameData` zurücküberschrieben werden, weil `CurrentGameData` gar keinen Zugriff mehr
+auf die Felder der anderen States hat.
+
+`ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI` (33/33) und `npm run
+test:rules` (9/9) grün. **TODO 4 (manueller Zwei-Browser-Smoke-Test) nicht durchgeführt** —
+kein laufendes Firebase-Emulator-/Browser-Multiplayer-Setup in dieser Session verfügbar. Vor
+dem Merge nachholen: Spiel erstellen, zweiter Spieler tritt bei, Karte spielen, Heropower
+auslösen, Boss erreichen — deckt alle drei neuen States gemeinsam ab.
+
 Kontext: Punkt 4 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefund 2/2b in
 `docs/done/review-2026-08/01-state-management.md`. Befund 3 aus derselben Datei (Reducer auf

@@ -1,5 +1,30 @@
 # Refactoring-Plan: FirestoreRepositoryService einführen, Services konsolidieren
 
+## Status (2026-08-29)
+
+TODO 1-4 umgesetzt: `FirestoreRepositoryService` (`FirestoreOperationError`, DI-injiziertes
+`Firestore`), `SaveGameService` darauf umgestellt und anschließend zusammen mit
+`LoadGameService`/`GamePlayerService` durch `GameRepositoryService`/`PlayerRepositoryService`
+ersetzt (alle drei alten Service-Klassen entfernt), `CurrentUserService` auf injiziertes
+`Auth`/`Firestore` umgestellt, Non-null-Assertions durch Fallback ersetzt. Zwei tote Methoden
+(`SaveGameService.updateDeliveryStack()`, `LoadGameService.loadPlayerCollectionData()`) hatten
+keine Aufrufer und wurden nicht migriert. `ng build`/`ng test --watch=false
+--browsers=ChromeHeadlessCI` grün nach jedem Schritt.
+
+**TODO 5 umgesetzt** (zusammen mit TODO 1 aus
+`docs/planned/player-hand-decomposition-plan.md`, wie hier vorgesehen): `onSnapshot` bekommt
+jetzt einen Error-Callback (über `FirestoreSyncService.watchPlayerDoc()`), alle
+`playerRepo`/`gameRepo`-Schreibaufrufe in `PlayerHandComponent` sind über ein neues
+`reportWriteFailure()` abgesichert, das einen fehlgeschlagenen Write auf einem `loadError`-Signal
+sichtbar macht (Template-Banner analog zu `GameComponent`). Bewusste Abweichung von der
+wörtlichen Formulierung "awaiten": die Schreibaufrufe bleiben "fire and forget" (lokales
+NGXS-Update passiert weiterhin sofort, die Live-Subscription synchronisiert den echten
+Serverstand nachträglich) statt jede Spielregel-Methode auf ein Await vor dem nächsten Schritt
+umzustellen — Letzteres hätte die Reihenfolge/das Timing des Kernspielloops verändert, was ohne
+echten Multiplayer-Test nicht verantwortbar zu verifizieren war.
+
+Damit ist dieser Plan vollständig umgesetzt.
+
 Kontext: Punkt 3 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefunde in
 `docs/done/review-2026-08/02-services.md`. PR #21 hat aus diesem Bereich bereits die

@@ -3,9 +3,9 @@ import { Store } from '@ngxs/store';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
+import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { DiebService } from 'src/app/services/dieb.service';
-import { SaveGameService } from 'src/app/services/save-game.service';
 import { Mob } from 'src/models/monster/monster.class';
 import { HeropowerComponent } from '../heropower.component';
 
@@ -24,7 +24,8 @@ import { HeropowerComponent } from '../heropower.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeropowerContainerComponent {
-  game = this.store.selectSignal(CurrentGameSelectors.currentGameState);
+  gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
+  currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   user = this.store.selectSignal(CurrentUserSelectors.currentUser);
   deliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
   heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
@@ -37,16 +38,15 @@ export class HeropowerContainerComponent {
     token: [],
   };
 
-  gameId = computed(() => this.game().gameId ?? '');
   playerId = computed(() => this.user().items.id ?? '');
-  enemy = computed(() => this.game().currentEnemy ?? this.emptyMob);
+  enemy = computed(() => this.currentEnemy() ?? this.emptyMob);
 
   // PlayerHandComponent owns the actual card-/handstack logic for these heropowers (it holds
   // the hand/cardstack signals this container does not have) — this container only detects
   // *when* a heropower resolves and delegates the *how* back up to its parent.
   readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere'>();
 
-  constructor(private store: Store, private saveGame: SaveGameService, private diebService: DiebService) {
+  constructor(private store: Store, private diebService: DiebService) {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
     effect(() => {
       const enemy = this.enemy();

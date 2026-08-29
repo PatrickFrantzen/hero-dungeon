@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from '@angular/fire/auth';
 import { FormBuilder, FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { User } from 'src/models/user.class';
+import { Router, RouterLink } from '@angular/router';
+import { AuthFormService } from 'src/app/services/auth-form.service';
 import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/material/card';
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
@@ -13,7 +11,7 @@ import { MatButton } from '@angular/material/button';
     selector: 'app-signup',
     templateUrl: './signup.component.html',
     styleUrls: ['./signup.component.scss'],
-    imports: [FormsModule, ReactiveFormsModule, MatCard, MatCardHeader, MatCardContent, MatFormField, MatLabel, MatInput, MatError, MatCardFooter, MatButton],
+    imports: [FormsModule, ReactiveFormsModule, RouterLink, MatCard, MatCardHeader, MatCardContent, MatFormField, MatLabel, MatInput, MatError, MatCardFooter, MatButton],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignupComponent implements OnInit {
@@ -21,13 +19,9 @@ export class SignupComponent implements OnInit {
   public signUpForm!: FormGroup;
   public errorMessage: string | null = null;
   public isSubmitting = false;
-  user = new User;
-  db = getFirestore();
-  // dbRef = collection(this.db, 'users');
-
 
   constructor(
-    public auth: Auth,
+    private authForm: AuthFormService,
     private fb: FormBuilder,
     private route: Router,
   ) { }
@@ -45,15 +39,10 @@ export class SignupComponent implements OnInit {
     this.errorMessage = null;
     this.isSubmitting = true;
     try {
-      const response = await createUserWithEmailAndPassword(this.auth, this.signUpForm.value.email, this.signUpForm.value.password);
-      this.user.userEmail = this.signUpForm.value.email;
-      this.user.userId = response.user.uid;
-      this.user.userNickname = this.signUpForm.value.nickname;
-      const docRef = doc(this.db, 'users', response.user.uid);
-      await setDoc(docRef, this.user.toJSON());
+      await this.authForm.register(this.signUpForm.value.email, this.signUpForm.value.password, this.signUpForm.value.nickname);
       this.route.navigate(['startscreen'])
     } catch (error) {
-      this.errorMessage = 'Registrierung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.';
+      this.errorMessage = error instanceof Error ? error.message : 'Registrierung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.';
     } finally {
       this.isSubmitting = false;
     }
@@ -80,10 +69,6 @@ export class SignupComponent implements OnInit {
       return 'You must enter a nickname';
     }
     return ''
-  }
-
-  backToSignIn() {
-    this.route.navigate(['signIn'])
   }
 
 }

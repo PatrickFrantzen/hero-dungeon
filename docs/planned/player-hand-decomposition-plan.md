@@ -1,5 +1,28 @@
 # Refactoring-Plan: `PlayerHandComponent` entflechten
 
+## Status (2026-08-29)
+
+TODO 1-3 umgesetzt, jeweils build-/testgrün, in eigenen Commits: `FirestoreSyncService`
+(inkl. `onSnapshot`-Error-Callback und `loadError`-Signal — zusammen mit TODO 5 aus
+`docs/planned/firestore-repository-service-plan.md` in derselben Session, wie dort
+vorgesehen), `HeropowerService` (Walküre/Jägerin/"Array"-Gruppe, bewusst **nicht** zu einer
+gemeinsamen Hilfsmethode vereinheitlicht — Diagnose ergab einen weiteren, in diesem Plan nicht
+dokumentierten Verhaltensunterschied zwischen `checkheropowerArray` und den beiden anderen
+Dispatch-Timings, siehe Status in `heropower.service.ts`), `CardPlayService` (komplette
+Karten-/Encounter-Regeln, `chooseCard()` einziger öffentlicher Einstiegspunkt). Ergebnis:
+`PlayerHandComponent` von ~586 auf 171 Zeilen reduziert.
+
+TODO 4 (Sub-Komponenten fürs Template) und TODO 5 (Heropower-Strategy-Pattern) bleiben offen —
+beide sind im Plan selbst als optional/nice-to-have markiert, TODO 5 setzt zusätzlich auf
+`docs/done/hero-data-model-plan.md` auf, das seit dieser Session verfügbar ist, falls eine
+künftige Session das aufgreifen will.
+
+`ng build`/`ng test --watch=false --browsers=ChromeHeadlessCI` grün nach jedem Schritt.
+**Kein manueller Multiplayer-Smoke-Test durchgeführt** (kein laufendes Firebase-
+Emulator-/Zwei-Browser-Setup in dieser Session verfügbar) — der Plan verlangt diesen
+ausdrücklich vor jedem Merge; vor dem tatsächlichen Merge nachholen (Karte spielen, jede
+Heropower-Variante auslösen, zweiter Spieler tritt bei, Kartenstapel geht zur Neige).
+
 Kontext: Punkt 5 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefunde 2/3/4/5/6/7 in
 `docs/done/review-2026-08/03-components-game.md`. Der bereits abgeschlossene OnPush-Umbau

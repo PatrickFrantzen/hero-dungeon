@@ -5,7 +5,7 @@ import { CurrentCardStackSelector } from '../selectors/currentCardStack-selector
 import { CurrentGameSelectors } from '../selectors/currentGame-selector';
 import { CurrentUserSelectors } from '../selectors/currentUser-selectors';
 import { UpdateCurrentHandAction } from '../actions/cardsInHand-action';
-import { SaveGameService } from './save-game.service';
+import { PlayerRepositoryService } from './player-repository.service';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/heropower-action';
 
 @Injectable({
@@ -13,7 +13,7 @@ import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/herop
 })
 export class DiebService {
 
-  constructor(private store: Store, private saveGame: SaveGameService) { }
+  constructor(private store: Store, private playerRepo: PlayerRepositoryService) { }
 
   heropower(heropowerArray: string[]) {
     let currentHand = this.store.selectSnapshot(
@@ -37,8 +37,8 @@ export class DiebService {
     for (let i = 0; i < 5 && currCardStack.length > 0; i++) {
       currHand.push(currCardStack.shift()!);
     }
-    this.saveGame.updateHandstack(gameId, playerId, currHand);
-    this.saveGame.updateCardstack(gameId, playerId, currCardStack);
+    this.playerRepo.updateHandstack(gameId, playerId, currHand);
+    this.playerRepo.updateCardstack(gameId, playerId, currCardStack);
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
   }

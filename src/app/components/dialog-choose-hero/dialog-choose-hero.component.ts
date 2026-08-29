@@ -1,24 +1,17 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
-import { Inject } from '@angular/core';
-import { Barbar } from 'src/models/helden/barbar.class';
-import { Dieb } from 'src/models/helden/dieb.class';
-import { Gladiator } from 'src/models/helden/gladiator.class';
-import { Jägerin } from 'src/models/helden/jägerin.class';
-import { Magier } from 'src/models/helden/magier.class';
-import { Ninja } from 'src/models/helden/ninja.class';
-import { Paladin } from 'src/models/helden/paladin.class';
-import { Waldläufer } from 'src/models/helden/waldläufer.class';
-import { Walküre } from 'src/models/helden/walküre.class';
-import { Zauberin } from 'src/models/helden/zauberin.class';
+import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import { createHero } from 'src/models/helden/hero.class';
+import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatSelect, MatOption } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
+import { BaseDialogComponent } from '../dialog-base.component';
+import { ChooseHeroDialogResult } from '../dialog-results';
 
 interface Heros {
-  value: Object;
+  value: { heroName: string; heroPower: string; cardstack: string[]; description: string };
   viewValue: string;
 }
 
@@ -29,42 +22,25 @@ interface Heros {
     imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatDialogActions, MatButton, MatDialogClose],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DialogChooseHeroComponent {
+export class DialogChooseHeroComponent extends BaseDialogComponent<ChooseHeroDialogResult> {
 
   numberOfPlayer!:number;
-  selectedValue!:string;
+  selectedValue!: Heros;
 
-  barbar:Barbar = new Barbar;
-  dieb: Dieb = new Dieb;
-  gladiator: Gladiator = new Gladiator;
-  jägerin: Jägerin = new Jägerin;
-  magier: Magier = new Magier;
-  ninja: Ninja = new Ninja;
-  paladin: Paladin = new Paladin;
-  waldläufer: Waldläufer = new Waldläufer;
-  walküre: Walküre = new Walküre;
-  zauberin: Zauberin = new Zauberin;
+  heros: Heros[] = HERO_DEFINITIONS.map((def) => ({
+    value: createHero(def.id).toJSON(),
+    viewValue: def.heroName,
+  }));
 
+  constructor(dialogRef: MatDialogRef<DialogChooseHeroComponent, { data: ChooseHeroDialogResult }>) {
+    super(dialogRef);
+  }
 
-  heros: Heros[] = [
-    {value: this.barbar.toJSON(), viewValue: 'Barbar'},
-    {value: this.dieb.toJSON(), viewValue: 'Dieb'},
-    {value: this.gladiator.toJSON(), viewValue: 'Gladiator'},
-    {value: this.jägerin.toJSON(), viewValue: 'Jägerin'},
-    {value: this.magier.toJSON(), viewValue: 'Magier'},
-    {value: this.ninja.toJSON(), viewValue: 'Ninja'},
-    {value: this.paladin.toJSON(), viewValue: 'Paladin'},
-    {value: this.waldläufer.toJSON(), viewValue: 'Waldläufer'},
-    {value: this.walküre.toJSON(), viewValue: 'Walküre'},
-    {value: this.zauberin.toJSON(), viewValue: 'Zauberin'},
-  ];
-
-  constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogChooseHeroComponent>) {}
-
-  getChoosenHero(choosenHero:any) {
-    this.dialogRef.close({data: {
-      choosenHero: {heroname: choosenHero.value.heroName, heropower: choosenHero.value.heroPower, cardstack: choosenHero.value.cardstack, description: choosenHero.value.description},
-    }})
+  getChoosenHero(choosenHero: Heros) {
+    const { heroName, heroPower, cardstack, description } = choosenHero.value;
+    this.closeWith({
+      choosenHero: { heroname: heroName, heropower: heroPower, cardstack, description },
+    });
   }
 
 }

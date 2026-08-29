@@ -5,6 +5,18 @@
     width: 100vw;
 }
 
+.player-hand-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #b00020;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    z-index: 1;
+}
+
 .card-stack {
     img {
         position: absolute;

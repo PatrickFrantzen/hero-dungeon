@@ -7,8 +7,14 @@ import { CardStackState } from 'src/app/states/cardStack-state';
 import { cardsInHandState } from 'src/app/states/cardsInHand-state';
 import { DeliveryStackState } from 'src/app/states/deliveryStack-state';
 import { CurrentUserState } from 'src/app/states/currentUser-state';
+import { EncounterState } from 'src/app/states/encounter-state';
 import { heropowerState } from 'src/app/states/heropower-state';
-import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
+import { LobbyState } from 'src/app/states/lobby-state';
+import {
+  ensureAngularFireSchedulersInitialized,
+  ensureFirebaseTestAppInitialized,
+  firestoreTestProviders,
+} from 'src/testing/firebase-test-app';
 
 import { GameComponent } from './game.component';
 
@@ -20,7 +26,8 @@ describe('GameComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState]), GameComponent],
+    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState]), GameComponent],
+    providers: firestoreTestProviders(),
     schemas: [NO_ERRORS_SCHEMA],
 })
     .compileComponents();
