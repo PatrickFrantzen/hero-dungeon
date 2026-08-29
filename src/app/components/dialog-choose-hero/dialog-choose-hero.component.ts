@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { Inject } from '@angular/core';
 import { Barbar } from 'src/models/helden/barbar.class';
@@ -26,7 +26,8 @@ interface Heros {
     selector: 'app-dialog-choose-hero',
     templateUrl: './dialog-choose-hero.component.html',
     styleUrls: ['./dialog-choose-hero.component.scss'],
-    imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatDialogActions, MatButton, MatDialogClose]
+    imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatDialogActions, MatButton, MatDialogClose],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DialogChooseHeroComponent {
 

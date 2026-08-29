@@ -46,6 +46,10 @@ import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.c
 import { NgStyle } from '@angular/common';
 import { HeropowerContainerComponent } from '../heropower/heropower-container/heropower-container.component';
 
+// Not OnPush: several fields (currentHand, currentEnemy, currentCardStack, currentPlayers, ...)
+// are mutated directly from raw Firestore onSnapshot callbacks in updateFromDatabase/
+// updatePlayerFromDatabase below, not via input()/signal/markForCheck - OnPush would silently
+// stop reflecting those updates. Untangling that dual-write pattern is Issue #8's job.
 @Component({
     selector: 'app-player-hand',
     templateUrl: './player-hand.component.html',

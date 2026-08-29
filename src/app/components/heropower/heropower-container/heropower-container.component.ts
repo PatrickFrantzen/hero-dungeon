@@ -1,4 +1,4 @@
-import { Component, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -20,7 +20,8 @@ import { HeropowerComponent } from '../heropower.component';
     ></app-heropower>
   `,
     styles: [``],
-    imports: [HeropowerComponent]
+    imports: [HeropowerComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeropowerContainerComponent {
   game = this.store.selectSignal(CurrentGameSelectors.currentGameState);

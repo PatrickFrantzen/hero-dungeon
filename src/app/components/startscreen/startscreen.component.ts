@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
 import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
@@ -17,7 +17,8 @@ import { LoadGameService } from 'src/app/services/load-game.service';
 @Component({
     selector: 'app-startscreen',
     templateUrl: './startscreen.component.html',
-    styleUrls: ['./startscreen.component.scss']
+    styleUrls: ['./startscreen.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StartscreenComponent implements OnInit {
   numberOfPlayers:number = 0;

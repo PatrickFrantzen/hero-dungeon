@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   input
 } from '@angular/core';
@@ -9,7 +10,8 @@ import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/
     selector: 'app-enemy',
     templateUrl: './enemy.component.html',
     styleUrls: ['./enemy.component.scss'],
-    imports: [MatCard, MatCardHeader, MatCardContent, MatCardFooter]
+    imports: [MatCard, MatCardHeader, MatCardContent, MatCardFooter],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EnemyComponent {
   readonly currentEnemy = input.required<Mob>();

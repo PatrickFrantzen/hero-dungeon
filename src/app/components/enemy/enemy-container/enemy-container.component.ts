@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -16,7 +16,8 @@ import { EnemyComponent } from '../enemy.component';
     ></app-enemy>
   `,
     styles: [``],
-    imports: [EnemyComponent]
+    imports: [EnemyComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EnemyContainerComponent implements OnInit {
   game = this.store.selectSignal(CurrentGameSelectors.currentGameState);

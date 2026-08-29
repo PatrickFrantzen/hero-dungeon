@@ -16,6 +16,10 @@ import { updateChoosenHeros } from 'src/app/actions/currentGame-action';
 import { EnemyContainerComponent } from '../enemy/enemy-container/enemy-container.component';
 import { PlayerHandComponent } from '../player-hand/player-hand.component';
 
+// Not OnPush: its child PlayerHandComponent still mutates plain fields from raw Firestore
+// onSnapshot callbacks (not via input()/signal/markForCheck), so an OnPush GameComponent
+// would prune change detection before it ever reaches PlayerHandComponent whenever those
+// callbacks fire outside a click/event. Revisit once Issue #8 untangles that.
 @Component({
     selector: 'app-game',
     templateUrl: './game.component.html',

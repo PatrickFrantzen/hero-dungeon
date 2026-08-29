@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
@@ -10,7 +10,8 @@ import { MatButton } from '@angular/material/button';
     selector: 'app-dialog-heropower',
     templateUrl: './dialog-heropower.component.html',
     styleUrls: ['./dialog-heropower.component.scss'],
-    imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatDialogActions, MatButton, MatDialogClose]
+    imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatDialogActions, MatButton, MatDialogClose],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DialogHeropowerComponent {
   selectedValue: { playerName: string; playerId: string; playerHero: string; } = { playerName: '', playerId: '', playerHero: '' }
