@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import {
   DocumentData,
   Firestore,
+  QueryConstraint,
   collection,
   doc,
   getDoc,
@@ -74,6 +75,16 @@ export class FirestoreRepositoryService {
       return snap.docs[snap.docs.length - 1]?.data() as T | undefined;
     } catch (cause) {
       throw new FirestoreOperationError('queryLatest', collectionPath, cause);
+    }
+  }
+
+  async queryAll<T extends DocumentData>(collectionPath: string[], constraints: QueryConstraint[]): Promise<T[]> {
+    try {
+      const q = query(collection(this.firestore, collectionPath.join('/')), ...constraints);
+      const snap = await getDocs(q);
+      return snap.docs.map((docSnap) => docSnap.data() as T);
+    } catch (cause) {
+      throw new FirestoreOperationError('queryAll', collectionPath, cause);
     }
   }
 }

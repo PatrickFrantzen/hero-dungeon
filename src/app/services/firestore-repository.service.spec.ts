@@ -34,4 +34,14 @@ describe('FirestoreRepositoryService', () => {
       } as Partial<FirestoreOperationError>)
     );
   });
+
+  it('wraps a failing queryAll in a FirestoreOperationError with the offending path', async () => {
+    await expectAsync(service.queryAll([], [])).toBeRejectedWith(
+      jasmine.objectContaining({
+        name: 'FirestoreOperationError',
+        operation: 'queryAll',
+        path: [],
+      } as Partial<FirestoreOperationError>)
+    );
+  });
 });
