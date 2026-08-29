@@ -15,13 +15,12 @@ describe('SignupComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-      declarations: [ SignupComponent ],
-      imports: [ ReactiveFormsModule, RouterTestingModule ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-      providers: [
+    imports: [ReactiveFormsModule, RouterTestingModule, SignupComponent],
+    schemas: [NO_ERRORS_SCHEMA],
+    providers: [
         { provide: Auth, useValue: {} },
-      ],
-    })
+    ],
+})
     .compileComponents();
 
     fixture = TestBed.createComponent(SignupComponent);

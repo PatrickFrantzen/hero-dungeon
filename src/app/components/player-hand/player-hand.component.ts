@@ -43,12 +43,14 @@ import { SaveGameService } from 'src/app/services/save-game.service';
 import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.component';
+import { NgStyle } from '@angular/common';
+import { HeropowerContainerComponent } from '../heropower/heropower-container/heropower-container.component';
 
 @Component({
     selector: 'app-player-hand',
     templateUrl: './player-hand.component.html',
     styleUrls: ['./player-hand.component.scss'],
-    standalone: false
+    imports: [NgStyle, HeropowerContainerComponent]
 })
 export class PlayerHandComponent implements OnInit, OnDestroy {
   @Select(CurrentUserSelectors.currentUserId)

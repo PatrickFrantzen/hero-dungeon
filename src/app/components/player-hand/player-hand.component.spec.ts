@@ -14,10 +14,9 @@ describe('PlayerHandComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-      declarations: [ PlayerHandComponent ],
-      imports: [ MatDialogModule, NgxsModule.forRoot([]) ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-    })
+    imports: [MatDialogModule, NgxsModule.forRoot([]), PlayerHandComponent],
+    schemas: [NO_ERRORS_SCHEMA],
+})
     .compileComponents();
 
     ensureAngularFireSchedulersInitialized();

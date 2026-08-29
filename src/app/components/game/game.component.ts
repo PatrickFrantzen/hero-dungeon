@@ -14,12 +14,14 @@ import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { CurrentUserHeroAction } from 'src/app/actions/currentUser-action';
 import { updateChoosenHeros } from 'src/app/actions/currentGame-action';
+import { EnemyContainerComponent } from '../enemy/enemy-container/enemy-container.component';
+import { PlayerHandComponent } from '../player-hand/player-hand.component';
 
 @Component({
     selector: 'app-game',
     templateUrl: './game.component.html',
     styleUrls: ['./game.component.scss'],
-    standalone: false
+    imports: [EnemyContainerComponent, PlayerHandComponent]
 })
 export class GameComponent implements OnInit, OnDestroy {
 

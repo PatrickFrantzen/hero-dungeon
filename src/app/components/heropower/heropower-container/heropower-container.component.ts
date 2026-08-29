@@ -31,6 +31,8 @@ import {
 } from 'src/app/states/currentUser-state';
 import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
+import { HeropowerComponent } from '../heropower.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'app-heropower-container',
@@ -43,7 +45,7 @@ import { Mob } from 'src/models/monster/monster.class';
     ></app-heropower>
   `,
     styles: [``],
-    standalone: false
+    imports: [HeropowerComponent, AsyncPipe]
 })
 export class HeropowerContainerComponent implements OnInit, OnDestroy {
   @Select(CurrentGameSelectors.currentGameState)

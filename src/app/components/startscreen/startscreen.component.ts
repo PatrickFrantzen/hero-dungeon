@@ -18,8 +18,7 @@ import { LoadGameService } from 'src/app/services/load-game.service';
 @Component({
     selector: 'app-startscreen',
     templateUrl: './startscreen.component.html',
-    styleUrls: ['./startscreen.component.scss'],
-    standalone: false
+    styleUrls: ['./startscreen.component.scss']
 })
 export class StartscreenComponent implements OnInit, OnDestroy{
   numberOfPlayers:number = 0;

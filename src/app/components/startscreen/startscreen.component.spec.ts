@@ -16,13 +16,12 @@ describe('StartscreenComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-      declarations: [ StartscreenComponent ],
-      imports: [ RouterTestingModule, MatDialogModule, NgxsModule.forRoot([]) ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-      providers: [
+    imports: [RouterTestingModule, MatDialogModule, NgxsModule.forRoot([]), StartscreenComponent],
+    schemas: [NO_ERRORS_SCHEMA],
+    providers: [
         { provide: Auth, useValue: {} },
-      ],
-    })
+    ],
+})
     .compileComponents();
 
     ensureAngularFireSchedulersInitialized();

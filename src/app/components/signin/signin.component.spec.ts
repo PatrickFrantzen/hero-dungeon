@@ -16,13 +16,12 @@ describe('SigninComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-      declarations: [ SigninComponent ],
-      imports: [ ReactiveFormsModule, RouterTestingModule, NgxsModule.forRoot([]) ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-      providers: [
+    imports: [ReactiveFormsModule, RouterTestingModule, NgxsModule.forRoot([]), SigninComponent],
+    schemas: [NO_ERRORS_SCHEMA],
+    providers: [
         { provide: Auth, useValue: {} },
-      ],
-    })
+    ],
+})
     .compileComponents();
 
     ensureAngularFireSchedulersInitialized();
