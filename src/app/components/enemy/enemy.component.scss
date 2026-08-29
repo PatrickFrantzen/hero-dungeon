@@ -1,8 +1,12 @@
 .current-Enemy {
-    height: 250px;
+    min-height: 120px;
+    max-height: clamp(120px, 30vh, 250px);
     display: flex;
+    flex-wrap: wrap;
     justify-content:space-between;
     align-items: center;
+    max-width: 100%;
+    box-sizing: border-box;
 
     img{
         padding:10px

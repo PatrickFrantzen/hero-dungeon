@@ -105,6 +105,10 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
 - Heldendatenmodell: `docs/done/hero-data-model-plan.md`
 - Dialog-/Auth-Vereinheitlichung: `docs/done/dialog-auth-unification-plan.md`
 - Singleplayer-Modus: `docs/planned/singleplayer-mode-plan.md`
+- App ist nicht responsive (kein `@media` im Projekt, feste Pixel-Positionierung v.a. in
+  `player-hand`/`heropower`): `docs/done/responsive-design-plan.md` — Layout auf
+  Flexbox/`clamp()` umgestellt, voller Multiplayer-Smoke-Test mit Firebase-Login steht laut
+  Status-Abschnitt im Plan noch aus
 - Deutsche und englische Bezeichner gemischt (`heropower-selector.ts` vs. `Heldenfähigkeiten`
   in Commit-Messages) — beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit
   beauftragt.

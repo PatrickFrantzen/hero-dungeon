@@ -2,7 +2,7 @@
     position: absolute;
     right: 25%;
     left: 25%;
-    bottom: 300px;
+    bottom: clamp(120px, 30vh, 300px);
     display: flex;
     flex-direction: column;
     justify-content: center;
