@@ -1,7 +1,6 @@
 import {
   Component,
-  Input,
-  OnInit,
+  input
 } from '@angular/core';
 import { Mob } from 'src/models/monster/monster.class';
 import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/material/card';
@@ -12,15 +11,8 @@ import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/
     styleUrls: ['./enemy.component.scss'],
     imports: [MatCard, MatCardHeader, MatCardContent, MatCardFooter]
 })
-export class EnemyComponent implements OnInit {
-  @Input() currentEnemy!: Mob;
-  @Input() gameId: string = '';
-  @Input() questCardStatus: boolean = false;
-
-  constructor() {}
-  ngAfterContentInit(): void {}
-
-
-  ngOnInit(): void {
-  }
+export class EnemyComponent {
+  readonly currentEnemy = input.required<Mob>();
+  readonly gameId = input<string>('');
+  readonly questCardStatus = input<boolean>(false);
 }
