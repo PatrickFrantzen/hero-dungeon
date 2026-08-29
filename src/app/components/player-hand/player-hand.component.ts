@@ -37,9 +37,8 @@ import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-sel
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
-import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
-import { LoadGameService } from 'src/app/services/load-game.service';
 import { SaveGameService } from 'src/app/services/save-game.service';
 import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
@@ -206,7 +205,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   executeWalkuereHeropower(data: DocumentData) {
-    console.warn('executeWalküre', data);
     const userId = data['userId'];
     let currentCardStack = data['cardstack'];
     let currentHand = data['handstack'];
@@ -498,7 +496,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   getNextEnemy() {
     const currMob = [...this.currentMob()];
     const newCurrentEnemy: Mob = currMob.shift()!;
-    this.saveGame.updateNewEnemy(this.currentGameId(), newCurrentEnemy);
+    this.saveGame.updateCurrentEnemyToken(this.currentGameId(), newCurrentEnemy);
     this.saveGame.updateNewMob(this.currentGameId(), currMob);
     this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
     this.store.dispatch(new UpdateMobAction(currMob));
@@ -506,7 +504,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   getNextBoss() {
     const newCurrentEnemy: Mob = this.currentBoss();
-    this.saveGame.updateNewEnemy(this.currentGameId(), newCurrentEnemy);
+    this.saveGame.updateCurrentEnemyToken(this.currentGameId(), newCurrentEnemy);
     this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
   }
 
@@ -554,54 +552,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     }
   }
 
-  checkDiebHeropower() {
-    // if (this.heropowerArray().length !== 3) return;
-    // this.heropowerArray().forEach((card) => {
-    //   let currHand = [...this.currentHand];
-    //   let indexOfHandCard = this.currentHand.indexOf(card);
-
-    //   currHand.splice(indexOfHandCard, 1);
-    //   this.store.dispatch(new UpdateCurrentHandAction(currHand));
-    // });
-    // for (let i = 0; i < 5; i++) {
-    //   let currCardStack = [...this.currentCardStack];
-    //   let currHand = [...this.currentHand];
-    //   if (currCardStack.length > 0) {
-    //     const getCardForHand = currCardStack.shift()!;
-    //     currHand.push(getCardForHand);
-
-    //     this.saveGame.updateHandstack(
-    //       this.currentGameId(),
-    //       this.currentPlayerId(),
-    //       currHand
-    //     );
-    //     this.saveGame.updateCardstack(
-    //       this.currentGameId(),
-    //       this.currentPlayerId(),
-    //       currCardStack
-    //     );
-
-    //     this.store.dispatch(new UpdateCardStackAction(currCardStack));
-    //     this.store.dispatch(new UpdateCurrentHandAction(currHand));
-    //   } else {
-    //     this.saveGame.updateHandstack(
-    //       this.currentGameId(),
-    //       this.currentPlayerId(),
-    //       currHand
-    //     );
-    //     this.saveGame.updateCardstack(
-    //       this.currentGameId(),
-    //       this.currentPlayerId(),
-    //       currCardStack
-    //     );
-
-    //     this.store.dispatch(new UpdateCardStackAction(currCardStack));
-    //     this.store.dispatch(new UpdateCurrentHandAction(currHand));
-    //   }
-    // }
-    // this.store.dispatch(new UpdateHeropowerActivated(false));
-    // this.store.dispatch(new UpdateHeropowerArray([]));
-  }
 
   saveHand(card: string, currHand: string[]) {
     let indexOfHandCard = this.currentHand().indexOf(card);

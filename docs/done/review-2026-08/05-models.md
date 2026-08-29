@@ -1,5 +1,24 @@
 # Code-Review: Models (Helden, Monster, Game, User)
 
+## Status (2026-08-29, PR #21)
+
+Befund 6 (Zuweisung statt Vergleich in `createMob`) war beim Prüfen bereits vor diesem Review
+behoben (Commit `ed16685`, #20): `monster.class.ts` vergleicht `currentBossName` korrekt mit
+`==`, kein `bossname`-Feld mehr vorhanden — kein Fix nötig. Umgesetzt in PR #21: Befund 1
+(gemeinsamer Konstruktor-Aufbau) via `Hero.buildCardstack()` gelöst — reduziert die 10
+Heldenklassen von ~10 auf ~1 Zeile Konstruktor-Rumpf; Befund 4 (`shuffle`-Duplikat) durch
+`src/models/shuffle.util.ts` konsolidiert; Befund 5 teilweise (Datenliterale
+`questCollection`/`bossCollection`/`monsterCollection` nach `monster-collection.data.ts`
+ausgelagert, `monster.class.ts` von 474 auf ~130 Zeilen reduziert — die `createMob`-Kaskade
+selbst ist noch nicht tabellarisiert).
+
+Offen, siehe [`../hero-data-model-plan.md`](../hero-data-model-plan.md): Befund 2 (Karten-Deck-
+Duplikate) und Befund 3 (datengetriebener Helden-Ansatz statt 10 Klassen) — Befund 1 aus diesem
+Plan war die risikoarme Vorstufe dazu und ist bereits erledigt. Nicht umgesetzt, nice-to-have
+und noch nicht neu geplant: `createMob`-Kaskade tabellarisieren und 9-Positionsparameter von
+`getMonsterForGame` durch ein Objekt ersetzen (Rest von Befund 5), Typisierung schärfen
+(`any`, Union-Types, Kartennamen-Enum — Befund 7), totes `Herointerface` (Teil von Befund 7).
+
 ## Überblick
 
 Scope: `src/models/helden/*.class.ts` (10 Heldenklassen + Basisklasse `hero.class.ts` +

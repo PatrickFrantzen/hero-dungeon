@@ -1,5 +1,22 @@
 # Code-Review: Dialog- und Auth-Komponenten (Signin/Signup/Startscreen)
 
+## Status (2026-08-29, PR #21)
+
+Umgesetzt: Login-Fehler werden jetzt sichtbar angezeigt, Submit-Button während des Requests
+disabled (Befund 1); Registrierungs-Fehler werden abgefangen und angezeigt, `setDoc`-Write
+wird jetzt awaited (Befund 2); Ok-Button im Settings-Dialog bei ungültigem Formular disabled
+(Befund 9); `afterClosed()`-Ergebnis wird vor Zugriff auf `.data` geprüft, `joinGame()`
+validiert die Eingabe und zeigt „Spiel nicht gefunden" statt einer unhandled rejection
+(Befund 6); `DialogGameSettings` → `DialogGameSettingsComponent` umbenannt (Teil von Befund 7).
+
+Offen, siehe [`../dialog-auth-unification-plan.md`](../dialog-auth-unification-plan.md):
+`AuthFormService`-Extraktion aus Signin/Signup (Befund 3), `BaseDialogComponent`/typisierte
+`MAT_DIALOG_DATA` für die drei Dialoge (Befund 4), `StartscreenComponent` entflechten in
+`GameFactoryService`/Firestore-Service/Angular-Forms statt `getElementById` (Befund 5).
+Nicht umgesetzt, nice-to-have und noch nicht neu geplant: Reactive-Forms- vs. Template-Ref-
+Mischung im Settings-Dialog (Befund 8), restliche Deutsch/Englisch-Naming-Inkonsistenzen
+(Befund 7, laut `CLAUDE.md` nur bei expliziter Beauftragung).
+
 ## Überblick
 
 Scope dieses Abschnitts: `dialog-choose-hero`, `dialog-game-settings`, `dialog-heropower`,

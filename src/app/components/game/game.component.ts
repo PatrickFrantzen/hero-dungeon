@@ -4,7 +4,7 @@ import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero
 import { User } from 'src/models/user.class';
 import { Store } from '@ngxs/store';
 import { CreateNewCardStackAction, UpdateCardStackAction } from 'src/app/actions/CardStack-action';
-import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
 import { CurrentDeliveryStack } from 'src/app/actions/deliveryStack-action';

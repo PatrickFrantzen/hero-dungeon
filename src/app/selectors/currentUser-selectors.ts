@@ -21,7 +21,6 @@ export class CurrentUserSelectors {
 
     @Selector([CurrentUserState])
     static currentUserHeroData(state: CurrentUserModel): Herointerface {
-        console.warn('currentUserSelector', state.hero)
         return state.hero;
     }
 }

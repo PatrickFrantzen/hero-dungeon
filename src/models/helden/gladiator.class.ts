@@ -1,4 +1,4 @@
-import { Hero, shuffle } from "./hero.class";
+import { Hero } from "./hero.class";
 
 export class Gladiator extends Hero {
     public override heroName: string = 'Gladiator';
@@ -9,7 +9,7 @@ export class Gladiator extends Hero {
 
     constructor() {
         super();
-        const heroCards = new Map([
+        this.cardstack = this.buildCardstack(new Map([
             ['red', 5],
             ['yellow', 7],
             ['green', 5],
@@ -22,14 +22,7 @@ export class Gladiator extends Hero {
             ['red_yellow', 2],
             ['wut', 2],
             ['riesensprung_hindernis', 2]
-        ])
-        heroCards.forEach((value, key) => {
-            for (let i = 0; i < value; i++) {
-                this.cardstack.push(key);
-                
-            }
-        })
-        shuffle(this.cardstack)
+        ]));
     }
 }
 

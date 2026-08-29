@@ -88,20 +88,11 @@ export class CurrentGameState {
     ctx.patchState({
       ...state,
       game: {
-        numberOfPlayers: state.game.numberOfPlayers,
+        ...state.game,
         currentEnemy: {
-          name: state.game.currentEnemy.name,
+          ...state.game.currentEnemy,
           token: enemyTokenArray,
-          type: state.game.currentEnemy.type,
         },
-        choosenHeros: state.game.choosenHeros,
-        currentBoss: state.game.currentBoss,
-        isLost: state.game.isLost,
-        gameId: state.game.gameId,
-        difficulty: state.game.difficulty,
-        Mob: state.game.Mob,
-        allBosses: state.game.allBosses,
-        questCardActivated: state.game.questCardActivated,
       },
     });
   }
@@ -117,16 +108,8 @@ export class CurrentGameState {
     ctx.patchState({
       ...state,
       game: {
-        numberOfPlayers: state.game.numberOfPlayers,
+        ...state.game,
         currentEnemy: enemy,
-        choosenHeros: state.game.choosenHeros,
-        currentBoss: state.game.currentBoss,
-        isLost: state.game.isLost,
-        gameId: state.game.gameId,
-        difficulty: state.game.difficulty,
-        Mob: state.game.Mob,
-        allBosses: state.game.allBosses,
-        questCardActivated: state.game.questCardActivated,
       },
     });
   }
@@ -142,16 +125,8 @@ export class CurrentGameState {
     ctx.patchState({
       ...state,
       game: {
-        numberOfPlayers: state.game.numberOfPlayers,
-        currentEnemy: state.game.currentEnemy,
-        choosenHeros: state.game.choosenHeros,
-        currentBoss: state.game.currentBoss,
-        isLost: state.game.isLost,
-        gameId: state.game.gameId,
-        difficulty: state.game.difficulty,
+        ...state.game,
         Mob: newMob,
-        allBosses: state.game.allBosses,
-        questCardActivated: state.game.questCardActivated,
       },
     });
   }

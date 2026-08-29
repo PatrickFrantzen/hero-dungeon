@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
-import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
+import { DialogGameSettingsComponent } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
 import { getFirestore, doc, setDoc, DocumentData} from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { Mob, Monster } from 'src/models/monster/monster.class';
 import { Store } from '@ngxs/store';
-import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameAction, CurrentGameData, SetNewEnemy } from 'src/app/actions/currentGame-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
@@ -36,6 +36,7 @@ export class StartscreenComponent implements OnInit {
   loadedCollectionData!: DocumentData;
   loadedCurrentEnemy!: Mob;
   loadedCurrentMob!: Mob[]
+  joinGameError: string | null = null;
 
   constructor(
     public dialog:MatDialog,
@@ -59,7 +60,7 @@ export class StartscreenComponent implements OnInit {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open(DialogGameSettings, {
+    let dialogRef = this.dialog.open(DialogGameSettingsComponent, {
       data: {numberOfPlayer: this.numberOfPlayers,
               difficulty: this.difficulty,
               gameId: this.gameId,
@@ -67,6 +68,9 @@ export class StartscreenComponent implements OnInit {
     })
 
     dialogRef.afterClosed().subscribe(result => {
+      if (!result?.data) {
+        return;
+      }
       this.setGameSettings(result.data);
       this.currentGameId = result.data.gameId;
       this.store.dispatch(new CurrentGameAction(this.currentGameId));
@@ -118,16 +122,27 @@ export class StartscreenComponent implements OnInit {
   }
 
   joinGame() {
-    let inputValue = (<HTMLInputElement>document.getElementById('joinGame')).value;
-    this.route.navigate(['/game/'+ inputValue]);
-    this.store.dispatch(new CurrentGameAction(inputValue));
+    let inputValue = (<HTMLInputElement>document.getElementById('joinGame')).value.trim();
+    if (!inputValue) {
+      return;
+    }
     this.loadGame.loadGameCollectionData(inputValue)
     .then((results)=> {
-      this.loadedCollectionData = results!;
+      if (!results) {
+        this.joinGameError = 'Kein Spiel mit dieser ID gefunden.';
+        return;
+      }
+      this.joinGameError = null;
+      this.loadedCollectionData = results;
       this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
       this.loadedCurrentMob = this.loadedCollectionData['Mob'];
       this.store.dispatch(new SetNewEnemy(this.loadedCurrentEnemy));
       this.store.dispatch(new UpdateMobAction(this.loadedCurrentMob));
+      this.route.navigate(['/game/'+ inputValue]);
+      this.store.dispatch(new CurrentGameAction(inputValue));
+    })
+    .catch(() => {
+      this.joinGameError = 'Kein Spiel mit dieser ID gefunden.';
     })
   }
 }

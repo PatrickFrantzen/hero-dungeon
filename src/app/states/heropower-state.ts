@@ -40,6 +40,5 @@ export class heropowerState {
             ...state,
             heropowerArray: heropowerArr
         })
-        console.warn('ArrayState', ctx.getState())
     }
 }

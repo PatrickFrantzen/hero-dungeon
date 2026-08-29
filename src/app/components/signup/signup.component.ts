@@ -19,10 +19,12 @@ import { MatButton } from '@angular/material/button';
 export class SignupComponent implements OnInit {
 
   public signUpForm!: FormGroup;
+  public errorMessage: string | null = null;
+  public isSubmitting = false;
   user = new User;
   db = getFirestore();
   // dbRef = collection(this.db, 'users');
-  
+
 
   constructor(
     public auth: Auth,
@@ -39,18 +41,22 @@ export class SignupComponent implements OnInit {
   }
 
 
-  register() {
-    createUserWithEmailAndPassword(this.auth, this.signUpForm.value.email, this.signUpForm.value.password)
-    .then((response) => {
+  async register() {
+    this.errorMessage = null;
+    this.isSubmitting = true;
+    try {
+      const response = await createUserWithEmailAndPassword(this.auth, this.signUpForm.value.email, this.signUpForm.value.password);
       this.user.userEmail = this.signUpForm.value.email;
       this.user.userId = response.user.uid;
       this.user.userNickname = this.signUpForm.value.nickname;
       const docRef = doc(this.db, 'users', response.user.uid);
-      setDoc(docRef, this.user.toJSON());
-    })
-    .then(() => {
+      await setDoc(docRef, this.user.toJSON());
       this.route.navigate(['startscreen'])
-    })
+    } catch (error) {
+      this.errorMessage = 'Registrierung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.';
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 
 

@@ -6,7 +6,7 @@ import { Select, Store } from '@ngxs/store';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { CurrentUserAction } from '../actions/currentUser-action';
-import { CurrentUserSelectors } from '../selectors/currentUser-selectos';
+import { CurrentUserSelectors } from '../selectors/currentUser-selectors';
 
 @Injectable({
   providedIn: 'root'

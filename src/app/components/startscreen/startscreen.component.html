@@ -6,7 +6,10 @@
             <input type="text" id="joinGame" placeholder="Name eines existierenden Spiels eingeben">
             <button (click)="joinGame()">Join Game</button>
             <button (click)="logout()">Logout</button>
-        
+
+        @if (joinGameError) {
+            <p class="error-message">{{ joinGameError }}</p>
+        }
 
     </div>
 </div>

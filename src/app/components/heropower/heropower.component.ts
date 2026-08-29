@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Store} from '@ngxs/store';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
-import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
 import { MatCard } from '@angular/material/card';

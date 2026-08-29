@@ -20,7 +20,7 @@ interface Difficulty {
     imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, FormsModule, MatInput, ReactiveFormsModule, MatError, MatSelect, MatOption, MatDialogActions, MatButton, MatDialogClose],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DialogGameSettings {
+export class DialogGameSettingsComponent {
   playerValidation = new FormControl('', [Validators.required, Validators.min(2), Validators.max(5)]);
   idValidation = new FormControl('', Validators.required);
 
@@ -32,7 +32,7 @@ export class DialogGameSettings {
     {value: 'hard', viewValue: 'hard'}
   ];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogGameSettings>) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogGameSettingsComponent>) {}
 
   getGameSettings(numberOfPlayer:number, difficulty: string, gameId: string) {
     this.dialogRef.close({data: {

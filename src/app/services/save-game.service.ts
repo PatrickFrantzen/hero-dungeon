@@ -12,59 +12,32 @@ export class SaveGameService {
 
   updateHandstack(gameId: string, playerId: string, update: string[]) {
     const docPlayer = doc(this.db, 'games', gameId, 'player', playerId);
-    const updateData = {
-      handstack: update
-    }
-    updateDoc(docPlayer, updateData)
+    return updateDoc(docPlayer, { handstack: update });
   }
 
   updateCardstack(gameId: string, playerId: string, update: string[]) {
     const docPlayer = doc(this.db, 'games', gameId, 'player', playerId);
-    const updateData = {
-      cardstack: update
-    }
-    updateDoc(docPlayer, updateData)
+    return updateDoc(docPlayer, { cardstack: update });
   }
 
   updateDeliveryStack(gameId: string, playerId: string, update: string[]) {
     const docPlayer = doc(this.db, 'games', gameId, 'player', playerId);
-    const updateData = {
-      deliveryStack: update
-    }
-    console.warn('delStack', update)
-    updateDoc(docPlayer, updateData)
+    return updateDoc(docPlayer, { deliveryStack: update });
   }
 
   updateCurrentEnemyToken(gameId: string, update: Mob | Mob[]) {
-    const docServer= doc(this.db, 'games', gameId);
-    const updateData = {
-      currentEnemy: update
-    }
-    updateDoc(docServer, updateData)
-  }
-
-  updateNewEnemy(gameId: string, update: Mob | Mob[]) {
-    const docServer= doc(this.db, 'games', gameId);
-    const updateData = {
-      currentEnemy: update
-    }
-    updateDoc(docServer, updateData)
+    const docServer = doc(this.db, 'games', gameId);
+    return updateDoc(docServer, { currentEnemy: update });
   }
 
   updateNewMob(gameId: string, update: Mob | Mob[]) {
-    const docServer= doc(this.db, 'games', gameId);
-    const updateData = {
-      Mob: update
-    }
-    updateDoc(docServer, updateData)
+    const docServer = doc(this.db, 'games', gameId);
+    return updateDoc(docServer, { Mob: update });
   }
 
   updateQuestStatus(gameId: string, update: boolean) {
-    const docServer= doc(this.db, 'games', gameId);
-    const updateData = {
-      questCardActivated: update
-    }
-    updateDoc(docServer, updateData)
+    const docServer = doc(this.db, 'games', gameId);
+    return updateDoc(docServer, { questCardActivated: update });
   }
 
 }

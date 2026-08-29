@@ -33,8 +33,9 @@ Major-Update, Store-Wechsel, neue Architektur-Entscheidung) bitte hier nachziehe
   auch nach der Signals-Migration (NGXS und Signals schließen sich nicht aus: `selectSignal()`
   ist NGXS' eigene Signal-Schnittstelle). States unter `src/app/states/`, Actions unter
   `src/app/actions/`, Selectors unter `src/app/selectors/`. Registrierung zentral in
-  `app.config.ts` über `provideStore([...])` — **Achtung:** nicht jeder State dort ist auch
-  tatsächlich registriert (siehe "Bekannte Baustellen" unten, `MobState`).
+  `app.config.ts` über `provideStore([...])` — Registrierung dort ist die einzige Quelle der
+  Wahrheit, welcher State tatsächlich aktiv ist (ein früherer nicht registrierter `MobState`
+  wurde deswegen entfernt, siehe `docs/done/review-2026-08/01-state-management.md`).
 - **UI**: Angular Material 21 (`@angular/material`, `@angular/cdk`), Theme `purple-green.css`
   (prebuilt, nicht customized), SCSS pro Komponente.
 - **Backend**: Firebase über `@angular/fire` v20 — Firestore (`getFirestore`, `doc`, `getDoc`,
@@ -79,53 +80,63 @@ src/app/
                  heropower/ haben je einen *-container/ Unterordner (Smart/Dumb-Trennung,
                  seit Commit e704eb2 — Container liest Store/Firestore, Kind-Komponente ist
                  reine Darstellung); dieses Muster ist noch nicht durchgängig, größter
-                 verbleibender Ausreißer ist PlayerHandComponent (>600 Zeilen, siehe unten)
+                 verbleibender Ausreißer ist PlayerHandComponent (>580 Zeilen, siehe unten)
   app.config.ts  Zentrale Provider-Konfiguration (Router, Firebase, NGXS-Store)
   app.routes.ts  Routing inkl. Auth-Guards
 src/models/
   helden/        Eine Klasse pro Heldentyp (barbar, dieb, gladiator, ...) + hero.class.ts,
-                 card.class.ts — nahezu identischer Konstruktor-Aufbau pro Klasse, nur die
-                 Kartendaten unterscheiden sich (siehe docs/review/05-models.md)
-  monster/       monster.class.ts (größte Modell-Datei, viele Datenliterale + Logik gemischt)
+                 card.class.ts — der Konstruktor-Rumpf ist über `Hero.buildCardstack()`
+                 dedupliziert (siehe docs/done/hero-data-model-plan.md), aber weiterhin
+                 zehn Klassen mit teils identischen Kartendaten statt einem Datenmodell
+  monster/       monster.class.ts (Auswahl-/Schwierigkeitslogik, ~130 Zeilen) +
+                 monster-collection.data.ts (Datenliterale, ausgelagert)
   game.ts, user.class.ts
 src/assets/img/  Karten-, Icon-, Monster-Token-Grafiken
 docs/
-  review/        Vollständiges Code-Review der App, aufgeteilt in unabhängig bearbeitbare
-                 Dateien (00-overview.md als Einstieg) — Referenz für anstehende
-                 Refactorings, DRY/SOLID-Befunde, priorisierte Empfehlungen
-  done/          Abgeschlossene/laufende Refactoring-Pläne im gleichen Stil wie diese Datei
+  done/          Abgeschlossene/laufende Refactoring-Pläne im gleichen Stil wie diese Datei,
+                 u.a. das vollständige Code-Review vom 2026-08 (jetzt unter
+                 `done/review-2026-08/`, 00-overview.md als Einstieg) und die daraus
+                 hervorgegangenen Pläne für die noch offenen strukturellen Umbauten
+                 (`firestore-repository-service-plan.md`, `currentGame-state-split-plan.md`,
+                 `player-hand-decomposition-plan.md`, `hero-data-model-plan.md`,
+                 `dialog-auth-unification-plan.md`)
 ```
 
 ## Bekannte Baustellen (Ist-Zustand, nicht normativ)
 
 Ein vollständiges, datei-für-Datei-Review mit `datei.ts:Zeile`-Belegen liegt unter
-`docs/review/` (Einstieg: `docs/review/00-overview.md`). Die wichtigsten Punkte von dort, kurz
-zusammengefasst:
+`docs/done/review-2026-08/` (Einstieg: `docs/done/review-2026-08/00-overview.md`). Die
+klein-/mittelgroßen Befunde daraus sind bereits umgesetzt (PR #21, siehe Status-Abschnitt in
+jeder Einzeldatei); die verbleibenden Punkte unten sind als eigene Umsetzungspläne unter
+`docs/done/*-plan.md` vorbereitet — Einstieg für eine neue Session ist jeweils der verlinkte
+Plan, nicht mehr das ursprüngliche Review.
 
-- `PlayerHandComponent` (`src/app/components/player-hand/player-hand.component.ts`, >600
+- `PlayerHandComponent` (`src/app/components/player-hand/player-hand.component.ts`, >580
   Zeilen) mischt weiterhin Firestore-Zugriff, NGXS-Dispatch, Spielregeln und UI in einer Klasse
   — der zentrale Hotspot im Projekt, bewusst nicht Teil des OnPush-Refactors
-  (`docs/done/onpush-refactor-plan.md`), da eigenständiges größeres Vorhaben.
-- Mehrere Heropower-Check-Methoden dort sind stark redundant (copy-paste-artige Struktur je
-  Heldentyp) — Kandidat für eine Strategy-Pattern-/Service-Extraktion.
+  (`docs/done/onpush-refactor-plan.md`), da eigenständiges größeres Vorhaben. Plan:
+  `docs/done/player-hand-decomposition-plan.md` (inkl. Heropower-Strategy-Pattern für die
+  redundanten Heropower-Check-Methoden als Stretch-Goal).
 - Kein Interceptor/Repository-Layer um Firestore-Fehler — `getDoc`/`updateDoc`-Aufrufe
-  größtenteils ohne try/catch, kein Error-Handling im UI bei Verbindungsproblemen oder
-  fehlgeschlagenen Auth-Aufrufen (Login/Registrierung geben Fehler aktuell nicht an den Nutzer
-  weiter).
-- Toter Code: `MobState` (`src/app/states/monsterStack-state.ts`) ist implementiert, aber nicht
-  in `app.config.ts`'s `provideStore([...])` registriert — `CurrentGameState` übernimmt die
-  gleiche Aufgabe tatsächlich. Ähnlich `CurrentGameService`
-  (`src/app/services/current-game.service.ts`), der von keiner Komponente injiziert wird.
-- Die zehn Heldenklassen unter `src/models/helden/` haben einen fast wortgleichen
-  Konstruktor-Aufbau; mehrere davon haben sogar identische Kartendaten (z.B. Barbar/Gladiator).
-  Datengetriebener Ansatz (Konfigurationsobjekte + Factory) wäre hier SOLID-konformer als zehn
-  Klassen.
+  größtenteils ohne try/catch. Plan: `docs/done/firestore-repository-service-plan.md`.
+- `currentGame-state.ts` bündelt vier fachlich unabhängige Verantwortlichkeiten (Spiel-
+  Identität, Gegner/Encounter, Lobby/Spieler, Quest-Flag) in einem NGXS-State. Plan:
+  `docs/done/currentGame-state-split-plan.md`.
+- Die zehn Heldenklassen unter `src/models/helden/` haben identische Kartendaten in mehreren
+  Paaren (z.B. Barbar/Gladiator) und tragen keine unterscheidbare Verhaltenslogik — ein
+  datengetriebener Ansatz (Konfigurationsobjekte + Factory) wäre SOLID-konformer als zehn
+  Klassen. Der Konstruktor-Rumpf selbst ist bereits über `Hero.buildCardstack()` dedupliziert.
+  Plan: `docs/done/hero-data-model-plan.md`.
+- `StartscreenComponent`, die drei Dialog-Komponenten und Signin/Signup haben überlappende
+  Verantwortung (Spiellogik/Firestore-Zugriff in der Komponente statt im Service, dupliziertes
+  `MatDialogRef`-Boilerplate, kein gemeinsamer Auth-Fehler-Mapper). Plan:
+  `docs/done/dialog-auth-unification-plan.md`.
 - Deutsche und englische Bezeichner gemischt (`heropower-selector.ts` vs. `Heldenfähigkeiten`
-  in Commit-Messages), dazu einzelne Tippfehler in Dateinamen (`currentUser-selectos.ts`) —
-  beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit beauftragt.
+  in Commit-Messages) — beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit
+  beauftragt.
 - Firestore-Zugriffs-Boilerplate (`doc(this.db, 'games', gameId, ...)` + `updateDoc(...)`) ist
   über mehrere Services und Komponenten dupliziert statt in einer gemeinsamen Abstraktion
-  gebündelt.
+  gebündelt (siehe `firestore-repository-service-plan.md`).
 
 ## Arbeitsweise für Änderungen
 
@@ -135,9 +146,10 @@ zusammengefasst:
   --browsers=ChromeHeadlessCI` grün halten, nicht in einem Rutsch alles umstellen. Der Stil aus
   `docs/done/onpush-refactor-plan.md` (Diagnose → nummerierte TODOs → Verifikation) ist die
   Referenz für neue Refactoring-Pläne.
-- Vor einem größeren Refactoring lohnt ein Blick in `docs/review/`, ob der betroffene
-  Codeteil dort bereits mit konkreten Befunden und Vorschlägen dokumentiert ist — dann darauf
-  aufbauen statt neu zu analysieren.
+- Vor einem größeren Refactoring lohnt ein Blick in `docs/done/*-plan.md` bzw.
+  `docs/done/review-2026-08/`, ob der betroffene Codeteil dort bereits mit konkreten Befunden,
+  einer Diagnose und nummerierten TODOs dokumentiert ist — dann darauf aufbauen statt neu zu
+  analysieren.
 - **Firebase-Credentials**: `environment.ts`/`environment.prod.ts` enthalten den Firebase-
   Web-API-Key. Das ist bei Firebase kein Geheimnis, das per Security Rules abgesichert wird —
   trotzdem keine anderen Secrets (Service-Account-Keys, Admin-SDK-Credentials) hier ablegen.
