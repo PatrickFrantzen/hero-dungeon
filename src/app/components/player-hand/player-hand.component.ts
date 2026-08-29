@@ -20,6 +20,7 @@ import { FirestoreOperationError } from 'src/app/services/firestore-repository.s
 import { FirestoreSyncService } from 'src/app/services/firestore-sync.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { HeropowerService } from 'src/app/services/heropower.service';
+import { HeropowerDialogPlayer } from '../dialog-results';
 import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.component';
 import { NgStyle } from '@angular/common';
 import { HeropowerContainerComponent } from '../heropower/heropower-container/heropower-container.component';
@@ -148,11 +149,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open(DialogHeropowerComponent, {
-      data: this.currentPlayers(),
-    });
+    let dialogRef = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
+      DialogHeropowerComponent,
+      { data: this.currentPlayers() }
+    );
 
     dialogRef.afterClosed().subscribe((result) => {
+      if (!result) return;
       const { playerId } = result.data;
       this.heropowerService.resolveJaegerinHeropowerForPlayer(
         this.currentGameId(),

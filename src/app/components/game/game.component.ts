@@ -14,6 +14,7 @@ import { EnemyContainerComponent } from '../enemy/enemy-container/enemy-containe
 import { PlayerHandComponent } from '../player-hand/player-hand.component';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
+import { ChooseHeroDialogResult } from 'src/app/components/dialog-results';
 
 interface ChoosenPlayer {
   playerName: string;
@@ -99,13 +100,12 @@ export class GameComponent implements OnInit {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open(DialogChooseHeroComponent, {
-      data: {
-        choosenHero: this.currentHero,
-      }
-    });
+    let dialogRef = this.dialog.open<DialogChooseHeroComponent, undefined, { data: ChooseHeroDialogResult }>(
+      DialogChooseHeroComponent
+    );
 
     dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) return;
       try {
         const { cardstack, heroname, heropower, description } = result.data.choosenHero;
         this.store.dispatch(new CreateNewCardStackAction(cardstack));

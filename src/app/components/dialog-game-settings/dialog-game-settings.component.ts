@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatSelect, MatOption } from '@angular/material/select';
 import { MatButton } from '@angular/material/button';
+import { BaseDialogComponent } from '../dialog-base.component';
+import { GameSettingsDialogResult } from '../dialog-results';
 
 interface Difficulty {
   value: string;
@@ -20,7 +21,7 @@ interface Difficulty {
     imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, FormsModule, MatInput, ReactiveFormsModule, MatError, MatSelect, MatOption, MatDialogActions, MatButton, MatDialogClose],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DialogGameSettingsComponent {
+export class DialogGameSettingsComponent extends BaseDialogComponent<GameSettingsDialogResult> {
   playerValidation = new FormControl('', [Validators.required, Validators.min(2), Validators.max(5)]);
   idValidation = new FormControl('', Validators.required);
 
@@ -32,13 +33,11 @@ export class DialogGameSettingsComponent {
     {value: 'hard', viewValue: 'hard'}
   ];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data:any, private dialogRef: MatDialogRef<DialogGameSettingsComponent>) {}
+  constructor(dialogRef: MatDialogRef<DialogGameSettingsComponent, { data: GameSettingsDialogResult }>) {
+    super(dialogRef);
+  }
 
   getGameSettings(numberOfPlayer:number, difficulty: string, gameId: string) {
-    this.dialogRef.close({data: {
-      numberOfPlayer: numberOfPlayer,
-      difficulty: difficulty,
-      gameId: gameId,
-    }})
+    this.closeWith({ numberOfPlayer, difficulty, gameId });
   }
 }

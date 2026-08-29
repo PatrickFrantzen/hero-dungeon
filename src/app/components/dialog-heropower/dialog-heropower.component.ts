@@ -5,6 +5,8 @@ import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatSelect, MatOption } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
+import { BaseDialogComponent } from '../dialog-base.component';
+import { HeropowerDialogPlayer } from '../dialog-results';
 
 @Component({
     selector: 'app-dialog-heropower',
@@ -13,19 +15,21 @@ import { MatButton } from '@angular/material/button';
     imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatDialogActions, MatButton, MatDialogClose],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DialogHeropowerComponent {
-  selectedValue: { playerName: string; playerId: string; playerHero: string; } = { playerName: '', playerId: '', playerHero: '' }
+export class DialogHeropowerComponent extends BaseDialogComponent<HeropowerDialogPlayer> {
+  selectedValue: HeropowerDialogPlayer = { playerName: '', playerId: '', playerHero: '' }
 
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: HeropowerDialogPlayer[],
+    dialogRef: MatDialogRef<DialogHeropowerComponent, { data: HeropowerDialogPlayer }>
+  ) {
+    super(dialogRef);
+  }
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data:{ playerName: string; playerId: string; playerHero: string; }[], private dialogRef: MatDialogRef<DialogHeropowerComponent>){}
-
-  getChoosenHero(selectedValue: { playerName: string; playerId: string; playerHero: string; }) {
-    this.dialogRef.close({
-      data:  {
-        playerName: selectedValue.playerName,
-        playerId: selectedValue.playerId,
-        playerHero: selectedValue.playerHero
-      }
-    })
+  getChoosenHero(selectedValue: HeropowerDialogPlayer) {
+    this.closeWith({
+      playerName: selectedValue.playerName,
+      playerId: selectedValue.playerId,
+      playerHero: selectedValue.playerHero,
+    });
   }
 }

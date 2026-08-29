@@ -14,6 +14,7 @@ import { SetNewEnemy } from 'src/app/actions/encounter-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
 import { CreateNewMobAction, UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
+import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
 
 @Component({
     selector: 'app-startscreen',
@@ -61,12 +62,9 @@ export class StartscreenComponent implements OnInit {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open(DialogGameSettingsComponent, {
-      data: {numberOfPlayer: this.numberOfPlayers,
-              difficulty: this.difficulty,
-              gameId: this.gameId,
-            }
-    })
+    let dialogRef = this.dialog.open<DialogGameSettingsComponent, undefined, { data: GameSettingsDialogResult }>(
+      DialogGameSettingsComponent
+    );
 
     dialogRef.afterClosed().subscribe(result => {
       if (!result?.data) {
@@ -84,7 +82,7 @@ export class StartscreenComponent implements OnInit {
     )
   }
 
-  setGameSettings(data:any) {
+  setGameSettings(data: GameSettingsDialogResult) {
     if (data) {
       const Mob: Mob[] = new Monster().createMob(data.numberOfPlayer, 'Baby-Barbar', data.difficulty);
       const allBosses: Mob[] = new Monster().bossCollection;
