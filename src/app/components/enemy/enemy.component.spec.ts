@@ -16,7 +16,7 @@ describe('EnemyComponent', () => {
 
     fixture = TestBed.createComponent(EnemyComponent);
     component = fixture.componentInstance;
-    component.currentEnemy = { name: '', token: [], type: '' };
+    fixture.componentRef.setInput('currentEnemy', { name: '', token: [], type: '' });
     fixture.detectChanges();
   });
 

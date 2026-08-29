@@ -1,4 +1,4 @@
-import { Component, Input, computed } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { Store} from '@ngxs/store';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
@@ -14,10 +14,10 @@ import { NgClass } from '@angular/common';
     imports: [MatCard, NgClass]
 })
 export class HeropowerComponent {
-  @Input() currentGameId: string = '';
-  @Input() currentPlayerId: string = '';
-  @Input() currentEnemy: Mob = {name: '', token: [], type: ''};
-  @Input() currentDeliveryStack:string[] = [];
+  readonly currentGameId = input<string>('');
+  readonly currentPlayerId = input<string>('');
+  readonly currentEnemy = input<Mob>({ name: '', token: [], type: '' });
+  readonly currentDeliveryStack = input<string[]>([]);
 
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
   heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
@@ -42,20 +42,20 @@ export class HeropowerComponent {
   }
 
   heroPowerGladiator() {
-    if (this.currentEnemy.type === 'Person' && !this.heropowerActivated()) {
+    if (this.currentEnemy().type === 'Person' && !this.heropowerActivated()) {
       this.activateHeroPower();
     } else this.deactivateHeroPower();
   }
 
   heroPowerBarbar() {
-    if (this.currentEnemy.type === 'Monster' && !this.heropowerActivated()) {
+    if (this.currentEnemy().type === 'Monster' && !this.heropowerActivated()) {
       this.activateHeroPower();
     } else this.deactivateHeroPower();
 
   }
 
   heroPowerZauberin() {
-    if (this.currentEnemy.type === 'Hindernis' && !this.heropowerActivated()) {
+    if (this.currentEnemy().type === 'Hindernis' && !this.heropowerActivated()) {
       this.activateHeroPower();
     } else this.deactivateHeroPower();
   }
@@ -71,7 +71,7 @@ export class HeropowerComponent {
   }
 
   heroPowerWaldlaeufer() {
-    if (this.currentEnemy.type === 'Person' && !this.heropowerActivated()) {
+    if (this.currentEnemy().type === 'Person' && !this.heropowerActivated()) {
       this.activateHeroPower();
     } else this.deactivateHeroPower();
   }
@@ -83,13 +83,13 @@ export class HeropowerComponent {
   }
 
   heroPowerNinja() {
-    if (this.currentEnemy.type === 'Hindernis' && !this.heropowerActivated()) {
+    if (this.currentEnemy().type === 'Hindernis' && !this.heropowerActivated()) {
       this.activateHeroPower();
     } else this.deactivateHeroPower();
   }
 
   heroPowerPaladin() {
-    if (this.currentEnemy.type === 'Monster' && !this.heropowerActivated()) {
+    if (this.currentEnemy().type === 'Monster' && !this.heropowerActivated()) {
       this.activateHeroPower();
     } else this.deactivateHeroPower();
   }
