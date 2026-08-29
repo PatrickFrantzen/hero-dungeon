@@ -36,6 +36,7 @@ export class StartscreenComponent implements OnInit {
   loadedCollectionData!: DocumentData;
   loadedCurrentEnemy!: Mob;
   loadedCurrentMob!: Mob[]
+  joinGameError: string | null = null;
 
   constructor(
     public dialog:MatDialog,
@@ -67,6 +68,9 @@ export class StartscreenComponent implements OnInit {
     })
 
     dialogRef.afterClosed().subscribe(result => {
+      if (!result?.data) {
+        return;
+      }
       this.setGameSettings(result.data);
       this.currentGameId = result.data.gameId;
       this.store.dispatch(new CurrentGameAction(this.currentGameId));
@@ -118,16 +122,27 @@ export class StartscreenComponent implements OnInit {
   }
 
   joinGame() {
-    let inputValue = (<HTMLInputElement>document.getElementById('joinGame')).value;
-    this.route.navigate(['/game/'+ inputValue]);
-    this.store.dispatch(new CurrentGameAction(inputValue));
+    let inputValue = (<HTMLInputElement>document.getElementById('joinGame')).value.trim();
+    if (!inputValue) {
+      return;
+    }
     this.loadGame.loadGameCollectionData(inputValue)
     .then((results)=> {
-      this.loadedCollectionData = results!;
+      if (!results) {
+        this.joinGameError = 'Kein Spiel mit dieser ID gefunden.';
+        return;
+      }
+      this.joinGameError = null;
+      this.loadedCollectionData = results;
       this.loadedCurrentEnemy = this.loadedCollectionData['currentEnemy'];
       this.loadedCurrentMob = this.loadedCollectionData['Mob'];
       this.store.dispatch(new SetNewEnemy(this.loadedCurrentEnemy));
       this.store.dispatch(new UpdateMobAction(this.loadedCurrentMob));
+      this.route.navigate(['/game/'+ inputValue]);
+      this.store.dispatch(new CurrentGameAction(inputValue));
+    })
+    .catch(() => {
+      this.joinGameError = 'Kein Spiel mit dieser ID gefunden.';
     })
   }
 }

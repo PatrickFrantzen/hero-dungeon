@@ -32,7 +32,7 @@
   </div>
 
   <div mat-dialog-actions>
-    <button mat-button mat-dialog-close cdkFocusInitial (click)="getGameSettings(playerNumber.valueAsNumber, selectedValue, gameId.value)">Ok</button>
+    <button mat-button mat-dialog-close cdkFocusInitial [disabled]="playerValidation.invalid || idValidation.invalid" (click)="getGameSettings(playerNumber.valueAsNumber, selectedValue, gameId.value)">Ok</button>
   </div>
 </div>
 
