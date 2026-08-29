@@ -5,66 +5,51 @@ import {
   CurrentGameData,
   updateQuestCardActivated,
 } from '../actions/currentGame-action';
-import { Game } from 'src/models/game';
-import { ToJSONService } from '../services/to-json.service';
 
 export interface CurrentGameModel {
   items: string;
-  game: Game;
+  numberOfPlayers: number;
+  gameId: string;
+  difficulty: string;
+  isLost: boolean;
+  questCardActivated: boolean;
 }
 
 @State<CurrentGameModel>({
   name: 'currentGame',
   defaults: {
     items: '',
-    game: {
-      numberOfPlayers: 0,
-      choosenHeros: [
-        {
-          playerName: '',
-          playerId: '',
-          playerHero: '',
-        },
-      ],
-      currentEnemy: { name: '', token: [], type: '' },
-      currentBoss: { name: '', token: [], type: '' },
-      isLost: false,
-      gameId: '',
-      difficulty: '',
-      Mob: [],
-      allBosses: [],
-      questCardActivated: false,
-    },
+    numberOfPlayers: 0,
+    gameId: '',
+    difficulty: '',
+    isLost: false,
+    questCardActivated: false,
   },
 })
 @Injectable()
 export class CurrentGameState {
-  constructor(JSON: ToJSONService) {}
   @Action(CurrentGameAction)
   getGameID(ctx: StateContext<CurrentGameModel>, action: CurrentGameAction) {
     const { id } = action;
     if (!id) return;
 
-    const state = ctx.getState();
-    const gameId: string = id;
-
-    ctx.setState({
-      ...state,
-      items: gameId,
-    });
+    ctx.patchState({ items: id });
   }
 
+  // Spiel-Identität/Metadaten - Gegner/Mob/Boss (EncounterState) und choosenHeros (LobbyState)
+  // haben je ihren eigenen @Action(CurrentGameData)-Handler auf denselben dispatchten Game-
+  // Datensatz, siehe encounter-state.ts/lobby-state.ts.
   @Action(CurrentGameData)
   setGameData(ctx: StateContext<CurrentGameModel>, action: CurrentGameData) {
     const { game } = action;
     if (!game) return;
 
-    const state = ctx.getState();
-    const gameData: Game = game;
-
-    ctx.setState({
-      ...state,
-      game: gameData,
+    ctx.patchState({
+      numberOfPlayers: game.numberOfPlayers,
+      gameId: game.gameId,
+      difficulty: game.difficulty,
+      isLost: game.isLost,
+      questCardActivated: game.questCardActivated,
     });
   }
 
@@ -74,15 +59,6 @@ export class CurrentGameState {
     action: updateQuestCardActivated
   ) {
     const { questCardActivated } = action;
-
-    const state = ctx.getState();
-    const activation = questCardActivated;
-    ctx.patchState({
-      ...state,
-      game: {
-        ...state.game,
-        questCardActivated: activation,
-      },
-    });
+    ctx.patchState({ questCardActivated });
   }
 }
