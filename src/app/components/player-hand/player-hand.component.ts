@@ -144,6 +144,20 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new updateQuestCardActivated(data['questCardActivated']));
   }
 
+  onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere') {
+    switch (kind) {
+      case 'array':
+        this.checkheropowerArray();
+        break;
+      case 'jaegerin':
+        this.checkJaegerinHeropower();
+        break;
+      case 'walkuere':
+        this.checkWalkuereHeropower();
+        break;
+    }
+  }
+
   checkWalkuereHeropower() {
     if (this.heropowerArray().length !== 3) return;
 
