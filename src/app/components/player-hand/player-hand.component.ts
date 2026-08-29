@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, Input, inject, signal } from '@angular/core';
-import { DocumentData, Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
 import { Subscription } from 'rxjs';
@@ -8,7 +8,6 @@ import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
 import {
   SetChoosenHeros,
-  updateChoosenHeros,
   updateQuestCardActivated,
 } from 'src/app/actions/currentGame-action';
 import {
@@ -16,10 +15,7 @@ import {
   UpdateMonsterTokenArray,
 } from 'src/app/actions/currentGame-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
-import {
-  UpdateHeropowerActivated,
-  UpdateHeropowerArray,
-} from 'src/app/actions/heropower-action';
+import { UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -29,8 +25,8 @@ import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { FirestoreOperationError } from 'src/app/services/firestore-repository.service';
 import { FirestoreSyncService } from 'src/app/services/firestore-sync.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
+import { HeropowerService } from 'src/app/services/heropower.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
-import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.component';
 import { NgStyle } from '@angular/common';
@@ -75,15 +71,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   questCardStatus = this.store.selectSignal(CurrentGameSelectors.currentQuestCardStatus);
 
-  playerIdForHeropowerAction: string = '';
-  playerNameForHeropowerAction: string = '';
-  playerHeroForHeropowerAction: string = '';
-
-  db = inject(Firestore);
-  loadedCollectionData!: DocumentData;
-  collectionData!: DocumentData;
-  allPlayerDataFromServer: DocumentData[] = [];
-
   loadError = signal<string | null>(null);
 
   gameSubscr!: Subscription;
@@ -94,6 +81,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     private gameRepo: GameRepositoryService,
     private playerRepo: PlayerRepositoryService,
     private firestoreSync: FirestoreSyncService,
+    private heropowerService: HeropowerService,
     public dialog: MatDialog
   ) {}
 
@@ -153,184 +141,28 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere') {
+    const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
     switch (kind) {
       case 'array':
-        this.checkheropowerArray();
+        this.heropowerService.resolveArrayHeropower(
+          this.currentGameId(),
+          this.currentPlayerId(),
+          reportWriteFailure,
+          (enemy) => this.checkForNextEnemy(enemy)
+        );
         break;
       case 'jaegerin':
-        this.checkJaegerinHeropower();
+        this.heropowerService.resolveJaegerinHeropower(
+          this.currentGameId(),
+          this.currentPlayerId(),
+          reportWriteFailure,
+          () => this.openDialog()
+        );
         break;
       case 'walkuere':
-        this.checkWalkuereHeropower();
+        this.heropowerService.resolveWalkuereHeropower(this.currentGameId(), this.currentPlayerId(), reportWriteFailure);
         break;
     }
-  }
-
-  checkWalkuereHeropower() {
-    if (this.heropowerArray().length !== 3) return;
-
-    this.heropowerArray().forEach((card) => {
-      let currHand = [...this.currentHand()];
-      let currCardStack = [...this.currentCardStack()];
-      let indexOfHandCard = this.currentHand().indexOf(card);
-      currHand.splice(indexOfHandCard, 1);
-      this.store.dispatch(new UpdateCurrentHandAction(currHand));
-
-      if (currHand.length < 5 && currCardStack.length > 0) {
-        let currCardStack = [...this.currentCardStack()];
-        let currHand = [...this.currentHand()];
-        const getCardForHand = currCardStack.shift()!;
-        currHand.push(getCardForHand);
-        this.reportWriteFailure(this.playerRepo.updateHandstack(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          currHand
-        ));
-        this.reportWriteFailure(this.playerRepo.updateCardstack(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          currCardStack
-        ));
-        this.store.dispatch(new UpdateCardStackAction(currCardStack));
-        this.store.dispatch(new UpdateCurrentHandAction(currHand));
-      }
-    });
-    this.getAllPlayerDatatoGivePlayersCards();
-
-    this.store.dispatch(new UpdateHeropowerActivated(false));
-    this.store.dispatch(new UpdateHeropowerArray([]));
-  }
-
-  async getAllPlayerDatatoGivePlayersCards() {
-    const allPlayerData = query(
-      collection(this.db, 'games', this.currentGameId(), 'player'),
-      where('gameId', '==', this.currentGameId()),
-      where('userId', '!=', this.currentPlayerId())
-    );
-    const querySnapshot = await getDocs(allPlayerData);
-    querySnapshot.forEach((doc) => {
-      this.executeWalkuereHeropower(doc.data());
-    });
-  }
-
-  executeWalkuereHeropower(data: DocumentData) {
-    const userId = data['userId'];
-    let currentCardStack = data['cardstack'];
-    let currentHand = data['handstack'];
-    for (let i = 0; i < 2; i++) {
-      let currHand = [...currentHand];
-      let currCardStack = [...currentCardStack];
-
-      if (currCardStack.length > 0) {
-        const getCardForHand = currCardStack.shift()!;
-        currHand.push(getCardForHand);
-
-        this.reportWriteFailure(this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand));
-        this.reportWriteFailure(this.playerRepo.updateCardstack(
-          this.currentGameId(),
-          userId,
-          currCardStack
-        ));
-
-        currentCardStack = currCardStack;
-        currentHand = currHand;
-      }
-    }
-  }
-
-  async getOtherPlayerDataTogivePlayerCards() {
-    const playerSnap = await getDocs(
-      query(
-        collection(this.db, 'games', this.currentGameId(), 'player'),
-        where('userId', '==', this.playerIdForHeropowerAction)
-      )
-    );
-    playerSnap.forEach((doc) => {
-      let data = doc.data();
-      this.executeJaegerinHeropower(data);
-    });
-  }
-
-  executeJaegerinHeropower(data: DocumentData) {
-    // console.warn('execute', data);
-    const userId = data['userId'];
-    let currentCardStack = data['cardstack'];
-    let currentHand = data['handstack'];
-
-    if (this.currentPlayerId() === userId) {
-      for (let i = 0; i < 4; i++) {
-        let currCardStack = [...this.currentCardStack()];
-        let currHand = [...this.currentHand()];
-
-        if (currCardStack.length > 0) {
-          const getCardForHand = currCardStack.shift()!;
-          currHand.push(getCardForHand);
-
-          this.reportWriteFailure(this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand));
-          this.reportWriteFailure(this.playerRepo.updateCardstack(
-            this.currentGameId(),
-            userId,
-            currCardStack
-          ));
-
-          this.store.dispatch(new UpdateCardStackAction(currCardStack));
-          this.store.dispatch(new UpdateCurrentHandAction(currHand));
-        }
-      }
-    } else {
-      for (let i = 0; i < 4; i++) {
-        let currHand = [...currentHand];
-        let currCardStack = [...currentCardStack];
-
-        if (currCardStack.length > 0) {
-          const getCardForHand = currCardStack.shift()!;
-          currHand.push(getCardForHand);
-
-          this.reportWriteFailure(this.playerRepo.updateHandstack(this.currentGameId(), userId, currHand));
-          this.reportWriteFailure(this.playerRepo.updateCardstack(
-            this.currentGameId(),
-            userId,
-            currCardStack
-          ));
-
-          currentCardStack = currCardStack;
-          currentHand = currHand;
-        }
-      }
-    }
-  }
-
-  checkJaegerinHeropower() {
-    if (this.heropowerArray().length !== 3) return;
-    this.heropowerArray().forEach((card) => {
-      let currHand = [...this.currentHand()];
-      let currCardStack = [...this.currentCardStack()];
-      let indexOfHandCard = this.currentHand().indexOf(card);
-      currHand.splice(indexOfHandCard, 1);
-      this.store.dispatch(new UpdateCurrentHandAction(currHand));
-
-      if (currHand.length < 5 && currCardStack.length > 0) {
-        let currCardStack = [...this.currentCardStack()];
-        let currHand = [...this.currentHand()];
-        const getCardForHand = currCardStack.shift()!;
-        currHand.push(getCardForHand);
-        this.reportWriteFailure(this.playerRepo.updateHandstack(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          currHand
-        ));
-        this.reportWriteFailure(this.playerRepo.updateCardstack(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          currCardStack
-        ));
-        this.store.dispatch(new UpdateCardStackAction(currCardStack));
-        this.store.dispatch(new UpdateCurrentHandAction(currHand));
-      }
-    });
-    this.openDialog();
-    this.store.dispatch(new UpdateHeropowerActivated(false));
-    this.store.dispatch(new UpdateHeropowerArray([]));
   }
 
   chooseCard(card: string) {
@@ -519,49 +351,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   loadNextDungeon() {}
 
-  checkheropowerArray() {
-    if (this.heropowerArray().length == 3) {
-      let currEnemyToken = [...this.currentEnemy().token];
-      currEnemyToken.length = 0;
-
-      this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
-      this.reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(
-        this.currentGameId(),
-        this.currentEnemy()
-      ));
-      this.checkForNextEnemy(this.currentEnemy());
-
-      this.heropowerArray().forEach((card) => {
-        let indexOfHandCard = this.currentHand().indexOf(card);
-        let currHand = [...this.currentHand()];
-        let currCardStack = [...this.currentCardStack()];
-        currHand.splice(indexOfHandCard, 1);
-
-        if (currHand.length < 5 && currCardStack.length > 0) {
-          const getCardForHand = currCardStack.shift()!;
-          currHand.push(getCardForHand);
-
-          this.reportWriteFailure(this.playerRepo.updateHandstack(
-            this.currentGameId(),
-            this.currentPlayerId(),
-            currHand
-          ));
-          this.reportWriteFailure(this.playerRepo.updateCardstack(
-            this.currentGameId(),
-            this.currentPlayerId(),
-            currCardStack
-          ));
-
-          this.store.dispatch(new UpdateCardStackAction(currCardStack));
-          this.store.dispatch(new UpdateCurrentHandAction(currHand));
-        }
-      });
-      this.store.dispatch(new UpdateHeropowerActivated(false));
-      this.store.dispatch(new UpdateHeropowerArray([]));
-    }
-  }
-
-
   saveHand(card: string, currHand: string[]) {
     let indexOfHandCard = this.currentHand().indexOf(card);
     currHand.splice(indexOfHandCard, 1);
@@ -581,11 +370,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      const { playerHero, playerId, playerName } = result.data;
-      this.playerIdForHeropowerAction = playerId;
-      this.playerNameForHeropowerAction = playerName;
-      this.playerHeroForHeropowerAction = playerHero;
-      this.getOtherPlayerDataTogivePlayerCards();
+      const { playerId } = result.data;
+      this.heropowerService.resolveJaegerinHeropowerForPlayer(
+        this.currentGameId(),
+        this.currentPlayerId(),
+        playerId,
+        (write) => this.reportWriteFailure(write)
+      );
     });
   }
 
