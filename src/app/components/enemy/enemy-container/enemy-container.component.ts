@@ -10,6 +10,8 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { SaveGameService } from 'src/app/services/save-game.service';
 import { Game } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
+import { EnemyComponent } from '../enemy.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'app-enemy-container',
@@ -21,7 +23,7 @@ import { Mob } from 'src/models/monster/monster.class';
     ></app-enemy>
   `,
     styles: [``],
-    standalone: false
+    imports: [EnemyComponent, AsyncPipe]
 })
 export class EnemyContainerComponent implements OnInit {
   @Select(CurrentGameSelectors.currentGameState)

@@ -4,12 +4,13 @@ import {
   OnInit,
 } from '@angular/core';
 import { Mob } from 'src/models/monster/monster.class';
+import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/material/card';
 
 @Component({
     selector: 'app-enemy',
     templateUrl: './enemy.component.html',
     styleUrls: ['./enemy.component.scss'],
-    standalone: false
+    imports: [MatCard, MatCardHeader, MatCardContent, MatCardFooter]
 })
 export class EnemyComponent implements OnInit {
   @Input() currentEnemy!: Mob;

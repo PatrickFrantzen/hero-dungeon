@@ -10,13 +10,13 @@ describe('DialogHeropowerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DialogHeropowerComponent ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-      providers: [
+    imports: [DialogHeropowerComponent],
+    schemas: [NO_ERRORS_SCHEMA],
+    providers: [
         { provide: MAT_DIALOG_DATA, useValue: [] },
-        { provide: MatDialogRef, useValue: { close: () => {} } },
-      ],
-    })
+        { provide: MatDialogRef, useValue: { close: () => { } } },
+    ],
+})
     .compileComponents();
 
     fixture = TestBed.createComponent(DialogHeropowerComponent);

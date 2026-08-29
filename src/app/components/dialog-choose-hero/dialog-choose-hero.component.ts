@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { Inject } from '@angular/core';
 import { Barbar } from 'src/models/helden/barbar.class';
 import { Dieb } from 'src/models/helden/dieb.class';
@@ -11,6 +11,11 @@ import { Paladin } from 'src/models/helden/paladin.class';
 import { Waldläufer } from 'src/models/helden/waldläufer.class';
 import { Walküre } from 'src/models/helden/walküre.class';
 import { Zauberin } from 'src/models/helden/zauberin.class';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatSelect, MatOption } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
 
 interface Heros {
   value: Object;
@@ -21,7 +26,7 @@ interface Heros {
     selector: 'app-dialog-choose-hero',
     templateUrl: './dialog-choose-hero.component.html',
     styleUrls: ['./dialog-choose-hero.component.scss'],
-    standalone: false
+    imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatDialogActions, MatButton, MatDialogClose]
 })
 export class DialogChooseHeroComponent {
 

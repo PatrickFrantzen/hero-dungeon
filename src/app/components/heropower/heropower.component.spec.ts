@@ -10,10 +10,9 @@ describe('HeropowerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ HeropowerComponent ],
-      imports: [ NgxsModule.forRoot([]) ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-    })
+    imports: [NgxsModule.forRoot([]), HeropowerComponent],
+    schemas: [NO_ERRORS_SCHEMA],
+})
     .compileComponents();
 
     fixture = TestBed.createComponent(HeropowerComponent);

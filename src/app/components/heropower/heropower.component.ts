@@ -7,12 +7,14 @@ import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { Mob } from 'src/models/monster/monster.class';
+import { MatCard } from '@angular/material/card';
+import { NgClass } from '@angular/common';
 
 @Component({
     selector: 'app-heropower',
     templateUrl: './heropower.component.html',
     styleUrls: ['./heropower.component.scss'],
-    standalone: false
+    imports: [MatCard, NgClass]
 })
 export class HeropowerComponent implements OnInit, OnDestroy{
   @Input() currentGameId: string = '';

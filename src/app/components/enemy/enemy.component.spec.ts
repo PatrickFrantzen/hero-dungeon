@@ -9,9 +9,9 @@ describe('EnemyComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ EnemyComponent ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-    })
+    imports: [EnemyComponent],
+    schemas: [NO_ERRORS_SCHEMA],
+})
     .compileComponents();
 
     fixture = TestBed.createComponent(EnemyComponent);
