@@ -12,7 +12,8 @@ import { CurrentUserHeroAction } from 'src/app/actions/currentUser-action';
 import { updateChoosenHeros } from 'src/app/actions/currentGame-action';
 import { EnemyContainerComponent } from '../enemy/enemy-container/enemy-container.component';
 import { PlayerHandComponent } from '../player-hand/player-hand.component';
-import { GamePlayerService } from 'src/app/services/game-player.service';
+import { GameRepositoryService } from 'src/app/services/game-repository.service';
+import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 
 interface ChoosenPlayer {
   playerName: string;
@@ -46,7 +47,8 @@ export class GameComponent implements OnInit {
   constructor(
     public dialog: MatDialog,
     private store: Store,
-    private gamePlayer: GamePlayerService,
+    private gameRepo: GameRepositoryService,
+    private playerRepo: PlayerRepositoryService,
   ) { }
 
   ngOnInit(): void {
@@ -55,7 +57,7 @@ export class GameComponent implements OnInit {
 
   async checkIfPlayerIsAlreadyPartOfGame() {
     try {
-      const data = await this.gamePlayer.getGame(this.currentGameId());
+      const data = await this.gameRepo.getGame(this.currentGameId());
       this.players = data?.['choosenHeros'] || [];
       const foundCurrentPlayer = this.players.some((player) => player.playerId === this.currentUserId());
 
@@ -71,7 +73,7 @@ export class GameComponent implements OnInit {
   }
 
   async createNewPlayer() {
-    await this.gamePlayer.createPlayer(this.currentGameId(), this.currentUserId(), this.user.toJSON(), {
+    await this.playerRepo.createPlayer(this.currentGameId(), this.currentUserId(), this.user.toJSON(), {
       userId: this.currentUserId(),
       userNickname: this.currentUserName(),
       gameId: this.currentGameId(),
@@ -86,12 +88,12 @@ export class GameComponent implements OnInit {
       playerHero: this.currentUserHeroData().choosenHero,
     };
     this.players.push(playerData);
-    await this.gamePlayer.addPlayerToGame(this.currentGameId(), this.players);
+    await this.gameRepo.addPlayerToGame(this.currentGameId(), this.players);
     this.store.dispatch(new updateChoosenHeros(playerData));
   }
 
   async loadHandstack(currentPlayerId: string) {
-    const data = await this.gamePlayer.getPlayer(this.currentGameId(), currentPlayerId);
+    const data = await this.playerRepo.getPlayer(this.currentGameId(), currentPlayerId);
     this.store.dispatch(new CurrentCardsInHand(data?.['handstack']));
     this.store.dispatch(new CurrentDeliveryStack(data?.['deliveryStack']));
   }
@@ -108,7 +110,7 @@ export class GameComponent implements OnInit {
         const { cardstack, heroname, heropower, description } = result.data.choosenHero;
         this.store.dispatch(new CreateNewCardStackAction(cardstack));
         this.store.dispatch(new CurrentUserHeroAction(heroname, heropower, description));
-        await this.gamePlayer.updatePlayerChoosenHero(this.currentGameId(), this.currentUserId(), result.data.choosenHero);
+        await this.playerRepo.updatePlayerChoosenHero(this.currentGameId(), this.currentUserId(), result.data.choosenHero);
         await this.drawInitialHand();
         await this.updatePlayerOfGame();
       } catch {
@@ -118,12 +120,12 @@ export class GameComponent implements OnInit {
   }
 
   async drawInitialHand() {
-    const data = await this.gamePlayer.getPlayer(this.currentGameId(), this.currentUserId());
+    const data = await this.playerRepo.getPlayer(this.currentGameId(), this.currentUserId());
     const cardStack: string[] = data?.['choosenHero'].cardstack || [];
     const handstack: string[] = cardStack.splice(0, 5);
     this.store.dispatch(new CurrentCardsInHand(handstack));
     this.store.dispatch(new UpdateCardStackAction(cardStack));
-    await this.gamePlayer.updatePlayerCards(this.currentGameId(), this.currentUserId(), cardStack, handstack);
+    await this.playerRepo.updatePlayerCards(this.currentGameId(), this.currentUserId(), cardStack, handstack);
   }
 
 }

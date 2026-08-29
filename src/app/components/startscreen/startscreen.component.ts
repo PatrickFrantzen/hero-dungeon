@@ -12,7 +12,7 @@ import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameAction, CurrentGameData, SetNewEnemy } from 'src/app/actions/currentGame-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
 import { CreateNewMobAction, UpdateMobAction } from 'src/app/actions/MonsterStack-action';
-import { LoadGameService } from 'src/app/services/load-game.service';
+import { GameRepositoryService } from 'src/app/services/game-repository.service';
 
 @Component({
     selector: 'app-startscreen',
@@ -45,7 +45,7 @@ export class StartscreenComponent implements OnInit {
     private userService: CurrentUserService,
     private store: Store,
     private JSON: ToJSONService,
-    private loadGame: LoadGameService
+    private gameRepo: GameRepositoryService
   ) {}
 
 
@@ -126,7 +126,7 @@ export class StartscreenComponent implements OnInit {
     if (!inputValue) {
       return;
     }
-    this.loadGame.loadGameCollectionData(inputValue)
+    this.gameRepo.getGame(inputValue)
     .then((results)=> {
       if (!results) {
         this.joinGameError = 'Kein Spiel mit dieser ID gefunden.';

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, effect } from '@a
 import { Store } from '@ngxs/store';
 import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
-import { SaveGameService } from 'src/app/services/save-game.service';
+import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { Mob } from 'src/models/monster/monster.class';
 import { EnemyComponent } from '../enemy.component';
 
@@ -32,7 +32,7 @@ export class EnemyContainerComponent implements OnInit {
   gameId = computed(() => this.game().gameId ?? '');
   currentEnemy = computed(() => this.game().currentEnemy ?? this.emptyMob);
 
-  constructor(private store: Store, private saveGame: SaveGameService) {
+  constructor(private store: Store, private gameRepo: GameRepositoryService) {
     // Dispatches whether the "quest card" is active whenever the current enemy changes,
     // mirroring the previous @Select-based pipe(map(...dispatch...)) exactly.
     effect(() => {
@@ -47,6 +47,6 @@ export class EnemyContainerComponent implements OnInit {
     let questCardStatus = this.store.selectSnapshot(
       CurrentGameSelectors.currentQuestCardStatus
     );
-    this.saveGame.updateQuestStatus(gameId, questCardStatus);
+    this.gameRepo.updateQuestStatus(gameId, questCardStatus);
   }
 }

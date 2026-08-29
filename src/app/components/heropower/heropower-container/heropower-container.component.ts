@@ -5,7 +5,6 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { DiebService } from 'src/app/services/dieb.service';
-import { SaveGameService } from 'src/app/services/save-game.service';
 import { Mob } from 'src/models/monster/monster.class';
 import { HeropowerComponent } from '../heropower.component';
 
@@ -46,7 +45,7 @@ export class HeropowerContainerComponent {
   // *when* a heropower resolves and delegates the *how* back up to its parent.
   readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere'>();
 
-  constructor(private store: Store, private saveGame: SaveGameService, private diebService: DiebService) {
+  constructor(private store: Store, private diebService: DiebService) {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
     effect(() => {
       const enemy = this.enemy();
