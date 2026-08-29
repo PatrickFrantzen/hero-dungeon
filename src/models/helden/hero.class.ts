@@ -1,4 +1,5 @@
 import { shuffle } from '../shuffle.util';
+import { HERO_DEFINITIONS, HeroId } from './hero-definitions';
 
 export interface Herointerface {
     choosenHero: string;
@@ -14,7 +15,7 @@ export class Hero {
 
     constructor() {}
 
-    protected buildCardstack(cardCounts: Map<string, number>): string[] {
+    public buildCardstack(cardCounts: Map<string, number>): string[] {
         const stack: string[] = [];
         cardCounts.forEach((count, cardName) => {
             for (let i = 0; i < count; i++) {
@@ -33,4 +34,18 @@ export class Hero {
         }
 
     }
+}
+
+export function createHero(id: HeroId): Hero {
+    const definition = HERO_DEFINITIONS.find((def) => def.id === id);
+    if (!definition) {
+        throw new Error(`Unbekannter Heldentyp: ${id}`);
+    }
+
+    const hero = new Hero();
+    hero.heroName = definition.heroName;
+    hero.heroPower = definition.heroPower;
+    hero.description = definition.description;
+    hero.cardstack = hero.buildCardstack(definition.cardCounts);
+    return hero;
 }
