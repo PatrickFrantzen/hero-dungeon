@@ -1,13 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { doc, getFirestore, getDoc, updateDoc, setDoc, DocumentReference } from '@angular/fire/firestore';
 import { User } from 'src/models/user.class';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { CreateNewCardStackAction, UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { CardStack } from 'src/models/helden/card.class'
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
-import { Observable, Subscription } from 'rxjs';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
@@ -23,25 +22,18 @@ import { PlayerHandComponent } from '../player-hand/player-hand.component';
     styleUrls: ['./game.component.scss'],
     imports: [EnemyContainerComponent, PlayerHandComponent]
 })
-export class GameComponent implements OnInit, OnDestroy {
+export class GameComponent implements OnInit {
 
-  @Select(CurrentUserSelectors.currentUserId) currentUserId$!: Observable<string>
-  @Select(CurrentUserSelectors.currentUserName) currentUserName$!: Observable<string>
-  @Select(CurrentGameSelectors.currentGame) currentGameId$!: Observable<string>
-  @Select(CurrentHandSelector.currentHand) currentHand$!: Observable<string[]>
-  @Select(CurrentUserSelectors.currentUserHeroData) currentUserHeroData$!: Observable<{ choosenHero: string, heroPower: string, description: string }>;
-  userHeroSubscription!: Subscription;
-  currentUserHeroData!: { choosenHero: string, heroPower: string, description: string }
+  currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
+  currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
+  currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
+  currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
+  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
+
   heroName: string = ''
   heropower: string = ''
   description: string = ''
-  playerIdSubscription!: Subscription;
-  playerNameSubscription!: Subscription;
-  gameIdSubscription!: Subscription;
 
-  currentPlayerId!: string;
-  currentPlayerName!: string;
-  currentGameId!: string;
   initialHand: CardStack = { cardstack: [] };
   deliveryStack: string[] = [];
   user = new User();
@@ -60,20 +52,18 @@ export class GameComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.setUserID();
-    this.setGameId();
     this.checkIfPlayerIsAlreadyPartOfGame();
   };
 
   async checkIfPlayerIsAlreadyPartOfGame() {
-    const docPlayer = doc(this.db, 'games', this.currentGameId);
+    const docPlayer = doc(this.db, 'games', this.currentGameId());
     const docSnap = await getDoc(docPlayer);
     let data = docSnap.data();
     this.players = data?.['choosenHeros'] || [];
     this.players.forEach(player => {
-      if (player.playerId === this.currentPlayerId) {
+      if (player.playerId === this.currentUserId()) {
         this.foundCurrentPlayer = true;
-        this.loadHandstack(this.currentPlayerId)
+        this.loadHandstack(this.currentUserId())
       }
     })
 
@@ -85,12 +75,12 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   createNewPlayer() {
-    const docRef = doc(this.db, 'games', this.currentGameId, 'player', this.currentPlayerId);
+    const docRef = doc(this.db, 'games', this.currentGameId(), 'player', this.currentUserId());
     setDoc(docRef, this.user.toJSON());
     const updateData = {
-      userId: this.currentPlayerId,
-      userNickname: this.currentPlayerName,
-      gameId: this.currentGameId,
+      userId: this.currentUserId(),
+      userNickname: this.currentUserName(),
+      gameId: this.currentGameId(),
     }
     updateDoc(docRef, updateData);
     this.store.dispatch(new CurrentDeliveryStack(this.user.deliveryStack));
@@ -98,9 +88,9 @@ export class GameComponent implements OnInit, OnDestroy {
 
   async updatePlayerOfGame(docPlayer: any) {
     this.playerData = {
-      playerName: this.currentPlayerName,
-      playerId: this.currentPlayerId,
-      playerHero: this.currentUserHeroData.choosenHero,
+      playerName: this.currentUserName(),
+      playerId: this.currentUserId(),
+      playerHero: this.currentUserHeroData().choosenHero,
     }
 
     this.players.push(this.playerData)
@@ -115,7 +105,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
 
   async loadHandstack(currentPlayerId: string) {
-    const docRef = doc(this.db, 'games', this.currentGameId, 'player', currentPlayerId);
+    const docRef = doc(this.db, 'games', this.currentGameId(), 'player', currentPlayerId);
     const docSnap = await getDoc(docRef);
     let data = docSnap.data();
     this.store.dispatch(new CurrentCardsInHand(data!['handstack']));
@@ -138,11 +128,11 @@ export class GameComponent implements OnInit, OnDestroy {
       const { cardstack, heroname, heropower, description } = result.data.choosenHero;
       this.store.dispatch(new CreateNewCardStackAction(cardstack));
       this.store.dispatch(new CurrentUserHeroAction(heroname, heropower, description))
-      const docRef = doc(this.db, 'games', this.currentGameId, 'player', this.currentPlayerId)
+      const docRef = doc(this.db, 'games', this.currentGameId(), 'player', this.currentUserId())
       updateDoc(docRef, updateData).then(() => {
         this.drawInitialHand(docRef)
       })
-      const docPlayer = doc(this.db, 'games', this.currentGameId);
+      const docPlayer = doc(this.db, 'games', this.currentGameId());
       this.updatePlayerOfGame(docPlayer);
     }
     )
@@ -160,35 +150,6 @@ export class GameComponent implements OnInit, OnDestroy {
     this.store.dispatch(new CurrentCardsInHand(handstack));
     this.store.dispatch(new UpdateCardStackAction(cardStack))
     updateDoc(docRef, updateData);
-  }
-
-  setGameId() {
-    this.gameIdSubscription = this.currentGameId$
-      .subscribe((data) => {
-        this.currentGameId = data;
-      });
-  }
-
-  setUserID() {
-    this.playerIdSubscription = this.currentUserId$
-      .subscribe((data) => {
-        this.currentPlayerId = data;
-      });
-    this.playerNameSubscription = this.currentUserName$
-      .subscribe((data) => {
-        this.currentPlayerName = data;
-      });
-    this.userHeroSubscription = this.currentUserHeroData$
-      .subscribe((data) => {
-        this.currentUserHeroData = data;
-      })
-  }
-
-  ngOnDestroy(): void {
-    this.playerIdSubscription.unsubscribe();
-    this.playerNameSubscription.unsubscribe();
-    this.gameIdSubscription.unsubscribe();
-    this.userHeroSubscription.unsubscribe();
   }
 
 }

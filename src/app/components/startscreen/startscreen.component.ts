@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Game } from 'src/models/game';
 import { DialogGameSettings } from '../dialog-game-settings/dialog-game-settings.component';
@@ -6,9 +6,8 @@ import { Auth, signOut } from '@angular/fire/auth';
 import { getFirestore, doc, setDoc, DocumentData} from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { Mob, Monster } from 'src/models/monster/monster.class';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectos';
-import { Observable, Subscription } from 'rxjs';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameAction, CurrentGameData, SetNewEnemy } from 'src/app/actions/currentGame-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
@@ -20,7 +19,7 @@ import { LoadGameService } from 'src/app/services/load-game.service';
     templateUrl: './startscreen.component.html',
     styleUrls: ['./startscreen.component.scss']
 })
-export class StartscreenComponent implements OnInit, OnDestroy{
+export class StartscreenComponent implements OnInit {
   numberOfPlayers:number = 0;
   difficulty!:string;
   gameId!:string;
@@ -30,14 +29,8 @@ export class StartscreenComponent implements OnInit, OnDestroy{
   db = getFirestore();
   gameAsJSON!:Game;
 
-  @Select(CurrentUserSelectors.currentUserId) currentUserId$!: Observable<string>
-  @Select(CurrentUserSelectors.currentUserName) currentUserName$!: Observable<string>
-
-  currentUserIdSubscription!: Subscription;
-  currentUserNameSubscription!: Subscription;
-
-  currentUserName: string= '';
-  currentUserId: string = '';
+  currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
+  currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
 
   loadedCollectionData!: DocumentData;
   loadedCurrentEnemy!: Mob;
@@ -55,16 +48,9 @@ export class StartscreenComponent implements OnInit, OnDestroy{
 
 
   ngOnInit(): void {
-    if (!this.currentUserName) {
+    if (!this.currentUserName()) {
       this.userService.getCurrentUser()
     }
-
-    this.currentUserIdSubscription = this.currentUserId$.subscribe((data)=> {
-      this.currentUserId = data;
-    })
-    this.currentUserNameSubscription = this.currentUserName$.subscribe((data)=> {
-      this.currentUserName = data;
-    })
   }
   
   newGame() {
@@ -142,10 +128,5 @@ export class StartscreenComponent implements OnInit, OnDestroy{
       this.store.dispatch(new SetNewEnemy(this.loadedCurrentEnemy));
       this.store.dispatch(new UpdateMobAction(this.loadedCurrentMob));
     })
-  }
-
-  ngOnDestroy(): void {
-    this.currentUserIdSubscription.unsubscribe();
-    this.currentUserNameSubscription.unsubscribe();
   }
 }

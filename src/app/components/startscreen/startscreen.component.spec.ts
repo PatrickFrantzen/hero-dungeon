@@ -4,6 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { Auth } from '@angular/fire/auth';
 import { NgxsModule } from '@ngxs/store';
+import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { ensureAngularFireSchedulersInitialized, ensureFirebaseTestAppInitialized } from 'src/testing/firebase-test-app';
 
 import { StartscreenComponent } from './startscreen.component';
@@ -16,7 +17,7 @@ describe('StartscreenComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [RouterTestingModule, MatDialogModule, NgxsModule.forRoot([]), StartscreenComponent],
+    imports: [RouterTestingModule, MatDialogModule, NgxsModule.forRoot([CurrentUserState]), StartscreenComponent],
     schemas: [NO_ERRORS_SCHEMA],
     providers: [
         { provide: Auth, useValue: {} },
