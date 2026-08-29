@@ -18,6 +18,10 @@ export class GameRepositoryService {
     return this.repo.getDoc(['games', gameId]);
   }
 
+  createGame(gameId: string, game: object): Promise<void> {
+    return this.repo.setDoc(['games', gameId], game);
+  }
+
   addPlayerToGame(gameId: string, choosenHeros: unknown[]): Promise<void> {
     return this.repo.updateFields(['games', gameId], { choosenHeros });
   }

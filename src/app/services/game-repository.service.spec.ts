@@ -42,4 +42,14 @@ describe('GameRepositoryService', () => {
 
     expect(spy).toHaveBeenCalledWith(['games', 'game-1'], { choosenHeros: [{ playerId: 'p1' }] });
   });
+
+  it('createGame writes the full game document via the repository', async () => {
+    const repo = TestBed.inject(FirestoreRepositoryService);
+    const spy = spyOn(repo, 'setDoc').and.resolveTo();
+    const game = { gameId: 'game-1', numberOfPlayers: 2 };
+
+    await service.createGame('game-1', game);
+
+    expect(spy).toHaveBeenCalledWith(['games', 'game-1'], game);
+  });
 });
