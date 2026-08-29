@@ -63,7 +63,7 @@ describe('CardPlayService', () => {
   });
 
   it('chooseCard clears the matching enemy token and reports the write when a single card matches', () => {
-    seedGameState({ hand: ['red'], enemy: { name: 'Goblin', type: 'Monster', token: ['red'] } });
+    seedGameState({ hand: ['red'], cardStack: ['blue'], enemy: { name: 'Goblin', type: 'Monster', token: ['red'] } });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const playerRepo = TestBed.inject(PlayerRepositoryService);
