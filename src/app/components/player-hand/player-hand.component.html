@@ -7,7 +7,7 @@
     </div>
 
     <div class="currentHandStack">
-      @for (card of this.currentHand ; track card; let x = $index) {
+      @for (card of currentHand() ; track card; let x = $index) {
         <img (click)="chooseCard(card)"
           [ngStyle]="{'left.px': x * 170}"  src="./assets/img/cards/{{card}}.png">
         }

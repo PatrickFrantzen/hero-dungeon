@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, Input } from '@angular/core';
 import {
   DocumentData,
   QuerySnapshot,
@@ -14,12 +14,13 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { Observable, Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
 import {
+  SetChoosenHeros,
   updateChoosenHeros,
   updateQuestCardActivated,
 } from 'src/app/actions/currentGame-action';
@@ -46,69 +47,44 @@ import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.c
 import { NgStyle } from '@angular/common';
 import { HeropowerContainerComponent } from '../heropower/heropower-container/heropower-container.component';
 
-// Not OnPush: several fields (currentHand, currentEnemy, currentCardStack, currentPlayers, ...)
-// are mutated directly from raw Firestore onSnapshot callbacks in updateFromDatabase/
-// updatePlayerFromDatabase below, not via input()/signal/markForCheck - OnPush would silently
-// stop reflecting those updates. Untangling that dual-write pattern is Issue #8's job.
+// OnPush: the Firestore onSnapshot callbacks in updateFromDatabase/updatePlayerFromDatabase
+// below now only dispatch NGXS actions instead of also mutating plain fields directly, so all
+// state read by the template flows through store.selectSignal() and is tracked correctly.
 @Component({
     selector: 'app-player-hand',
     templateUrl: './player-hand.component.html',
     styleUrls: ['./player-hand.component.scss'],
-    imports: [NgStyle, HeropowerContainerComponent]
+    imports: [NgStyle, HeropowerContainerComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerHandComponent implements OnInit, OnDestroy {
   currentPlayerId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
   currentPlayerName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
 
-  @Select(CurrentGameSelectors.currentPlayers) currentPlayers$!: Observable<
-    { playerName: string; playerId: string; playerHero: string }[]
-  >;
-  currPlayersSubscription!: Subscription;
-  currentPlayers!: {
-    playerName: string;
-    playerId: string;
-    playerHero: string;
-  }[];
+  currentPlayers = this.store.selectSignal(CurrentGameSelectors.currentPlayers);
 
-  @Select(CurrentHandSelector.currentHand) currentHand$!: Observable<string[]>;
-  handSubscription!: Subscription;
-  currentHand!: string[];
+  currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
   loadedCurrentHand: string[] = [];
 
-  @Select(CurrentCardStackSelector.currentCardStack)
-  currentCardStack$!: Observable<string[]>;
-  stackSubscription!: Subscription;
-  currentCardStack!: string[];
+  currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
   loadedCurrentCardStack!: string[];
 
-  @Select(CurrentGameSelectors.currentEnemy) currentEnemy$!: Observable<Mob>;
-  currentEnemySubscription!: Subscription;
-  currentEnemy!: Mob;
+  currentEnemy = this.store.selectSignal(CurrentGameSelectors.currentEnemy);
   loadedCurrentEnemy!: Mob;
 
-  @Select(CurrentGameSelectors.currentMob) currentMob$!: Observable<Mob[]>;
-  MobSubscription!: Subscription;
-  currentMob!: Mob[];
+  currentMob = this.store.selectSignal(CurrentGameSelectors.currentMob);
   loadedCurrentMob!: Mob[];
 
-  @Select(CurrentGameSelectors.currentBoss) currentBoss$!: Observable<Mob>;
-  currentBossSubscription!: Subscription;
-  currentBoss!: Mob;
+  currentBoss = this.store.selectSignal(CurrentGameSelectors.currentBoss);
 
-  @Select(CurrentDeliveryStackSelector.currentDeliveryStack)
-  currentDeliveryStack$!: Observable<string[]>;
-  deliveryStackSubscription!: Subscription;
-  currentDeliveryStack!: string[];
+  currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
 
   heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
   heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
 
-  @Select(CurrentGameSelectors.currentQuestCardStatus)
-  questStatus$!: Observable<boolean>;
-  questCardStatus: boolean = false;
-  questCardStatusSubscription!: Subscription;
+  questCardStatus = this.store.selectSignal(CurrentGameSelectors.currentQuestCardStatus);
 
   playerIdForHeropowerAction: string = '';
   playerNameForHeropowerAction: string = '';
@@ -134,7 +110,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.getGameData();
     this.gameSubscr = this.game$.subscribe(async () => {
       const docRef = doc(this.db, 'games', this.currentGameId());
       const docSnap = await getDoc(docRef);
@@ -155,39 +130,33 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   updatePlayerFromDatabase(data: DocumentData) {
-    this.currentCardStack = data['cardstack'];
-    this.currentHand = data['handstack'];
-    this.currentDeliveryStack = data['deliveryStack'];
-    this.store.dispatch(new UpdateCurrentHandAction(this.currentHand));
-    this.store.dispatch(new UpdateCardStackAction(this.currentCardStack));
-    this.store.dispatch(new UpdateDeliveryStack(this.currentDeliveryStack));
+    this.store.dispatch(new UpdateCurrentHandAction(data['handstack']));
+    this.store.dispatch(new UpdateCardStackAction(data['cardstack']));
+    this.store.dispatch(new UpdateDeliveryStack(data['deliveryStack']));
   }
 
   updateFromDatabase(data: DocumentData) {
-    this.currentEnemy = data['currentEnemy'];
-    this.currentBoss = data['currentBoss'];
-    this.currentMob = data['Mob'];
-    this.currentPlayers = data['choosenHeros'];
-    this.questCardStatus = data['questCardActivated'];
-    this.store.dispatch(new SetNewEnemy(this.currentEnemy));
-    this.store.dispatch(new UpdateMonsterTokenArray(this.currentEnemy.token));
-    this.store.dispatch(new UpdateMobAction(this.currentMob));
-    this.store.dispatch(new updateQuestCardActivated(this.questCardStatus));
+    const currentEnemy = data['currentEnemy'];
+    this.store.dispatch(new SetNewEnemy(currentEnemy));
+    this.store.dispatch(new UpdateMonsterTokenArray(currentEnemy.token));
+    this.store.dispatch(new UpdateMobAction(data['Mob']));
+    this.store.dispatch(new SetChoosenHeros(data['choosenHeros']));
+    this.store.dispatch(new updateQuestCardActivated(data['questCardActivated']));
   }
 
   checkWalkuereHeropower() {
     if (this.heropowerArray().length !== 3) return;
 
     this.heropowerArray().forEach((card) => {
-      let currHand = [...this.currentHand];
-      let currCardStack = [...this.currentCardStack];
-      let indexOfHandCard = this.currentHand.indexOf(card);
+      let currHand = [...this.currentHand()];
+      let currCardStack = [...this.currentCardStack()];
+      let indexOfHandCard = this.currentHand().indexOf(card);
       currHand.splice(indexOfHandCard, 1);
       this.store.dispatch(new UpdateCurrentHandAction(currHand));
 
       if (currHand.length < 5 && currCardStack.length > 0) {
-        let currCardStack = [...this.currentCardStack];
-        let currHand = [...this.currentHand];
+        let currCardStack = [...this.currentCardStack()];
+        let currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
         this.saveGame.updateHandstack(
@@ -269,8 +238,8 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
     if (this.currentPlayerId() === userId) {
       for (let i = 0; i < 4; i++) {
-        let currCardStack = [...this.currentCardStack];
-        let currHand = [...this.currentHand];
+        let currCardStack = [...this.currentCardStack()];
+        let currHand = [...this.currentHand()];
 
         if (currCardStack.length > 0) {
           const getCardForHand = currCardStack.shift()!;
@@ -313,15 +282,15 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   checkJaegerinHeropower() {
     if (this.heropowerArray().length !== 3) return;
     this.heropowerArray().forEach((card) => {
-      let currHand = [...this.currentHand];
-      let currCardStack = [...this.currentCardStack];
-      let indexOfHandCard = this.currentHand.indexOf(card);
+      let currHand = [...this.currentHand()];
+      let currCardStack = [...this.currentCardStack()];
+      let indexOfHandCard = this.currentHand().indexOf(card);
       currHand.splice(indexOfHandCard, 1);
       this.store.dispatch(new UpdateCurrentHandAction(currHand));
 
       if (currHand.length < 5 && currCardStack.length > 0) {
-        let currCardStack = [...this.currentCardStack];
-        let currHand = [...this.currentHand];
+        let currCardStack = [...this.currentCardStack()];
+        let currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
         this.saveGame.updateHandstack(
@@ -345,16 +314,16 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   chooseCard(card: string) {
     const doubleCard = card.split('_');
-    const currHand = [...this.currentHand];
-    const currEne = [...this.currentEnemy.token];
-    const currName = this.currentEnemy.name;
-    const currType = this.currentEnemy.type;
+    const currHand = [...this.currentHand()];
+    const currEne = [...this.currentEnemy().token];
+    const currName = this.currentEnemy().name;
+    const currType = this.currentEnemy().type;
     const currMob: Mob = {
       name: currName,
       token: currEne,
       type: currType,
     };
-    if (this.questCardStatus) {
+    if (this.questCardStatus()) {
       //check welche Quest usw.
     }
 
@@ -380,41 +349,41 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           this.store.dispatch(new UpdateMonsterTokenArray(currEne));
           this.saveGame.updateCurrentEnemyToken(
             this.currentGameId(),
-            this.currentEnemy
+            this.currentEnemy()
           );
-          this.checkForNextEnemy(this.currentEnemy);
+          this.checkForNextEnemy(this.currentEnemy());
           this.saveHand(card, currHand);
         }
         if (
           card.includes('_') &&
-          (this.currentEnemy.token.includes(doubleCard[0]) ||
-            this.currentEnemy.token.includes(doubleCard[1]))
+          (this.currentEnemy().token.includes(doubleCard[0]) ||
+            this.currentEnemy().token.includes(doubleCard[1]))
         ) {
           if (
-            this.currentEnemy.token.includes(doubleCard[0]) &&
-            this.currentEnemy.token.includes(doubleCard[1])
+            this.currentEnemy().token.includes(doubleCard[0]) &&
+            this.currentEnemy().token.includes(doubleCard[1])
           ) {
             this.playAsTwoCards(doubleCard[0], doubleCard[1], currEne);
-          } else if (this.currentEnemy.token.includes(doubleCard[0])) {
+          } else if (this.currentEnemy().token.includes(doubleCard[0])) {
             this.playAsOneCard(doubleCard[0], currEne);
-          } else if (this.currentEnemy.token.includes(doubleCard[1])) {
+          } else if (this.currentEnemy().token.includes(doubleCard[1])) {
             this.playAsOneCard(doubleCard[1], currEne);
           }
           this.saveHand(card, currHand);
         }
       }
 
-      if (this.currentEnemy.token.includes(card)) {
+      if (this.currentEnemy().token.includes(card)) {
         this.playCardfromHandAndUpdateEnemyToken(card);
       }
     }
   }
 
   playCardfromHandAndUpdateEnemyToken(card: string) {
-    const currHand = [...this.currentHand];
-    const currEne = [...this.currentEnemy.token];
-    const currName = this.currentEnemy.name;
-    const currType = this.currentEnemy.type;
+    const currHand = [...this.currentHand()];
+    const currEne = [...this.currentEnemy().token];
+    const currName = this.currentEnemy().name;
+    const currType = this.currentEnemy().type;
     const currMob: Mob = {
       name: currName,
       token: currEne,
@@ -438,12 +407,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new UpdateCurrentHandAction(updatedHand));
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
 
-    this.checkForNextEnemy(this.currentEnemy);
+    this.checkForNextEnemy(this.currentEnemy());
   }
 
   checkHandsize(handsize: string[]) {
     const currHand = [...handsize];
-    const currCardStack = [...this.currentCardStack];
+    const currCardStack = [...this.currentCardStack()];
 
     while (currHand.length < 5 && currCardStack.length > 0) {
       const changedCardStack = [...currCardStack];
@@ -469,7 +438,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       //  if (this.currentMob.length > 0 && !currentEnemy.token.length) { // funktioniert so noch nicht
       //   this.loadNextDungeon() //noch nicht geschrieben
       //  }
-      if (this.currentMob.length > 0) {
+      if (this.currentMob().length > 0) {
         this.getNextEnemy();
       } else {
         this.getNextBoss();
@@ -483,9 +452,9 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
     this.saveGame.updateCurrentEnemyToken(
       this.currentGameId(),
-      this.currentEnemy
+      this.currentEnemy()
     );
-    this.checkForNextEnemy(this.currentEnemy);
+    this.checkForNextEnemy(this.currentEnemy());
   }
 
   playAsTwoCards(cardOne: string, cardTwo: string, currEne: string[]) {
@@ -495,7 +464,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
     this.saveGame.updateCurrentEnemyToken(
       this.currentGameId(),
-      this.currentEnemy
+      this.currentEnemy()
     );
 
     if (currEne.includes(cardTwo)) {
@@ -506,14 +475,14 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       this.store.dispatch(new UpdateMonsterTokenArray(secCurrEne));
       this.saveGame.updateCurrentEnemyToken(
         this.currentGameId(),
-        this.currentEnemy
+        this.currentEnemy()
       );
-      this.checkForNextEnemy(this.currentEnemy);
+      this.checkForNextEnemy(this.currentEnemy());
     }
   }
 
   getNextEnemy() {
-    const currMob = [...this.currentMob];
+    const currMob = [...this.currentMob()];
     const newCurrentEnemy: Mob = currMob.shift()!;
     this.saveGame.updateNewEnemy(this.currentGameId(), newCurrentEnemy);
     this.saveGame.updateNewMob(this.currentGameId(), currMob);
@@ -522,7 +491,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   getNextBoss() {
-    const newCurrentEnemy: Mob = this.currentBoss;
+    const newCurrentEnemy: Mob = this.currentBoss();
     this.saveGame.updateNewEnemy(this.currentGameId(), newCurrentEnemy);
     this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
   }
@@ -531,20 +500,20 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   checkheropowerArray() {
     if (this.heropowerArray().length == 3) {
-      let currEnemyToken = [...this.currentEnemy.token];
+      let currEnemyToken = [...this.currentEnemy().token];
       currEnemyToken.length = 0;
 
       this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
       this.saveGame.updateCurrentEnemyToken(
         this.currentGameId(),
-        this.currentEnemy
+        this.currentEnemy()
       );
-      this.checkForNextEnemy(this.currentEnemy);
+      this.checkForNextEnemy(this.currentEnemy());
 
       this.heropowerArray().forEach((card) => {
-        let indexOfHandCard = this.currentHand.indexOf(card);
-        let currHand = [...this.currentHand];
-        let currCardStack = [...this.currentCardStack];
+        let indexOfHandCard = this.currentHand().indexOf(card);
+        let currHand = [...this.currentHand()];
+        let currCardStack = [...this.currentCardStack()];
         currHand.splice(indexOfHandCard, 1);
 
         if (currHand.length < 5 && currCardStack.length > 0) {
@@ -621,7 +590,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   saveHand(card: string, currHand: string[]) {
-    let indexOfHandCard = this.currentHand.indexOf(card);
+    let indexOfHandCard = this.currentHand().indexOf(card);
     currHand.splice(indexOfHandCard, 1);
     currHand = this.checkHandsize(currHand)!;
     this.saveGame.updateHandstack(
@@ -630,12 +599,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       currHand
     );
     this.store.dispatch(new UpdateCurrentHandAction(currHand));
-    this.store.dispatch(new UpdateCardStackAction(this.currentCardStack));
+    this.store.dispatch(new UpdateCardStackAction(this.currentCardStack()));
   }
 
   openDialog() {
     let dialogRef = this.dialog.open(DialogHeropowerComponent, {
-      data: this.currentPlayers,
+      data: this.currentPlayers(),
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -647,44 +616,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     });
   }
 
-  getGameData() {
-    this.handSubscription = this.currentHand$.subscribe((data) => {
-      this.currentHand = data;
-    });
-
-    this.currentEnemySubscription = this.currentEnemy$.subscribe((data) => {
-      this.currentEnemy = data;
-    });
-    this.MobSubscription = this.currentMob$.subscribe((data) => {
-      this.currentMob = data;
-    });
-    this.currentBossSubscription = this.currentBoss$.subscribe((data) => {
-      this.currentBoss = data;
-    });
-    this.stackSubscription = this.currentCardStack$.subscribe((data) => {
-      this.currentCardStack = data;
-    });
-    this.deliveryStackSubscription = this.currentDeliveryStack$.subscribe(
-      (data) => {
-        this.currentDeliveryStack = data;
-      }
-    );
-    this.currPlayersSubscription = this.currentPlayers$.subscribe((data) => {
-      this.currentPlayers = data;
-    });
-
-    this.questCardStatusSubscription = this.questStatus$.subscribe((data) => {
-      this.questCardStatus = data;
-    });
-  }
-
   ngOnDestroy(): void {
-    this.handSubscription.unsubscribe();
-    this.currentEnemySubscription.unsubscribe();
-    this.MobSubscription.unsubscribe();
-    this.stackSubscription.unsubscribe();
     this.gameSubscr.unsubscribe();
-    this.currPlayersSubscription.unsubscribe();
-    this.questCardStatusSubscription.unsubscribe();
   }
 }

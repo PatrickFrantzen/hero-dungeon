@@ -35,7 +35,7 @@ Firestore-Snapshot. Dafür braucht es eine neue Action (siehe TODO 1).
 
 ## TODOs
 
-- [ ] **TODO 1 — Neue Action `SetChoosenHeros`**
+- [x] **TODO 1 — Neue Action `SetChoosenHeros`**
   - `src/app/actions/currentGame-action.ts`: neue Action-Klasse, die `choosenHeros: {playerName, playerId, playerHero}[]` trägt.
   - `src/app/states/currentGame-state.ts`: Reducer, der `state.game.choosenHeros` komplett
     ersetzt (analog zum bestehenden `updateQuestCardActivated`-Reducer, der auch nur ein
@@ -43,7 +43,7 @@ Firestore-Snapshot. Dafür braucht es eine neue Action (siehe TODO 1).
   - Verifikation: `ng build`, bestehende Suite grün (kein neues Verhalten, nur eine neue
     Action, die noch nirgends aufgerufen wird).
 
-- [ ] **TODO 2 — Dual-Write in `updateFromDatabase`/`updatePlayerFromDatabase` auflösen**
+- [x] **TODO 2 — Dual-Write in `updateFromDatabase`/`updatePlayerFromDatabase` auflösen**
   - Direkte Feldzuweisungen (`this.currentEnemy = ...`, `this.currentBoss = ...`,
     `this.currentMob = ...`, `this.currentPlayers = ...`, `this.questCardStatus = ...`,
     `this.currentCardStack = ...`, `this.currentHand = ...`, `this.currentDeliveryStack = ...`)
@@ -54,7 +54,7 @@ Firestore-Snapshot. Dafür braucht es eine neue Action (siehe TODO 1).
   - Verifikation: `ng build`, `ng test` (mehrfach wiederholt wie bei den vorherigen Issues,
     um Flakes auszuschließen).
 
-- [ ] **TODO 3 — Restliche `@Select()`-Felder auf `store.selectSignal()` umstellen**
+- [x] **TODO 3 — Restliche `@Select()`-Felder auf `store.selectSignal()` umstellen**
   - Betroffen: `currentPlayers$`, `currentHand$`, `currentCardStack$`, `currentEnemy$`,
     `currentMob$`, `currentBoss$`, `currentDeliveryStack$`, `questStatus$`.
   - Gleiches Muster wie in Issue #4 (PR #15) bereits für andere Komponenten gemacht.
@@ -63,7 +63,7 @@ Firestore-Snapshot. Dafür braucht es eine neue Action (siehe TODO 1).
     Subscription, keine `@Select()`).
   - Verifikation: `ng build`, `ng test`.
 
-- [ ] **TODO 4 — Alle internen Lesezugriffe umstellen**
+- [x] **TODO 4 — Alle internen Lesezugriffe umstellen**
   - `this.currentHand` → `this.currentHand()` usw., durchgängig in allen Methoden
     (`chooseCard`, `checkHandsize`, `checkWalkuereHeropower`, `checkJaegerinHeropower`,
     `executeJaegerinHeropower`, `checkheropowerArray`, `saveHand`, `playCardfromHandAndUpdateEnemyToken`,
@@ -74,18 +74,22 @@ Firestore-Snapshot. Dafür braucht es eine neue Action (siehe TODO 1).
   - Verifikation: `ng build` (TypeScript deckt hier die meisten Stellen ab, die vergessen
     wurden — ein Signal ohne `()` aufgerufen ergibt einen Typfehler).
 
-- [ ] **TODO 5 — `ChangeDetectionStrategy.OnPush` setzen**
+- [x] **TODO 5 — `ChangeDetectionStrategy.OnPush` setzen**
   - Reihenfolge: `PlayerHandComponent` → `GameComponent` → `AppComponent`.
   - Die erklärenden Kommentare ("Not OnPush: ...") in `game.component.ts` und
     `app.component.ts` (aus PR #17/#18) entfernen bzw. durch einen kurzen Hinweis ersetzen,
     dass die Abhängigkeit aufgelöst wurde.
 
-- [ ] **TODO 6 — Verifikation**
+- [x] **TODO 6 — Verifikation**
   - `ng build` + `ng test` (mehrfach wiederholt), `npm run test:rules` (sollte unberührt sein).
   - **Manueller Smoke-Test empfohlen, bevor gemerged wird**: Zwei Browser-Tabs gegen ein
     echtes Spiel (oder den Firestore-Emulator), Karte ausspielen, Heropower auslösen, zweiter
     Spieler tritt bei — hier wird echte, ungetestete Spiellogik angefasst, die aktuelle
     Test-Suite deckt nur "should create" ab, nicht das tatsächliche Spielverhalten.
+  - **Ergebnis dieser Session**: `ng build` grün, `ng test` (3x wiederholt, headless Chromium)
+    19/19 grün, `npm run test:rules` 9/9 grün. Der manuelle Zwei-Browser-Smoke-Test wurde
+    **nicht** durchgeführt (keine interaktive Browser-/Emulator-Session in dieser Umgebung
+    verfügbar) — sollte vor dem Merge noch nachgeholt werden.
 
 ## Nicht im Scope dieses Plans
 
