@@ -1,11 +1,9 @@
 <mat-card class="current-Enemy">
-  <mat-card-header>{{ currentEnemy().name }}</mat-card-header>
-  <mat-card-content>
+  <mat-card-header class="enemy-name">{{ currentEnemy().name }}</mat-card-header>
+  <mat-card-content class="enemy-tokens">
     @for (token of currentEnemy().token; track token; let x = $index) {
       <img src="./assets/img/monsterToken/{{token}}.png">
     }
   </mat-card-content>
-  <mat-card-footer>{{currentEnemy().type}}
-
-  </mat-card-footer>
+  <mat-card-footer class="enemy-description">{{ currentEnemy().type }}</mat-card-footer>
 </mat-card>
