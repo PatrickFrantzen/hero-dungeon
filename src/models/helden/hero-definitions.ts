@@ -66,7 +66,7 @@ const paladinWalküreCardCounts = new Map([
   ['purple', 3],
   ['yellow_yellow', 2],
   ['heiligeHandgranate', 1],
-  ['göttlicherSchild', 2],
+  ['göttlicherSchild', 1],
   ['heiltrank', 2],
   ['heile', 1],
   ['haudrauf_monster', 1],
