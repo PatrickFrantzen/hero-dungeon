@@ -7,8 +7,15 @@ oben in diesem Plan) ist die Komponente auf ~195 Zeilen reduziert:
 
 - Firestore-Sync ausgelagert in `FirestoreSyncService` (`services/CLAUDE.md`).
 - Heldenfähigkeiten-Prüfung ausgelagert in `HeropowerService`.
-- Karten-/Encounter-Regeln ausgelagert in `CardPlayService` (`chooseCard()` als einziger
-  öffentlicher Einstiegspunkt).
+- Karten-/Encounter-Regeln ausgelagert in `CardPlayService` (`chooseCard()` als Einstiegspunkt
+  für Karten ohne weitere Nutzereingabe).
+
+Fünf Aktionskarten (Spende, Stehlen, Heilkräuter, Wut, Heilung) brauchen vor der Auflösung einen
+Zielspieler — `chooseCard(card)` fängt diese Kartennamen ab (`singleTargetActionCards`-Set bzw.
+der `'wut'`-Sonderfall), öffnet `DialogHeropowerComponent` (wiederverwendet, ursprünglich nur für
+Jägerins Fähigkeit-Folgedialog gedacht) und ruft erst nach dessen Schließen die passende
+`CardPlayService.resolve*()`-Methode mit dem/den gewählten Zielspieler(n) auf. "Wut" braucht
+zwei Zielspieler, daher zwei sequentielle Dialog-Öffnungen (`openWutDialog()`).
 
 **Vor jeder größeren Änderung hier zuerst `docs/planned/player-hand-decomposition-plan.md`
 lesen** — dort steht der aktuelle Umsetzungsstand (welche TODOs offen sind, u.a. optionale

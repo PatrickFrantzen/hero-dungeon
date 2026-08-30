@@ -7,15 +7,18 @@ Diagnose basiert auf einem vollständigen Abgleich der deutschen Originalanleitu
 
 Umgesetzt: TODO 1 (Kartenanzahl Paladin/Walküre), TODO 2 (Starthand-/Nachziehgröße je
 Spielerzahl), TODO 5+6 (Timer-Pause-Infrastruktur, Magier "Zeit einfrieren", Walküre/Paladin
-"Göttlicher Schild"), sowie aus TODO 7 bereits Paladin/Walküre "Heilige Handgranate" und
-"Heiltrank" (`CardPlayService.resolveHeiligeHandgranate()`/`resolveHeiltrank()` — Sonderfälle in
-`chooseCard()`, analog zu `resolveGoettlicherSchild()`).
+"Göttlicher Schild"), und TODO 7 vollständig: Paladin/Walküre "Heilige Handgranate" und
+"Heiltrank" (Sonderfälle direkt in `CardPlayService.chooseCard()`, analog zu
+`resolveGoettlicherSchild()`), sowie die fünf Aktionskarten mit Zielspieler-Auswahl —
+Dieb/Ninja "Spende"/"Stehlen", Jägerin/Waldläufer "Heilkräuter", Barbar/Gladiator "Wut"
+(zwei Zielspieler), Paladin/Walküre "Heilung" (Karte `heile`). Letztere fünf laufen **nicht**
+über `chooseCard()`, sondern über eigene `CardPlayService.resolve*()`-Methoden, die
+`PlayerHandComponent.chooseCard()` direkt aufruft, nachdem dort der wiederverwendete
+`DialogHeropowerComponent`-Zielspieler-Dialog geschlossen wurde (bei "Wut" zweimal
+nacheinander) — Details in `src/app/components/player-hand/CLAUDE.md` und
+`src/app/services/CLAUDE.md`.
 
-Aus TODO 7 offen: Dieb/Ninja "Spende"/"Stehlen", Jägerin/Waldläufer "Heilkräuter",
-Barbar/Gladiator "Wut", Paladin/Walküre "Heilung" — diese fünf benötigen eine
-Zielspieler-Auswahl (bei "Wut" zwei Spieler), anders als die bereits umgesetzten TODO-7-Karten,
-die ohne Zielspieler auskommen. Reuse-Kandidat: `DialogHeropowerComponent`
-(`src/app/components/dialog-heropower/`), bisher nur für Jägerins Fähigkeit-Folgedialog genutzt.
+TODO 7 ist damit vollständig abgeschlossen.
 
 Wichtiger Hinweis vorab: Der im Repo bereits existierende **Singleplayer-Modus**
 (`docs/planned/singleplayer-mode-plan.md`) ist eine bewusste Erweiterung des Originalspiels, das
@@ -218,7 +221,7 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
   - Verifikation: `ng build`, `ng test`; manueller 2-Spieler-Test „Magier friert Zeit ein, Timer
     pausiert bei allen Clients, nächste gespielte Karte startet ihn wieder".
 
-- [ ] **TODO 7 — Restliche Heldenfähigkeiten/Aktionskarten implementieren**
+- [x] **TODO 7 — Restliche Heldenfähigkeiten/Aktionskarten implementieren**
   - Einzeln nacheinander (jede für sich verifizierbar), Vorbild sind die bestehenden Muster in
     `heropower.service.ts` (Zielspieler-Auswahl via Dialog wie bei Jägerin, siehe
     `dialog-heropower.component.ts`) bzw. reguläre Aktionskarten-Auflösung:
