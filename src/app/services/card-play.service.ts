@@ -79,6 +79,16 @@ export class CardPlayService {
         return;
       }
 
+      if (card === 'heiligeHandgranate') {
+        this.resolveHeiligeHandgranate(gameId, playerId, card, currHand, reportWriteFailure);
+        return;
+      }
+
+      if (card === 'heiltrank') {
+        this.resolveHeiltrank(gameId, playerId, card, currHand, reportWriteFailure);
+        return;
+      }
+
       if (card.includes('_')) {
         const isEventCard = currMob.token[0].toLocaleLowerCase().includes('event');
         const isMatchingType = currMob.type.toLocaleLowerCase().includes(doubleCard[1]);
@@ -275,6 +285,81 @@ export class CardPlayService {
     hand.push(cardStack.shift()!);
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, hand));
     reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, cardStack));
+  }
+
+  /** Paladin/Walküre "Heilige Handgranate": besiegt sofort die aktuelle Bedrohung - die einzige
+   * Karte im Spiel, die auch einen Mini-Boss oder Boss direkt besiegen kann (Anleitung S. 9).
+   * Bis Mini-Bosse umgesetzt sind (TODO 9 im Plan) betrifft das faktisch nur normale
+   * Dungeon-Karten und Bosse. */
+  private resolveHeiligeHandgranate(
+    gameId: string,
+    playerId: string,
+    card: string,
+    currHand: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+
+    const clearedEnemy: Mob = { ...this.currentEnemy(), token: [] };
+    this.store.dispatch(new UpdateMonsterTokenArray(clearedEnemy.token));
+    reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, clearedEnemy));
+    this.checkForNextEnemy(gameId, clearedEnemy, reportWriteFailure);
+
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+  }
+
+  /** Paladin/Walküre "Heiltrank": alle Spieler (inkl. dir selbst) nehmen 3 Karten von ihrem
+   * eigenen Ablagestapel (deliveryStack) zurück auf die Hand. */
+  private resolveHeiltrank(
+    gameId: string,
+    playerId: string,
+    card: string,
+    currHand: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+    this.reclaimCardsFromDeliveryStack(gameId, playerId, reportWriteFailure);
+    this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, reportWriteFailure);
+  }
+
+  private reclaimCardsFromDeliveryStack(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
+    const hand = [...this.currentHand()];
+    const deliveryStack = [...this.currentDeliveryStack()];
+    const reclaimed = deliveryStack.splice(0, Math.min(3, deliveryStack.length));
+    if (reclaimed.length === 0) return;
+
+    hand.push(...reclaimed);
+    this.store.dispatch(new UpdateCurrentHandAction(hand));
+    this.store.dispatch(new UpdateDeliveryStack(deliveryStack));
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, hand));
+    reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, playerId, deliveryStack));
+  }
+
+  private async reclaimCardsFromDeliveryStackForOtherPlayers(
+    gameId: string,
+    playerId: string,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    const otherPlayers = await this.repo.queryAll<DocumentData>(
+      ['games', gameId, 'player'],
+      [where('gameId', '==', gameId), where('userId', '!=', playerId)]
+    );
+    otherPlayers.forEach((data) => this.reclaimCardsFromDeliveryStackForPlayer(gameId, data, reportWriteFailure));
+  }
+
+  private reclaimCardsFromDeliveryStackForPlayer(gameId: string, data: DocumentData, reportWriteFailure: ReportWriteFailure): void {
+    const userId = data['userId'];
+    const hand: string[] = [...(data['handstack'] ?? [])];
+    const deliveryStack: string[] = [...(data['deliveryStack'] ?? [])];
+    const reclaimed = deliveryStack.splice(0, Math.min(3, deliveryStack.length));
+    if (reclaimed.length === 0) return;
+
+    hand.push(...reclaimed);
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, hand));
+    reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, userId, deliveryStack));
   }
 
   private checkHandsize(
