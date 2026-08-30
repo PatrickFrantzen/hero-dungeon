@@ -1,6 +1,6 @@
-<div class="dialog">
+<div class="tw-flex tw-min-w-[260px] tw-flex-col tw-items-center">
   <h1 mat-dialog-title>{{ singleplayerMode ? 'Singleplayer starten' : 'Spieleinstellungen' }}</h1>
-  <div mat-dialog-content class="settings">
+  <div mat-dialog-content class="tw-flex tw-w-full tw-flex-col tw-gap-2">
 
     @if (!singleplayerMode) {
       <mat-form-field appearance="fill">
@@ -35,9 +35,10 @@
 
   </div>
 
-  <div mat-dialog-actions>
+  <div mat-dialog-actions class="tw-w-full tw-justify-end">
     <button
-      mat-button
+      mat-flat-button
+      color="primary"
       mat-dialog-close
       cdkFocusInitial
       [disabled]="!singleplayerMode && (playerValidation.invalid || idValidation.invalid)"

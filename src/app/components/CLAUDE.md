@@ -23,6 +23,20 @@ Materials eigene Optik laufen.
   nicht um Material-Komponenten zu ersetzen.
 - Referenzumbau: `startscreen/` (`startscreen.component.html`) — komplett auf `tw-`-Utilities
   umgestellt, `startscreen.component.scss` ist jetzt leer.
+- Weitere durchgeführte Umstellungen (2026-08-30):
+  - `dialog-choose-hero/`, `dialog-game-settings/`, `dialog-heropower/`: identisches
+    `.dialog`/`.settings`-SCSS-Boilerplate (dreifach dupliziert) durch `tw-`-Klassen direkt im
+    Template ersetzt, `.scss`-Dateien sind jetzt leer. Bestätigungs-Buttons einheitlich auf
+    `mat-flat-button color="primary"` (statt `mat-button`) für klareren Call-to-Action.
+  - `heropower/heropower.component.html`: Inline-`style="..."`-Attribute (Flex-Layout,
+    `color: white`) durch `tw-flex tw-flex-col tw-items-center`/`tw-text-white` ersetzt.
+  - `player-hand/player-hand.component.html`: bis dahin komplett unstyled Buttons
+    (`solo-event-button`, `rest-button`) mit `tw-`-Klassen gestylt (Farben/Radius/Hover
+    passend zu den Akzentfarben aus `startscreen/`: Grün für primäre Aktion, Lila für
+    sekundäre). Positionierung (`position: absolute`, `z-index`) bleibt in
+    `player-hand.component.scss`, da Layout-Konzern.
+  - `enemy/`, `game/` bereits konsistent (Material-Card bzw. eigenes, bereits responsives SCSS
+    mit `clamp()`) — unverändert gelassen.
 
 ## Smart/Dumb-Container-Muster
 

@@ -1,8 +1,8 @@
 <div class="heropower-position">
 
   <mat-card [ngClass]="{'color-effect': this.heropowerActivated()}">
-    <div style="display: flex; flex-direction: column; align-items: center;">
-      <span style="color: white;">{{ this.heropower() }}</span>
+    <div class="tw-flex tw-flex-col tw-items-center">
+      <span class="tw-text-white">{{ this.heropower() }}</span>
       @if (this.heroName() == 'Gladiator') {
         <img (click)="heroPowerGladiator()" src="../../../assets/img/icons/person_icon.png">
       }
@@ -34,7 +34,7 @@
         <img (click)="heroPowerWalkuere()" src="../../../assets/img/icons/heilig_icon.png">
       }
     </div>
-    <span style="color: white;">{{this.description()}}</span>
+    <span class="tw-text-white">{{this.description()}}</span>
   </mat-card>
 
 </div>
