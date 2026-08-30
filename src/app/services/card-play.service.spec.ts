@@ -245,4 +245,41 @@ describe('CardPlayService', () => {
 
     expect(gameRepo.updateGameStatus).toHaveBeenCalledWith('game-1', 'won');
   });
+
+  it('resolveStehlen marks the game as lost when the stolen-from player has no cards left anywhere (TODO 11)', async () => {
+    seedGameState({ hand: ['blue'], cardStack: ['green'], enemy: { name: 'Goblin', type: 'Monster', token: ['red'] } });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
+    spyOn(gameRepo, 'updateGameStatus').and.resolveTo();
+    spyOn(playerRepo, 'updateHandstack').and.resolveTo();
+    spyOn(playerRepo, 'updateCardstack').and.resolveTo();
+    spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
+    spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], cardstack: [], deliveryStack: [] });
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2', reportWriteFailure);
+
+    expect(gameRepo.updateGameStatus).toHaveBeenCalledWith('game-1', 'lost');
+    expect(store.selectSnapshot((state) => state.currentGame.gameStatus)).toBe('lost');
+  });
+
+  it('resolveStehlen does not mark the game as lost when the stolen-from player still has cards to draw', async () => {
+    seedGameState({ hand: ['blue'], cardStack: ['green'], enemy: { name: 'Goblin', type: 'Monster', token: ['red'] } });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
+    const gameStatusSpy = spyOn(gameRepo, 'updateGameStatus').and.resolveTo();
+    spyOn(playerRepo, 'updateHandstack').and.resolveTo();
+    spyOn(playerRepo, 'updateCardstack').and.resolveTo();
+    spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
+    spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], cardstack: ['yellow'], deliveryStack: [] });
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2', reportWriteFailure);
+
+    expect(gameStatusSpy).not.toHaveBeenCalledWith('game-1', 'lost');
+  });
 });

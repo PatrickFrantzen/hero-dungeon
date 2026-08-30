@@ -69,6 +69,16 @@ Repository-Services unten gebündelt.
   nicht gegen Ereigniskarten. Da es keine Auswahl-UI für "welches Symbol nutzen" gibt, ist die
   Tokenwahl deterministisch statt spielerseitig frei wählbar (Vereinfachung, analog zur
   automatischen Doppelsymbol-Karten-Auflösung).
+  `checkHandDeadlockLoss(gameId, hand, cardStack, deliveryStack, ...)` (TODO 11, erster von zwei
+  diagnostizierten Verlustwegen) setzt `gameStatus: 'lost'`, sobald ein Spieler gleichzeitig
+  leere Hand-, Nachzieh- und Ablagestapel hat (kann seine Hand nicht mehr auffüllen) und der
+  Status noch `'playing'` ist. Aufgerufen aus `persistPlayerStacks()` (deckt `checkHandsize()`,
+  `drawCardsIgnoringHandsize()`, `restCard()`, `resolveSpende()` ab), `applyEventToPlayerData()`
+  und `resolveStehlen()` — Stehlen ist praktisch der einzige Weg, diesen Zustand tatsächlich zu
+  erreichen, da beim normalen Kartenausspielen die abgelegte Karte selbst sofort zurückgemischt
+  und nachgezogen wird, solange irgendwo (Hand/Nachzieh-/Ablagestapel) noch eine Karte liegt. Die
+  zweite Verlustbedingung ("Gruppe kann die geforderten Symbole nicht mehr aufbringen") ist
+  bewusst nicht umgesetzt — siehe TODO 11 im Plan.
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,

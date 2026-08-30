@@ -102,6 +102,29 @@ dieser Bedingungen und fällt automatisch durch. "Heilige Handgranate" (TODO 7) 
 unberührt, da sie den Token unconditional leert, unabhängig vom Typ — genau die in der Anleitung
 vorgesehene Sonderregel.
 
+TODO 11 umgesetzt, bewusst mit engem Scope (nur der erste der beiden diagnostizierten
+Verlustwege — der zweite bleibt Folge-TODO, siehe unten):
+- Neue `CardPlayService.checkHandDeadlockLoss(gameId, hand, cardStack, deliveryStack, ...)`:
+  sind Hand, Nachzieh- **und** Ablagestapel eines Spielers gleichzeitig leer (kann nicht mehr
+  auffüllen), wird `gameStatus: 'lost'` gesetzt — aber nur, wenn der aktuelle Status noch
+  `'playing'` ist (kein Überschreiben eines bereits gesetzten `'won'`/`'bossDefeated'`/`'lost'`).
+  Aufgerufen aus `persistPlayerStacks()` (deckt den Nachzieh-Pfad des handelnden Spielers ab, also
+  `checkHandsize()`, `drawCardsIgnoringHandsize()`, `restCard()`, `resolveSpende()`),
+  `applyEventToPlayerData()` (Event-Effekt bei Mitspielern) und `resolveStehlen()` (der bestohlene
+  Spieler kann durch "Stehlen" auf 0 Handkarten fallen, ohne dass sein Nachzieh-/Ablagestapel
+  angefasst wird — die abgespielte/abgelegte Karte selbst landet nicht im Ablagestapel und heilt
+  den Zustand nicht automatisch, anders als beim normalen Kartenausspielen).
+  Praktisch tritt der Deadlock fast nur über "Stehlen" ein: beim normalen Ablegen (`saveHand()`/
+  `checkHandsize()`) wandert die gespielte Karte selbst zunächst in den Ablagestapel und wird im
+  selben `drawCards()`-Aufruf sofort zurückgemischt und nachgezogen, sobald der Nachziehstapel
+  leer ist — ein Spieler mit noch mindestens einer Karte irgendwo (Hand/Nachzieh-/Ablagestapel)
+  kann sich so nicht selbst in den Deadlock spielen.
+- **Nicht umgesetzt** (Folge-TODO): die zweite, komplexere Verlustbedingung „Gruppe kann die
+  aktuell geforderten Symbole nicht mehr aufbringen" — erfordert eine Prüfung über alle
+  Spieler-Hände/Heropower-Optionen hinweg, ob die aktuelle Dungeon-Karte theoretisch noch lösbar
+  ist. Absichtlich ausgeklammert, um TODO 11 klein und verifizierbar zu halten (siehe ursprüngliche
+  TODO-Beschreibung unten, die diesen Scope-Schnitt bereits vorschlägt).
+
 Wichtiger Hinweis vorab: Der im Repo bereits existierende **Singleplayer-Modus**
 (`docs/planned/singleplayer-mode-plan.md`) ist eine bewusste Erweiterung des Originalspiels, das
 laut Anleitung offiziell **keinen** Einzelspieler-Modus vorsieht. Dieser Plan behandelt ihn daher
@@ -364,7 +387,8 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
   - Verifikation: `ng build`, `ng test`; manueller Test „Heropower gegen Mini-Boss versuchen,
     wird abgelehnt; Heilige Handgranate (TODO 7) funktioniert trotzdem, da Sonderregel".
 
-- [ ] **TODO 11 — Fehlende Verlustbedingungen ergänzen**
+- [x] **TODO 11 — Fehlende Verlustbedingungen ergänzen** (nur der erste Verlustweg umgesetzt, der
+  zweite bleibt bewusst offenes Folge-TODO, siehe Status-Abschnitt oben)
   - Prüfung „kein Spieler hat mehr Handkarten (und keiner kann/darf mehr ziehen)" nach jedem
     Kartenausspielen/Ablegen ergänzen, analog zur bestehenden Timer-Verlust-Prüfung in
     `game.component.ts:90-105` bzw. zentraler in `CardPlayService`, falls dort der bessere Ort
