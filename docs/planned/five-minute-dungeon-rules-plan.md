@@ -2,9 +2,20 @@
 
 ## Status (2026-08-30)
 
-Neu erstellt. Diagnose basiert auf einem vollständigen Abgleich der deutschen Originalanleitung
-(„5-Minute Dungeon – Regeln“, Wiggles 3D / KOSMOS) mit dem aktuellen Code-Stand. Noch kein TODO
-umgesetzt.
+Diagnose basiert auf einem vollständigen Abgleich der deutschen Originalanleitung
+(„5-Minute Dungeon – Regeln“, Wiggles 3D / KOSMOS) mit dem aktuellen Code-Stand.
+
+Umgesetzt: TODO 1 (Kartenanzahl Paladin/Walküre), TODO 2 (Starthand-/Nachziehgröße je
+Spielerzahl), TODO 5+6 (Timer-Pause-Infrastruktur, Magier "Zeit einfrieren", Walküre/Paladin
+"Göttlicher Schild"), sowie aus TODO 7 bereits Paladin/Walküre "Heilige Handgranate" und
+"Heiltrank" (`CardPlayService.resolveHeiligeHandgranate()`/`resolveHeiltrank()` — Sonderfälle in
+`chooseCard()`, analog zu `resolveGoettlicherSchild()`).
+
+Aus TODO 7 offen: Dieb/Ninja "Spende"/"Stehlen", Jägerin/Waldläufer "Heilkräuter",
+Barbar/Gladiator "Wut", Paladin/Walküre "Heilung" — diese fünf benötigen eine
+Zielspieler-Auswahl (bei "Wut" zwei Spieler), anders als die bereits umgesetzten TODO-7-Karten,
+die ohne Zielspieler auskommen. Reuse-Kandidat: `DialogHeropowerComponent`
+(`src/app/components/dialog-heropower/`), bisher nur für Jägerins Fähigkeit-Folgedialog genutzt.
 
 Wichtiger Hinweis vorab: Der im Repo bereits existierende **Singleplayer-Modus**
 (`docs/planned/singleplayer-mode-plan.md`) ist eine bewusste Erweiterung des Originalspiels, das

@@ -30,8 +30,9 @@ Repository-Services unten gebündelt.
   neue Kartenregeln hier einhängen, nicht an der Komponente vorbei. Startet außerdem per
   `ensureGameTimerStarted()` den Dungeon-Timer bei der ersten wirksam gespielten Karte und
   beendet per `resumeGameTimerIfPaused()` eine laufende Magier-/Göttlicher-Schild-Pause, sobald
-  eine Karte in die Tischmitte gespielt wird; `resolveGoettlicherSchild()` behandelt die Karte
-  `göttlicherSchild` als Sonderfall (kein Dungeon-Symbol-Match, jederzeit spielbar) — Details
+  eine Karte in die Tischmitte gespielt wird; `resolveGoettlicherSchild()`,
+  `resolveHeiligeHandgranate()` und `resolveHeiltrank()` behandeln die gleichnamigen Karten als
+  Sonderfall (keine passen zu Dungeon-Symbolen, sind aber jederzeit spielbar) — Details
   zum Gesamt-Feature in `src/app/components/game/CLAUDE.md`.
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
