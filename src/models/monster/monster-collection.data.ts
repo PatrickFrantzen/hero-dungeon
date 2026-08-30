@@ -1,21 +1,21 @@
 import { Mob } from './monster.class';
 
 export const questCollection: Mob[] = [
-  // {
-  //   name: 'Feindselige Riesenkrabbe',
-  //   type: 'Mini-Boss',
-  //   token: ['green', 'green', 'green', 'yellow', 'yellow', 'yellow'],
-  // },
-  // {
-  //   name: 'Ein Bonsai-T-Rex',
-  //   type: 'Mini-Boss',
-  //   token: ['yellow', 'yellow', 'green', 'green', 'red', 'red'],
-  // },
-  // {
-  //   name: 'Der Sammler',
-  //   type: 'Mini-Boss',
-  //   token: ['yellow', 'green', 'red', 'blue', 'purple'],
-  // },
+  {
+    name: 'Feindselige Riesenkrabbe',
+    type: 'Mini-Boss',
+    token: ['green', 'green', 'green', 'yellow', 'yellow', 'yellow'],
+  },
+  {
+    name: 'Ein Bonsai-T-Rex',
+    type: 'Mini-Boss',
+    token: ['yellow', 'yellow', 'green', 'green', 'red', 'red'],
+  },
+  {
+    name: 'Der Sammler',
+    type: 'Mini-Boss',
+    token: ['yellow', 'green', 'red', 'blue', 'purple'],
+  },
   {
     name: 'Plötzliche Krankheit',
     type: 'Jeder legt alle Handkarten auf den eigenen Ablagestapel.',
@@ -31,6 +31,10 @@ export const questCollection: Mob[] = [
     type: 'Jeder legt 1 Karte auf den eigenen Ablagestapel.',
     token: ['event'],
   },
+  // "Hinterhalt" (deckt 2 Dungeon-Karten gleichzeitig auf, beide müssen besiegt werden, bevor es
+  // weitergeht) bleibt auskommentiert - der Encounter-Loop kennt nur einen currentEnemy nach dem
+  // anderen, dieser Zwei-Karten-Mechanismus ist nicht umgesetzt (siehe
+  // docs/planned/five-minute-dungeon-rules-plan.md TODO 9).
   // {
   //     "name": "Hinterhalt",
   //     "type": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
@@ -41,16 +45,16 @@ export const questCollection: Mob[] = [
     type: 'Jeder legt 3 Karten auf den eigenen Ablagestapel.',
     token: ['event'],
   },
-  // {
-  //   name: 'Der Rattenkönig',
-  //   type: 'Mini-Boss',
-  //   token: ['purple', 'purple', 'purple', 'red', 'red', 'red'],
-  // },
-  // {
-  //   name: 'Ein Zauberer mit schlechtem Ruf',
-  //   type: 'Mini-Boss',
-  //   token: ['blue', 'blue', 'blue', 'blue', 'purple', 'purple'],
-  // },
+  {
+    name: 'Der Rattenkönig',
+    type: 'Mini-Boss',
+    token: ['purple', 'purple', 'purple', 'red', 'red', 'red'],
+  },
+  {
+    name: 'Ein Zauberer mit schlechtem Ruf',
+    type: 'Mini-Boss',
+    token: ['blue', 'blue', 'blue', 'blue', 'purple', 'purple'],
+  },
 ];
 
 export const bossCollection: Mob[] = [

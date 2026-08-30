@@ -30,6 +30,15 @@ Repository-Services unten gebündelt.
 - **`card-play.service.ts`** — Karten-/Encounter-Regeln (Karte ausspielen, Encounter-Auflösung
   inkl. Singleplayer-Sonderfälle). `chooseCard()` ist der Einstiegspunkt für alle Karten ohne
   weitere Nutzereingabe — neue Kartenregeln hier einhängen, nicht an der Komponente vorbei.
+  `resolveEvent()` (aufgerufen über den "Event ausführen"-Button in `PlayerHandComponent`,
+  sichtbar sobald `currentEnemy().token.includes('event')` — Spielerzahl-unabhängig) wendet den
+  Ereignis-Effekt auf ALLE Spieler an (`applyEventToSelf()`/`applyEventToOtherPlayers()`), nicht
+  nur auf den klickenden Spieler; "Chaos" ist dabei vereinfacht wie "Plötzliche Krankheit"
+  behandelt (siehe Kommentar an `resolveEvent()` — die Anleitung gibt keine feste
+  Weitergabe-Reihenfolge für "gibt seine Handkarten einem Mitspieler" vor). In `chooseCard()`
+  darf nur die Karte `verhinderung_event` (Magier/Zauberin) eine Ereigniskarte stoppen — vorher
+  löste jede beliebige Doppelkarte ein Event auf, weil nur geprüft wurde, ob überhaupt ein Event
+  anliegt, nicht welche Karte gespielt wurde.
   Startet außerdem per `ensureGameTimerStarted()` den Dungeon-Timer bei der ersten wirksam
   gespielten Karte und beendet per `resumeGameTimerIfPaused()` eine laufende Magier-/
   Göttlicher-Schild-Pause, sobald eine Karte in die Tischmitte gespielt wird;

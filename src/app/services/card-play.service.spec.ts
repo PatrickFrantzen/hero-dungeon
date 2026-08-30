@@ -110,7 +110,7 @@ describe('CardPlayService', () => {
     expect(playerRepo.updateDeliveryStack).toHaveBeenCalledWith('game-1', 'player-1', ['red']);
   });
 
-  it('resolveSoloEvent applies Plötzliche Krankheit by discarding the full hand and drawing back to five', () => {
+  it('resolveEvent applies Plötzliche Krankheit by discarding the full hand and drawing back to five', () => {
     seedGameState({
       hand: ['red', 'blue'],
       cardStack: ['green', 'yellow', 'purple', 'red_purple', 'green_green'],
@@ -127,10 +127,48 @@ describe('CardPlayService', () => {
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
     const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.resolveSoloEvent('game-1', 'player-1', reportWriteFailure);
+    service.resolveEvent('game-1', 'player-1', reportWriteFailure);
 
     expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack).length).toBe(5);
     expect(store.selectSnapshot((state) => state.deliveryStack.items)).toEqual(['red', 'blue']);
+    expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
+  });
+
+  it('chooseCard does not clear an event when a non-Verhinderung double card is played (regression)', () => {
+    seedGameState({
+      hand: ['riesensprung_hindernis'],
+      enemy: { name: 'Chaos', type: 'Jeder gibt seine Handkarten einem Mitspieler.', token: ['event'] },
+    });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    service.chooseCard('game-1', 'player-1', 'riesensprung_hindernis', reportWriteFailure);
+
+    expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
+    expect(store.selectSnapshot((state) => state.encounter.currentEnemy).token).toEqual(['event']);
+  });
+
+  it('chooseCard clears an event when the Verhinderung card is played', () => {
+    seedGameState({
+      hand: ['verhinderung_event'],
+      cardStack: ['blue'],
+      enemy: { name: 'Chaos', type: 'Jeder gibt seine Handkarten einem Mitspieler.', token: ['event'] },
+      mob: [{ name: 'Next', type: 'Monster', token: ['red'] }],
+    });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
+    spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    spyOn(gameRepo, 'updateNewMob').and.resolveTo();
+    spyOn(playerRepo, 'updateHandstack').and.resolveTo();
+    spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    service.chooseCard('game-1', 'player-1', 'verhinderung_event', reportWriteFailure);
+
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
   });
 
