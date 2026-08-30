@@ -3,6 +3,7 @@ import {
   CurrentGameModel,
   CurrentGameState,
 } from '../states/currentGame-state';
+import { GameStats } from 'src/models/game';
 
 export class CurrentGameSelectors {
   @Selector([CurrentGameState])
@@ -48,5 +49,10 @@ export class CurrentGameSelectors {
   @Selector([CurrentGameState])
   static currentDifficulty(state: CurrentGameModel): string {
     return state.difficulty;
+  }
+
+  @Selector([CurrentGameState])
+  static currentStats(state: CurrentGameModel): GameStats {
+    return state.stats;
   }
 }

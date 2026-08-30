@@ -24,7 +24,8 @@ export class ToJSONService {
             timerStartedAt: game.timerStartedAt,
             timerDurationSeconds: game.timerDurationSeconds,
             timerPausedAt: game.timerPausedAt,
-            timerPausedSecondsTotal: game.timerPausedSecondsTotal
+            timerPausedSecondsTotal: game.timerPausedSecondsTotal,
+            stats: game.stats
         }
   }
 }

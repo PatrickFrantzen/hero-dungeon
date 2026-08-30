@@ -17,6 +17,18 @@
 
     <app-enemy-container></app-enemy-container>
 
+    @if (currentGameStatus() !== 'playing') {
+        <div class="game-stats">
+            <span class="game-stats__title">Statistik</span>
+            <div class="game-stats__grid">
+                <span>⚔️ Besiegte Gegner: {{ currentStats().enemiesDefeated }}</span>
+                <span>🃏 Gespielte Karten: {{ currentStats().cardsPlayed }}</span>
+                <span>🔄 Gecyclete Karten: {{ currentStats().cardsCycled }}</span>
+                <span>✨ Genutzte Heldenfähigkeiten: {{ currentStats().heropowersUsed }}</span>
+            </div>
+        </div>
+    }
+
     @if (currentGameStatus() === 'bossDefeated') {
         <div class="game-prompt">
             <p>{{ currentBoss().name }} ist besiegt! Weiter mit dem nächsten Dungeon?</p>

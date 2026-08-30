@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
-import { GameStatus } from 'src/models/game';
+import { GameStats, GameStatus } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 
@@ -65,5 +65,9 @@ export class GameRepositoryService {
 
   updateRemainingBosses(gameId: string, allBosses: Mob[]): Promise<void> {
     return this.repo.updateFields(['games', gameId], { allBosses });
+  }
+
+  updateStats(gameId: string, stats: GameStats): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { stats });
   }
 }

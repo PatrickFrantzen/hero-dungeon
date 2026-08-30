@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { NgxsModule, Store } from '@ngxs/store';
 import { CardStackState } from 'src/app/states/cardStack-state';
 import { cardsInHandState } from 'src/app/states/cardsInHand-state';
+import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { EncounterState } from 'src/app/states/encounter-state';
 import { heropowerState } from 'src/app/states/heropower-state';
 import {
@@ -21,7 +22,7 @@ describe('HeropowerService', () => {
   beforeEach(() => {
     ensureFirebaseTestAppInitialized();
     TestBed.configureTestingModule({
-      imports: [NgxsModule.forRoot([EncounterState, CardStackState, cardsInHandState, heropowerState])],
+      imports: [NgxsModule.forRoot([EncounterState, CardStackState, cardsInHandState, heropowerState, CurrentGameState])],
       providers: firestoreTestProviders(),
     });
     ensureAngularFireSchedulersInitialized();

@@ -4,7 +4,7 @@ import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { ResetGameTimer, SetGameTimerPauseState, StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { ResetGameTimer, SetGameStats, SetGameTimerPauseState, StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { UpdateHeropowerArray } from 'src/app/actions/heropower-action';
@@ -16,6 +16,7 @@ import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { createHero } from 'src/models/helden/hero.class';
 import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
+import { GameStats } from 'src/models/game';
 import { Mob, Monster } from 'src/models/monster/monster.class';
 import { shuffle } from 'src/models/shuffle.util';
 import { FirestoreRepositoryService } from './firestore-repository.service';
@@ -25,6 +26,11 @@ import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
 
 export type ReportWriteFailure = (write: Promise<void>) => void;
+
+// Feste Gegnertypen (monster-collection.data.ts) - Ereigniskarten tragen im `type`-Feld
+// stattdessen ihren Fließtext-Effekt (z.B. "Jeder gibt seine Handkarten..."), damit lassen sie
+// sich von echten Gegnern unterscheiden (siehe CardPlayService.checkForNextEnemy()).
+const ENEMY_TYPES = ['Monster', 'Person', 'Hindernis', 'Mini-Boss', 'Boss'];
 
 /**
  * Die eigentlichen Kartenspielregeln aus PlayerHandComponent: welche Karte auf welches
@@ -51,6 +57,7 @@ export class CardPlayService {
   private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
   private timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
   private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
+  private currentStats = this.store.selectSignal(CurrentGameSelectors.currentStats);
   private heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
   private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
   private currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
@@ -159,7 +166,7 @@ export class CardPlayService {
 
     currHand.splice(cardIndex, 1);
     const deliveryStack = [...this.currentDeliveryStack(), card];
-    const drawResult = this.drawCards(currHand, [...this.currentCardStack()], deliveryStack, 1);
+    const drawResult = this.drawCards(currHand, [...this.currentCardStack()], deliveryStack, 1, gameId, reportWriteFailure);
 
     this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
   }
@@ -228,7 +235,9 @@ export class CardPlayService {
       hand,
       [...(data['cardstack'] ?? [])],
       [...(data['deliveryStack'] ?? []), ...discardedCards],
-      drawCount
+      drawCount,
+      gameId,
+      reportWriteFailure
     );
 
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, drawResult.hand));
@@ -269,7 +278,23 @@ export class CardPlayService {
     this.checkForNextEnemy(gameId, this.currentEnemy(), reportWriteFailure);
   }
 
+  /** Statistik-Zähler (besiegte Gegner/gespielte Karten/gecyclete Karten/genutzte
+   * Heldenfähigkeiten, `src/models/game.ts` GameStats) - schreibt den neuen absoluten Wert
+   * lokal + nach Firestore, analog zu den Timer-Feldern (siehe game/CLAUDE.md). */
+  private bumpStat(gameId: string, key: keyof GameStats, amount: number, reportWriteFailure: ReportWriteFailure): void {
+    if (amount <= 0) return;
+    const stats = { ...this.currentStats(), [key]: this.currentStats()[key] + amount };
+    this.store.dispatch(new SetGameStats(stats));
+    reportWriteFailure(this.gameRepo.updateStats(gameId, stats));
+  }
+
+  /** Aufgerufen an jeder Stelle, an der chooseCard() (bzw. eine der resolve*()-Sonderfall-
+   * Methoden) tatsächlich eine Karte wirksam spielt - startet den Dungeon-Timer bei der ersten
+   * solchen Karte (Guard unten) und zählt bei JEDER dieser Karten die "gespielte Karten"-
+   * Statistik hoch, unabhängig vom Timer-Guard. */
   private ensureGameTimerStarted(gameId: string, reportWriteFailure: ReportWriteFailure): void {
+    this.bumpStat(gameId, 'cardsPlayed', 1, reportWriteFailure);
+
     if (this.timerStartedAt() !== null) return;
     const startedAt = Date.now();
     this.store.dispatch(new StartGameTimer(startedAt));
@@ -317,7 +342,9 @@ export class CardPlayService {
       [...this.currentHand()],
       [...this.currentCardStack()],
       [...this.currentDeliveryStack()],
-      count
+      count,
+      gameId,
+      reportWriteFailure
     );
     this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
   }
@@ -352,7 +379,9 @@ export class CardPlayService {
       [...(data['handstack'] ?? [])],
       [...(data['cardstack'] ?? [])],
       [...(data['deliveryStack'] ?? [])],
-      count
+      count,
+      gameId,
+      reportWriteFailure
     );
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, drawResult.hand));
     reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, drawResult.cardStack));
@@ -472,7 +501,14 @@ export class CardPlayService {
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, targetPlayerId, targetHand));
 
     const deliveryStack = [...this.currentDeliveryStack(), card];
-    const drawResult = this.drawCards([], [...this.currentCardStack()], deliveryStack, startHandSize(this.currentNumberOfPlayers()));
+    const drawResult = this.drawCards(
+      [],
+      [...this.currentCardStack()],
+      deliveryStack,
+      startHandSize(this.currentNumberOfPlayers()),
+      gameId,
+      reportWriteFailure
+    );
     this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
   }
 
@@ -652,7 +688,9 @@ export class CardPlayService {
       [...handsize],
       [...this.currentCardStack()],
       [...this.currentDeliveryStack(), ...discardedCards],
-      drawCount
+      drawCount,
+      gameId,
+      reportWriteFailure
     );
 
     this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
@@ -664,12 +702,23 @@ export class CardPlayService {
    * comes next). */
   checkForNextEnemy(gameId: string, currentEnemy: Mob, reportWriteFailure: ReportWriteFailure): void {
     if (Array.isArray(currentEnemy.token) && !currentEnemy.token.length) {
+      // Ereigniskarten (type ist bei ihnen ein Fließtext wie "Jeder gibt seine Handkarten...",
+      // siehe monster-collection.data.ts questCollection) zählen bewusst nicht als "besiegter
+      // Gegner" - nur die festen Gegnertypen.
+      if (ENEMY_TYPES.includes(currentEnemy.type)) {
+        this.bumpStat(gameId, 'enemiesDefeated', 1, reportWriteFailure);
+      }
+
       if (currentEnemy.type === 'Boss') {
         // Nicht automatisch weitermachen: die Gruppe wird gefragt, ob sie mit dem nächsten
         // Dungeon fortfährt (continueToNextDungeon(), von GameComponent nach Bestätigung
         // aufgerufen) oder abbricht. Erst nach Boss #5 (Dungeon-Overlord, allBosses leer) ist
-        // das Spiel direkt gewonnen.
+        // das Spiel direkt gewonnen. Timer einfrieren, solange die Gruppe entscheidet bzw. das
+        // Spiel bereits gewonnen ist - läuft sonst sichtbar weiter, ohne dass noch etwas
+        // gespielt werden kann (continueToNextDungeon()/restartCampaign() setzen ihn per
+        // ResetGameTimer ohnehin zurück).
         const status = this.currentAllBosses().length > 0 ? 'bossDefeated' : 'won';
+        this.freezeGameTimer(gameId, reportWriteFailure);
         reportWriteFailure(this.gameRepo.updateGameStatus(gameId, status));
         this.store.dispatch(new UpdateGameStatus(status));
       } else if (this.currentMob().length > 0) {
@@ -836,9 +885,19 @@ export class CardPlayService {
     this.store.dispatch(new UpdateCardStackAction(this.currentCardStack()));
   }
 
-  private drawCards(hand: string[], cardStack: string[], deliveryStack: string[], drawCount: number) {
+  private drawCards(
+    hand: string[],
+    cardStack: string[],
+    deliveryStack: string[],
+    drawCount: number,
+    gameId: string,
+    reportWriteFailure: ReportWriteFailure
+  ) {
     for (let i = 0; i < drawCount; i++) {
       if (cardStack.length === 0 && deliveryStack.length > 0) {
+        // Ablagestapel wird gemischt zurück zum Nachziehstapel - das ist ein "Kartenzyklus"
+        // (Statistik "gecyclete Karten": jede so wieder verfügbar gemachte Karte zählt).
+        this.bumpStat(gameId, 'cardsCycled', deliveryStack.length, reportWriteFailure);
         cardStack = shuffle([...deliveryStack]);
         deliveryStack = [];
       }

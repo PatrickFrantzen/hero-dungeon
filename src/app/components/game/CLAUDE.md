@@ -81,6 +81,49 @@ Lobby (siehe `src/app/states/CLAUDE.md` zur Aufteilung von `currentGame-state.ts
 Änderung an der Timer-Dauer oder ein zusätzlicher Timer-Typ betrifft potenziell alle oben
 genannten Dateien — nicht nur diese Komponente.
 
+- **Timer-Pause bei Boss-Sieg** — `CardPlayService.checkForNextEnemy()` friert den Timer
+  (`freezeGameTimer()`, dieselbe Pause-Mechanik wie Magier/Göttlicher Schild) zusätzlich immer
+  dann ein, wenn ein Boss besiegt wird (`gameStatus` wechselt auf `'bossDefeated'` oder `'won'`)
+  — sonst läuft die sichtbare Zeit während der Bestätigungs-Entscheidung (siehe unten) bzw. nach
+  Spielsieg sinnlos weiter, obwohl `markGameLostWhenTimerRunsOut()` wegen des
+  `gameStatus !== 'playing'`-Guards ohnehin keinen Verlust mehr auslösen könnte.
+  `continueToNextDungeon()`/`restartCampaign()` setzen die Pause über `ResetGameTimer`
+  ohnehin bedingungslos zurück, sobald die Gruppe weitermacht.
+
+## Kampagnen-Statistik (`GameStats`, `src/models/game.ts`)
+
+Vier Zähler (`enemiesDefeated`, `cardsPlayed`, `cardsCycled`, `heropowersUsed`), synct/persistiert
+analog zu den Timer-Feldern (`GameRepositoryService.updateStats()`, `SetGameStats`-Action,
+`CurrentGameState`/`CurrentGameSelectors.currentStats`, `PlayerHandComponent.updateFromDatabase()`
+für den Sync bei anderen Clients). Läuft über die **gesamte Kampagne** mit (wird weder von
+`continueToNextDungeon()` noch von `restartCampaign()` zurückgesetzt) — bewusst kumulativ, nicht
+pro Dungeon.
+
+- `CardPlayService.bumpStat()`/`HeropowerService.bumpStat()` (zwei separate, bewusst nicht
+  geteilte Implementierungen, analog zur Nicht-Vereinheitlichung der Heropower-Methoden) liest
+  den aktuellen Wert aus dem Store, addiert das Delta und schreibt den neuen absoluten Wert
+  lokal + nach Firestore (kein Firestore `increment()` — bei echtem gleichzeitigem Schreiben
+  zweier Clients ist ein Lost-Update theoretisch möglich, wie bei den übrigen Feldern in diesem
+  Modul auch).
+- **`enemiesDefeated`** — `CardPlayService.checkForNextEnemy()`, dem einzigen Funnel für "eine
+  Bedrohung ist auf 0 Token": zählt nur bei den festen Gegnertypen (`ENEMY_TYPES`-Konstante:
+  Monster/Person/Hindernis/Mini-Boss/Boss), nicht bei Ereigniskarten (deren `type`-Feld ein
+  Fließtext-Effekt ist, siehe `monster-collection.data.ts`).
+- **`cardsPlayed`** — `CardPlayService.ensureGameTimerStarted()`: an allen 13 Stellen aufgerufen,
+  an denen `chooseCard()`/eine `resolve*()`-Methode tatsächlich eine Karte wirksam spielt (siehe
+  `services/CLAUDE.md`) — zählt bei jedem Aufruf hoch, unabhängig vom Timer-Start-Guard.
+- **`cardsCycled`** — `CardPlayService.drawCards()`: sobald der Ablagestapel gemischt zum
+  Nachziehstapel wird (Stapel leer, Ablage nicht), zählt die Anzahl der so wieder verfügbaren
+  Karten. Zentral in dieser privaten Methode, alle 6 Aufrufer reichen dafür `gameId`/
+  `reportWriteFailure` durch.
+- **`heropowersUsed`** — je einmal in `HeropowerService.resolveWalkuereHeropower()`/
+  `resolveJaegerinHeropower()`/`resolveMagierHeropower()`/`resolveArrayHeropower()`, direkt nach
+  deren bestehendem `heropowerArray().length !== 3`-Guard.
+- **Anzeige**: `GameComponent`, `.game-stats`-Block im Template, sichtbar sobald
+  `gameStatus() !== 'playing'` (Boss-Bestätigung, Sieg, Niederlage) — bewusst nicht permanent
+  während des laufenden Spiels eingeblendet, um die Sicht auf den Hintergrund nicht zu verdecken
+  (siehe `components/CLAUDE.md`, Enemy-Card-Breite).
+
 ## Bestätigungs-Flow: Boss-Kampagne fortsetzen / Dungeon neu starten
 
 `GameStatus` (`src/models/game.ts`) hat vier Werte: `'playing' | 'bossDefeated' | 'won' | 'lost'`.

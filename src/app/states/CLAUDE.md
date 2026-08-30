@@ -29,14 +29,18 @@ einem State. Davon sind bereits herausgelöst:
   ankommt.
 - **`currentGame-state.ts`** (`CurrentGameState`) — der Rest: `{ items, numberOfPlayers,
   gameId, difficulty, isLost, questCardActivated, timerStartedAt, timerDurationSeconds,
-  timerPausedAt, timerPausedSecondsTotal }`. Die Timer-Felder gehören zum Dungeon-Countdown-Timer
-  — Details zum kompletten Feature (Start-Trigger, Pause, Anzeige, Firestore-Sync) in
-  `src/app/components/game/CLAUDE.md`, hier nur der State-Teil: `StartGameTimer`-Action,
-  Reducer-Guard `timerStartedAt !== null` (setzt den Timer nur einmal, ein späterer Dispatch
-  überschreibt einen bereits laufenden Timer nicht); `SetGameTimerPauseState` setzt die
-  Pause-Felder dagegen bedingungslos; `ResetGameTimer` setzt bei einem Boss-Wechsel alle drei
-  Timer-Felder bedingungslos zurück auf "noch nicht gestartet" (umgeht bewusst den
+  timerPausedAt, timerPausedSecondsTotal, stats }`. Die Timer-Felder gehören zum
+  Dungeon-Countdown-Timer — Details zum kompletten Feature (Start-Trigger, Pause, Anzeige,
+  Firestore-Sync) in `src/app/components/game/CLAUDE.md`, hier nur der State-Teil:
+  `StartGameTimer`-Action, Reducer-Guard `timerStartedAt !== null` (setzt den Timer nur einmal,
+  ein späterer Dispatch überschreibt einen bereits laufenden Timer nicht); `SetGameTimerPauseState`
+  setzt die Pause-Felder dagegen bedingungslos; `ResetGameTimer` setzt bei einem Boss-Wechsel
+  alle drei Timer-Felder bedingungslos zurück auf "noch nicht gestartet" (umgeht bewusst den
   `StartGameTimer`-Guard, da der Timer für den nächsten Dungeon wieder von vorn losläuft).
+  `stats` (`GameStats`) ist die Kampagnen-Statistik (besiegte Gegner/gespielte Karten/gecyclete
+  Karten/genutzte Heldenfähigkeiten) — `SetGameStats` setzt sie bedingungslos auf einen bereits
+  berechneten absoluten Wert, analog zu `SetGameTimerPauseState`; Details/Zählstellen in
+  `src/app/components/game/CLAUDE.md`.
 
 Weitere States: `cardStack-state.ts`/`cardsInHand-state.ts`/`deliveryStack-state.ts` (die drei
 Kartenstapel: Nachziehstapel, Hand, Ablage), `currentUser-state.ts` (eingeloggter Nutzer),

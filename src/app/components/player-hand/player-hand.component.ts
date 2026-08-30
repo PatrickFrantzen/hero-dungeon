@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { ResetGameTimer, SetGameTimerPauseState, StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { ResetGameTimer, SetGameStats, SetGameTimerPauseState, StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
@@ -138,6 +138,11 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       new SetGameTimerPauseState(
         typeof data['timerPausedAt'] === 'number' ? data['timerPausedAt'] : null,
         typeof data['timerPausedSecondsTotal'] === 'number' ? data['timerPausedSecondsTotal'] : 0
+      )
+    );
+    this.store.dispatch(
+      new SetGameStats(
+        data['stats'] ?? { enemiesDefeated: 0, cardsPlayed: 0, cardsCycled: 0, heropowersUsed: 0 }
       )
     );
   }

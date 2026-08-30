@@ -52,11 +52,15 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
 - **`game.ts`** — Spiel-Datenstruktur, wie sie in Firestore unter `games/{gameId}` liegt
   (Felder decken sich mit dem, was die States unter `src/app/states/` verwalten — bei einer
   Feld-Änderung hier auch `firestore.rules`/`firestore.rules.test.js` und den betroffenen State
-  mitziehen). Enthält u.a. `timerStartedAt`/`timerDurationSeconds` für den Dungeon-Timer —
-  Gesamt-Feature in `src/app/components/game/CLAUDE.md` beschrieben. `allBosses` ist die
-  Warteschlange der nach dem aktuellen Boss noch ausstehenden Bosse (nicht die volle 5-Boss-Liste
-  — siehe `EncounterState` in `src/app/states/CLAUDE.md` und `CardPlayService.continueToNextDungeon()`
-  in `src/app/services/CLAUDE.md`).
+  mitziehen; `firestore.rules` ist hier bewusst ausgenommen, da sie feldunabhängig jedem
+  signierten Nutzer Lese-/Schreibzugriff auf das gesamte `games/{gameId}`-Dokument erlaubt). Enthält
+  u.a. `timerStartedAt`/`timerDurationSeconds` für den Dungeon-Timer — Gesamt-Feature in
+  `src/app/components/game/CLAUDE.md` beschrieben. `allBosses` ist die Warteschlange der nach dem
+  aktuellen Boss noch ausstehenden Bosse (nicht die volle 5-Boss-Liste — siehe `EncounterState` in
+  `src/app/states/CLAUDE.md` und `CardPlayService.continueToNextDungeon()` in
+  `src/app/services/CLAUDE.md`). `stats: GameStats` (`enemiesDefeated`/`cardsPlayed`/
+  `cardsCycled`/`heropowersUsed`) ist die Kampagnen-Statistik — Zählstellen/Anzeige in
+  `src/app/components/game/CLAUDE.md`.
 - **`user.class.ts`** — Nutzer-Datenstruktur (`CurrentUserService`/`CurrentUserState`).
 - **`shuffle.util.ts`** — reine Shuffle-Funktion, von `Hero.buildCardstack()` genutzt.
 

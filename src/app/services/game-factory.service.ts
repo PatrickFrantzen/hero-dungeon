@@ -40,6 +40,7 @@ export class GameFactoryService {
       timerDurationSeconds: 300,
       timerPausedAt: null,
       timerPausedSecondsTotal: 0,
+      stats: { enemiesDefeated: 0, cardsPlayed: 0, cardsCycled: 0, heropowersUsed: 0 },
     };
   }
 }
