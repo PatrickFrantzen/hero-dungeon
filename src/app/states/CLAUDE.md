@@ -21,7 +21,7 @@ einem State. Davon sind bereits herausgelöst:
 - **`lobby-state.ts`** (`LobbyState`) — `choosenHeros` (welche Spieler mit welchem Helden).
 - **`encounter-state.ts`** (`EncounterState`) — `currentEnemy`/`currentBoss`/`currentMob`/
   `allBosses`. `allBosses` ist seit der Boss-Kampagne (TODO 4,
-  `docs/planned/five-minute-dungeon-rules-plan.md`) die Warteschlange der nach dem aktuellen
+  `docs/done/five-minute-dungeon-rules-plan.md`) die Warteschlange der nach dem aktuellen
   Boss noch ausstehenden Bosse (analog zu `Mob` als Warteschlange der Dungeon-Karten) — **nicht**
   mehr die vollständige 5-Boss-Liste. `SetCurrentBoss`/`SetRemainingBosses`-Actions werden von
   `CardPlayService.continueToNextDungeon()` dispatcht, sobald ein Boss besiegt ist; `PlayerHandComponent.updateFromDatabase()`

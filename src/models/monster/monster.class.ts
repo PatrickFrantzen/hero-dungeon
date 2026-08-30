@@ -117,7 +117,7 @@ export class Monster {
    * durch vorherige splice()-Aufrufe leer ist (Math.random() * 0 = 0, splice(0,1) auf leerem
    * Array liefert []). Das tritt konkret ab 3 Spielern auf, weil questTwo/-Drei/-Vier/-Fünf
    * (4/6/8/10) den aktuell nur 4 aktiven Event-Kartentypen entwachsen sind (Mini-Bosse sind
-   * auskommentiert, siehe docs/planned/five-minute-dungeon-rules-plan.md TODO 9) - ein
+   * auskommentiert, siehe docs/done/five-minute-dungeon-rules-plan.md TODO 9) - ein
    * `undefined`-Eintrag im Mob-Array führt beim späteren `.shift()` zu einem TypeError, sobald
    * er zufällig an erster Stelle landet. */
   loadQuests(numberOfQuestCards: number) {

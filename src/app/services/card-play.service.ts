@@ -169,7 +169,7 @@ export class CardPlayService {
    * "Chaos" ("Jeder gibt seine Handkarten einem Mitspieler") ist vereinfacht wie "Plötzliche
    * Krankheit" behandelt (komplette Hand ablegen + auffüllen): die Anleitung gibt keine feste
    * Weitergabe-Reihenfolge vor, eine korrekte Umsetzung bräuchte eine Zielspieler-Zuordnung pro
-   * Spieler - nicht umgesetzt, siehe docs/planned/five-minute-dungeon-rules-plan.md TODO 9. */
+   * Spieler - nicht umgesetzt, siehe docs/done/five-minute-dungeon-rules-plan.md TODO 9. */
   resolveEvent(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
     const event = this.currentEnemy();
     if (!event.token.includes('event')) return;

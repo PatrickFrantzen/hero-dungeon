@@ -249,14 +249,14 @@ Schritt `ng build` und `ng test --watch=false --browsers=ChromeHeadlessCI` grün
 Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rules.test.js`
 (betrifft v.a. TODO 3 und TODO 4, falls neue `Game`-Felder hinzukommen).
 
-- [ ] **TODO 1 — Karten-Anzahl Paladin/Walküre auf 40 korrigieren**
+- [x] **TODO 1 — Karten-Anzahl Paladin/Walküre auf 40 korrigieren**
   - `src/models/helden/hero-definitions.ts:61-73`: `cardCounts`-Summe von 41 auf 40 reduzieren
     (welche Karte reduziert wird, anhand der Originalanleitung/Kartenliste prüfen, falls
     verfügbar; sonst konservativ die naheliegendste Dopplung um 1 kürzen).
   - Verifikation: Summe aller `cardCounts`-Werte für Paladin/Walküre per Test oder kurzem Skript
     auf 40 prüfen, `ng test`.
 
-- [ ] **TODO 2 — Start-Hand- und Nachzieh-Zielgröße an Spielerzahl koppeln**
+- [x] **TODO 2 — Start-Hand- und Nachzieh-Zielgröße an Spielerzahl koppeln**
   - Zentrale Funktion `startHandSize(numberOfPlayers: number): number` ergänzen (z.B. in
     `src/models/` oder als Service-Methode), Mapping 2→5, 3→4, 4-5→3 gemäß Tabelle S. 2.
   - `GameComponent.drawInitialHand()` (`game.component.ts:171-178`) auf diese Funktion umstellen
@@ -295,7 +295,7 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
   - Verifikation: `ng build`, `ng test`, `npm run test:rules`; manueller Test „Boss #1 besiegen →
     Boss #2 (Der Flecken-Schrecken) erscheint mit neuen Dungeon-Karten, Timer läuft neu".
 
-- [ ] **TODO 5 — Timer-Pause-Mechanismus (Grundlage für Magier + Walküre)**
+- [x] **TODO 5 — Timer-Pause-Mechanismus (Grundlage für Magier + Walküre)**
   - `Game`-Modell (`src/models/game.ts`) um ein Pause-Feld erweitern (z.B. `timerPausedAt:
     number | null` oder `isPaused: boolean`), Reducer in dem für Timer zuständigen State
     ergänzen (State-Zuordnung gemäß `src/app/states/CLAUDE.md` prüfen).
@@ -307,7 +307,7 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
   - Verifikation: `ng build`, `ng test`; noch kein UI-Trigger nötig, reine Infrastruktur — wird
     von TODO 6 genutzt.
 
-- [ ] **TODO 6 — Magier „Zeit einfrieren" und Walküre „Göttlicher Schild" implementieren**
+- [x] **TODO 6 — Magier „Zeit einfrieren" und Walküre „Göttlicher Schild" implementieren**
   - `heropower.component.ts:64-66` (`heroPowerMagier`) und
     `heropower-container.component.ts:66-67` (`case 'Magier': break;`) mit echter Logik füllen:
     3 Handkarten ablegen → `isPaused` aus TODO 5 setzen.
