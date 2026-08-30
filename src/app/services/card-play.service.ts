@@ -54,6 +54,7 @@ export class CardPlayService {
   private heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
   private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
   private currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
+  private currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
 
   constructor(
     private store: Store,
@@ -233,6 +234,7 @@ export class CardPlayService {
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, drawResult.hand));
     reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, drawResult.cardStack));
     reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, userId, drawResult.deliveryStack));
+    this.checkHandDeadlockLoss(gameId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
   }
 
   private playCardfromHandAndUpdateEnemyToken(
@@ -494,6 +496,7 @@ export class CardPlayService {
     if (stolenCards.length === 0) return;
 
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, targetPlayerId, []));
+    this.checkHandDeadlockLoss(gameId, [], targetData?.['cardstack'] ?? [], targetData?.['deliveryStack'] ?? [], reportWriteFailure);
 
     const newOwnHand = [...this.currentHand(), ...stolenCards];
     this.store.dispatch(new UpdateCurrentHandAction(newOwnHand));
@@ -864,5 +867,24 @@ export class CardPlayService {
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, hand));
     reportWriteFailure(this.playerRepo.updateCardstack(gameId, playerId, cardStack));
     reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, playerId, deliveryStack));
+    this.checkHandDeadlockLoss(gameId, hand, cardStack, deliveryStack, reportWriteFailure);
+  }
+
+  /** Verlustbedingung (TODO 11, Anleitung: kann ein Spieler seine Hand nicht mehr auffüllen, weil
+   * sowohl Nachzieh- als auch Ablagestapel leer sind, ist das Spiel sofort verloren). Bewusst nur
+   * dieser Fall - die zweite, komplexere Verlustbedingung ("Gruppe kann die geforderten Symbole
+   * nicht mehr aufbringen") ist laut Plan als eigenes Folge-TODO vorgesehen. */
+  private checkHandDeadlockLoss(
+    gameId: string,
+    hand: string[],
+    cardStack: string[],
+    deliveryStack: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    if (hand.length > 0 || cardStack.length > 0 || deliveryStack.length > 0) return;
+    if (this.currentGameStatus() !== 'playing') return;
+
+    this.store.dispatch(new UpdateGameStatus('lost'));
+    reportWriteFailure(this.gameRepo.updateGameStatus(gameId, 'lost'));
   }
 }
