@@ -42,15 +42,20 @@ export class GameComponent implements OnInit, OnDestroy {
   currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
   timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
   timerDurationSeconds = this.store.selectSignal(CurrentGameSelectors.currentTimerDurationSeconds);
+  timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
+  timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
 
   loadError = signal<string | null>(null);
   now = signal(Date.now());
+  isTimerPaused = computed(() => this.timerPausedAt() !== null);
   remainingSeconds = computed(() => {
     const startedAt = this.timerStartedAt();
     if (startedAt === null) return this.timerDurationSeconds();
 
-    const elapsedSeconds = Math.floor((this.now() - startedAt) / 1000);
+    const pausedAt = this.timerPausedAt();
+    const clockAt = pausedAt ?? this.now();
+    const elapsedSeconds = Math.floor((clockAt - startedAt) / 1000) - Math.floor(this.timerPausedSecondsTotal());
     return Math.max(0, this.timerDurationSeconds() - elapsedSeconds);
   });
   formattedRemainingTime = computed(() => {

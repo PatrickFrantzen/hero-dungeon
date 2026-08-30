@@ -3,9 +3,11 @@ import { DocumentData, where } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
+import { SetGameTimerPauseState } from 'src/app/actions/currentGame-action';
 import { UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
+import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
@@ -41,6 +43,9 @@ export class HeropowerService {
   private currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
   private currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
+  private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
+  private timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
+  private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
 
   constructor(
     private store: Store,
@@ -201,6 +206,29 @@ export class HeropowerService {
         }
       }
     }
+  }
+
+  /** Magier "Zeit einfrieren": 3 Handkarten ablegen, dafür pausiert der Dungeon-Timer, bis
+   * jemand eine Karte in die Tischmitte spielt (CardPlayService.resumeGameTimerIfPaused()). */
+  resolveMagierHeropower(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
+    if (this.heropowerArray().length !== 3) return;
+
+    this.heropowerArray().forEach((card) => {
+      const indexOfHandCard = this.currentHand().indexOf(card);
+      const currHand = [...this.currentHand()];
+      currHand.splice(indexOfHandCard, 1);
+      this.store.dispatch(new UpdateCurrentHandAction(currHand));
+    });
+
+    if (this.timerStartedAt() !== null && this.timerPausedAt() === null) {
+      const pausedAt = Date.now();
+      this.store.dispatch(new SetGameTimerPauseState(pausedAt, this.timerPausedSecondsTotal()));
+      reportWriteFailure(this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal()));
+    }
+
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, this.currentHand()));
+    this.store.dispatch(new UpdateHeropowerActivated(false));
+    this.store.dispatch(new UpdateHeropowerArray([]));
   }
 
   resolveArrayHeropower(

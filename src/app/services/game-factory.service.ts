@@ -37,6 +37,8 @@ export class GameFactoryService {
       questCardActivated: false,
       timerStartedAt: null,
       timerDurationSeconds: 300,
+      timerPausedAt: null,
+      timerPausedSecondsTotal: 0,
     };
   }
 }

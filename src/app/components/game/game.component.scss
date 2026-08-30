@@ -46,6 +46,11 @@
     color: #ffb3b3;
 }
 
+.game-timer--paused {
+    border-color: #66d9ff;
+    color: #b3ecff;
+}
+
 .game-timer__label,
 .game-timer__hint {
     display: block;

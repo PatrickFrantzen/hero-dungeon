@@ -4,11 +4,14 @@
         <div class="game-error">{{ loadError() }}</div>
     }
 
-    <div class="game-timer" [class.game-timer--running]="timerStartedAt() !== null" [class.game-timer--danger]="remainingSeconds() <= 30">
+    <div class="game-timer" [class.game-timer--running]="timerStartedAt() !== null" [class.game-timer--danger]="remainingSeconds() <= 30" [class.game-timer--paused]="isTimerPaused()">
         <span class="game-timer__label">Dungeon-Timer</span>
         <span class="game-timer__time">{{ formattedRemainingTime() }}</span>
         @if (timerStartedAt() === null) {
             <span class="game-timer__hint">Startet mit der ersten gespielten Karte</span>
+        }
+        @if (isTimerPaused()) {
+            <span class="game-timer__hint">Zeit eingefroren, bis jemand eine Karte spielt</span>
         }
     </div>
 

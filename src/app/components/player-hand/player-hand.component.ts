@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { SetGameTimerPauseState, StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
@@ -120,11 +120,20 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     if (typeof data['timerStartedAt'] === 'number') {
       this.store.dispatch(new StartGameTimer(data['timerStartedAt']));
     }
+    this.store.dispatch(
+      new SetGameTimerPauseState(
+        typeof data['timerPausedAt'] === 'number' ? data['timerPausedAt'] : null,
+        typeof data['timerPausedSecondsTotal'] === 'number' ? data['timerPausedSecondsTotal'] : 0
+      )
+    );
   }
 
-  onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere') {
+  onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere' | 'magier') {
     const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
     switch (kind) {
+      case 'magier':
+        this.heropowerService.resolveMagierHeropower(this.currentGameId(), this.currentPlayerId(), reportWriteFailure);
+        break;
       case 'array':
         this.heropowerService.resolveArrayHeropower(
           this.currentGameId(),

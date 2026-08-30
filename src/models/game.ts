@@ -20,4 +20,6 @@ export interface Game {
     questCardActivated: boolean;
     timerStartedAt: number | null;
     timerDurationSeconds: number;
+    timerPausedAt: number | null;
+    timerPausedSecondsTotal: number;
 }

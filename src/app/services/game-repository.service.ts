@@ -45,4 +45,8 @@ export class GameRepositoryService {
   updateTimerStartedAt(gameId: string, timerStartedAt: number): Promise<void> {
     return this.repo.updateFields(['games', gameId], { timerStartedAt });
   }
+
+  updateTimerPauseState(gameId: string, timerPausedAt: number | null, timerPausedSecondsTotal: number): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { timerPausedAt, timerPausedSecondsTotal });
+  }
 }
