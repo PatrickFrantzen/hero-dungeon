@@ -1,4 +1,4 @@
-import { Game, GameStatus } from "src/models/game"
+import { Game, GameStats, GameStatus } from "src/models/game"
 
 export class CurrentGameAction {
     static readonly type = '[Startscreen page] Generating new Game ID'
@@ -40,4 +40,13 @@ export class SetGameTimerPauseState {
 export class ResetGameTimer {
     static readonly type = "[Game page] resetting dungeon timer for the next dungeon"
     constructor(){}
+}
+
+/** Setzt die vier Statistik-Zähler (besiegte Gegner/gespielte Karten/gecyclete Karten/genutzte
+ * Heldenfähigkeiten) bedingungslos auf die übergebenen, bereits berechneten absoluten Werte -
+ * analog zu SetGameTimerPauseState: wird sowohl vom auslösenden Client (CardPlayService/
+ * HeropowerService) als auch vom Firestore-Sync für alle anderen Clients dispatcht. */
+export class SetGameStats {
+    static readonly type = "[Game page] setting game statistics"
+    constructor(public stats: GameStats){}
 }

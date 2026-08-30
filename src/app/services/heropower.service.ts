@@ -3,7 +3,7 @@ import { DocumentData, where } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { SetGameTimerPauseState } from 'src/app/actions/currentGame-action';
+import { SetGameStats, SetGameTimerPauseState } from 'src/app/actions/currentGame-action';
 import { UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
@@ -11,6 +11,7 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
+import { GameStats } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 import { GameRepositoryService } from './game-repository.service';
@@ -46,6 +47,7 @@ export class HeropowerService {
   private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
   private timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
   private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
+  private currentStats = this.store.selectSignal(CurrentGameSelectors.currentStats);
 
   constructor(
     private store: Store,
@@ -54,8 +56,19 @@ export class HeropowerService {
     private repo: FirestoreRepositoryService
   ) {}
 
+  /** Statistik-Zähler "genutzte Heldenfähigkeiten" (`src/models/game.ts` GameStats) - schreibt
+   * den neuen absoluten Wert lokal + nach Firestore, analog zu CardPlayService.bumpStat()
+   * (bewusst nicht geteilt, siehe Klassenkommentar oben zur Nicht-Vereinheitlichung). */
+  private bumpStat(gameId: string, key: keyof GameStats, amount: number, reportWriteFailure: ReportWriteFailure): void {
+    if (amount <= 0) return;
+    const stats = { ...this.currentStats(), [key]: this.currentStats()[key] + amount };
+    this.store.dispatch(new SetGameStats(stats));
+    reportWriteFailure(this.gameRepo.updateStats(gameId, stats));
+  }
+
   resolveWalkuereHeropower(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
     if (this.heropowerArray().length !== 3) return;
+    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
 
     this.heropowerArray().forEach((card) => {
       let currHand = [...this.currentHand()];
@@ -122,6 +135,8 @@ export class HeropowerService {
     openFollowUpDialog: () => void
   ): void {
     if (this.heropowerArray().length !== 3) return;
+    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
+
     this.heropowerArray().forEach((card) => {
       let currHand = [...this.currentHand()];
       let currCardStack = [...this.currentCardStack()];
@@ -212,6 +227,7 @@ export class HeropowerService {
    * jemand eine Karte in die Tischmitte spielt (CardPlayService.resumeGameTimerIfPaused()). */
   resolveMagierHeropower(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
     if (this.heropowerArray().length !== 3) return;
+    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
 
     this.heropowerArray().forEach((card) => {
       const indexOfHandCard = this.currentHand().indexOf(card);
@@ -238,6 +254,7 @@ export class HeropowerService {
     onEnemyTokenCleared: (enemy: Mob) => void
   ): void {
     if (this.heropowerArray().length !== 3) return;
+    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
 
     let currEnemyToken = [...this.currentEnemy().token];
     currEnemyToken.length = 0;

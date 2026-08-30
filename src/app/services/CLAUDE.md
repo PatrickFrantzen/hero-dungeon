@@ -21,7 +21,8 @@ Repository-Services unten gebündelt.
   `updateTimerPauseState()`/`resetTimer()` sind die Firestore-Writes für den Dungeon-Timer inkl.
   Pause/Reset (`src/app/components/game/CLAUDE.md`); `updateCurrentBoss()`/
   `updateRemainingBosses()` sind die Firestore-Writes für die Boss-Kampagne (siehe
-  `card-play.service.ts` unten).
+  `card-play.service.ts` unten); `updateStats()` schreibt die vier Kampagnen-Statistik-Zähler
+  (`GameStats`, siehe `src/app/components/game/CLAUDE.md`).
 - **`current-user.service.ts`** — Auth-State (`@angular/fire/auth`) + zugehöriges
   Firestore-Nutzerdokument.
 
@@ -79,12 +80,16 @@ Repository-Services unten gebündelt.
   und nachgezogen wird, solange irgendwo (Hand/Nachzieh-/Ablagestapel) noch eine Karte liegt. Die
   zweite Verlustbedingung ("Gruppe kann die geforderten Symbole nicht mehr aufbringen") ist
   bewusst nicht umgesetzt — siehe TODO 11 im Plan.
+  `bumpStat()`/`ensureGameTimerStarted()`/`checkForNextEnemy()`/`drawCards()` schreiben zusätzlich
+  die Kampagnen-Statistik (`GameStats`) fort — Details in `src/app/components/game/CLAUDE.md`.
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,
   siehe Kommentar/Status direkt in der Datei) — vor einer Vereinheitlichung diesen Unterschied
   erneut prüfen, nicht blind zusammenlegen. `resolveMagierHeropower()` pausiert zusätzlich den
-  Dungeon-Timer (`src/app/components/game/CLAUDE.md`).
+  Dungeon-Timer (`src/app/components/game/CLAUDE.md`). Alle vier `resolve*Heropower()`-Methoden
+  zählen über ihr eigenes `bumpStat()` (bewusst nicht mit `CardPlayService.bumpStat()` geteilt)
+  die `heropowersUsed`-Statistik hoch.
 - **`dieb.service.ts`** — heldenspezifische Sonderlogik für den Dieb (Solo-Held im
   Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`).
 - **`game-factory.service.ts`** — baut ein neues `Game`-Objekt (Startscreen: Spiel erstellen).

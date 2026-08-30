@@ -4,12 +4,15 @@ import {
   CurrentGameAction,
   CurrentGameData,
   ResetGameTimer,
+  SetGameStats,
   SetGameTimerPauseState,
   StartGameTimer,
   UpdateGameStatus,
   updateQuestCardActivated,
 } from '../actions/currentGame-action';
-import { GameStatus } from 'src/models/game';
+import { GameStats, GameStatus } from 'src/models/game';
+
+const DEFAULT_STATS: GameStats = { enemiesDefeated: 0, cardsPlayed: 0, cardsCycled: 0, heropowersUsed: 0 };
 
 export interface CurrentGameModel {
   items: string;
@@ -23,6 +26,7 @@ export interface CurrentGameModel {
   timerDurationSeconds: number;
   timerPausedAt: number | null;
   timerPausedSecondsTotal: number;
+  stats: GameStats;
 }
 
 @State<CurrentGameModel>({
@@ -39,6 +43,7 @@ export interface CurrentGameModel {
     timerDurationSeconds: 300,
     timerPausedAt: null,
     timerPausedSecondsTotal: 0,
+    stats: DEFAULT_STATS,
   },
 })
 @Injectable()
@@ -70,6 +75,7 @@ export class CurrentGameState {
       timerDurationSeconds: game.timerDurationSeconds ?? 300,
       timerPausedAt: game.timerPausedAt ?? null,
       timerPausedSecondsTotal: game.timerPausedSecondsTotal ?? 0,
+      stats: game.stats ?? DEFAULT_STATS,
     });
   }
 
@@ -109,5 +115,10 @@ export class CurrentGameState {
       timerPausedAt: null,
       timerPausedSecondsTotal: 0,
     });
+  }
+
+  @Action(SetGameStats)
+  setGameStats(ctx: StateContext<CurrentGameModel>, action: SetGameStats) {
+    ctx.patchState({ stats: action.stats });
   }
 }

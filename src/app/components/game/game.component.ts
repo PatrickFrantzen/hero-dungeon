@@ -50,6 +50,7 @@ export class GameComponent implements OnInit, OnDestroy {
   timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
   timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
+  currentStats = this.store.selectSignal(CurrentGameSelectors.currentStats);
 
   loadError = signal<string | null>(null);
   now = signal(Date.now());

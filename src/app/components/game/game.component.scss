@@ -99,5 +99,33 @@
     margin: 4px 0;
 }
 
+.game-stats {
+    align-self: center;
+    width: fit-content;
+    max-width: min(480px, 92vw);
+    margin-top: 16px;
+    box-sizing: border-box;
+    padding: clamp(8px, 2vw, 16px);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.72);
+    color: white;
+    text-align: center;
+}
+
+.game-stats__title {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.game-stats__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: clamp(0.85rem, 2.3vw, 1rem);
+}
+
 
 

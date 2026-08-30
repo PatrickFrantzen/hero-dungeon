@@ -5,6 +5,15 @@ import { Mob } from "./monster/monster.class";
  * CardPlayService.continueToNextDungeon()/GameComponent). */
 export type GameStatus = 'playing' | 'bossDefeated' | 'won' | 'lost';
 
+/** Kampagnen-Statistik (Anzeige: GameComponent, sobald gameStatus !== 'playing') - läuft über
+ * die gesamte Kampagne mit, wird bei einem Neustart (restartCampaign()) NICHT zurückgesetzt. */
+export interface GameStats {
+    enemiesDefeated: number;
+    cardsPlayed: number;
+    cardsCycled: number;
+    heropowersUsed: number;
+}
+
 export interface Game {
     numberOfPlayers: number ;
     choosenHeros: {
@@ -25,4 +34,5 @@ export interface Game {
     timerDurationSeconds: number;
     timerPausedAt: number | null;
     timerPausedSecondsTotal: number;
+    stats: GameStats;
 }
