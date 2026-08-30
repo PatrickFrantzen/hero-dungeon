@@ -253,14 +253,14 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     );
   }
 
-  resolveSoloEvent() {
-    this.cardPlayService.resolveSoloEvent(this.currentGameId(), this.currentPlayerId(), (write) =>
+  resolveEvent() {
+    this.cardPlayService.resolveEvent(this.currentGameId(), this.currentPlayerId(), (write) =>
       this.reportWriteFailure(write)
     );
   }
 
-  isSoloEventActive(): boolean {
-    return this.currentNumberOfPlayers() === 1 && this.store.selectSnapshot(CurrentGameSelectors.currentQuestCardStatus);
+  isEventActive(): boolean {
+    return this.store.selectSnapshot(CurrentGameSelectors.currentQuestCardStatus);
   }
 
   isSingleplayer(): boolean {

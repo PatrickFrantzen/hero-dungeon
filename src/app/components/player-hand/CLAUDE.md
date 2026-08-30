@@ -17,6 +17,12 @@ Jägerins Fähigkeit-Folgedialog gedacht) und ruft erst nach dessen Schließen d
 `CardPlayService.resolve*()`-Methode mit dem/den gewählten Zielspieler(n) auf. "Wut" braucht
 zwei Zielspieler, daher zwei sequentielle Dialog-Öffnungen (`openWutDialog()`).
 
+`isEventActive()`/`resolveEvent()` (Ereigniskarten-Button, sichtbar bei
+`currentEnemy().token.includes('event')`) sind Spielerzahl-unabhängig — vor der Boss-Kampagne/
+Event-Überarbeitung hießen sie `isSoloEventActive()`/`resolveSoloEvent()` und waren auf
+Singleplayer beschränkt; `CardPlayService.resolveEvent()` wendet den Effekt jetzt auf alle
+Spieler an, nicht nur auf den klickenden.
+
 **Vor jeder größeren Änderung hier zuerst `docs/planned/player-hand-decomposition-plan.md`
 lesen** — dort steht der aktuelle Umsetzungsstand (welche TODOs offen sind, u.a. optionale
 Sub-Komponenten fürs Template und ein Heropower-Strategy-Pattern) und die Begründung für

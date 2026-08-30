@@ -110,10 +110,13 @@ export class CardPlayService {
       }
 
       if (card.includes('_')) {
-        const isEventCard = currMob.token[0].toLocaleLowerCase().includes('event');
+        // Nur die Magier-Karte "Verhinderung" darf eine Ereigniskarte stoppen (Anleitung S. 9) -
+        // vorher löste jede beliebige Doppelkarte ein Event auf, weil nur der Bedrohungstyp
+        // ("ist es überhaupt ein Event") geprüft wurde, nicht welche Karte gespielt wurde.
+        const isVerhinderungAgainstEvent = card === 'verhinderung_event' && currMob.token[0].toLocaleLowerCase().includes('event');
         const isMatchingType = currMob.type.toLocaleLowerCase().includes(doubleCard[1]);
 
-        if (isEventCard || isMatchingType) {
+        if (isVerhinderungAgainstEvent || isMatchingType) {
           this.ensureGameTimerStarted(gameId, reportWriteFailure);
           this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
           currEne.length = 0;
@@ -160,43 +163,76 @@ export class CardPlayService {
     this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
   }
 
-  /** Löst die solo-tauglichen Eventkarten aus und lädt danach den nächsten Encounter. */
-  resolveSoloEvent(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
+  /** Löst eine aufgedeckte Ereigniskarte aus (Anleitung S. 8-9: "müsst ihr sofort tun, was die
+   * Karte verlangt") - betrifft ALLE Spieler, nicht nur den, der auf "Event ausführen" klickt.
+   * "Chaos" ("Jeder gibt seine Handkarten einem Mitspieler") ist vereinfacht wie "Plötzliche
+   * Krankheit" behandelt (komplette Hand ablegen + auffüllen): die Anleitung gibt keine feste
+   * Weitergabe-Reihenfolge vor, eine korrekte Umsetzung bräuchte eine Zielspieler-Zuordnung pro
+   * Spieler - nicht umgesetzt, siehe docs/planned/five-minute-dungeon-rules-plan.md TODO 9. */
+  resolveEvent(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
     const event = this.currentEnemy();
     if (!event.token.includes('event')) return;
 
-    const currHand = [...this.currentHand()];
-    let cardsToDiscard = 0;
-    let cardsToDraw = 0;
-
-    switch (event.name) {
-      case 'Plötzliche Krankheit':
-        cardsToDiscard = currHand.length;
-        cardsToDraw = 5;
-        break;
-      case 'Ein Wehweh':
-        cardsToDiscard = Math.min(1, currHand.length);
-        cardsToDraw = cardsToDiscard;
-        break;
-      case 'Falltür':
-        cardsToDiscard = Math.min(3, currHand.length);
-        cardsToDraw = cardsToDiscard;
-        break;
-      default:
-        cardsToDiscard = currHand.length;
-        cardsToDraw = 5;
-        break;
-    }
-
-    const discardedCards = currHand.splice(0, cardsToDiscard);
-    const deliveryStack = [...this.currentDeliveryStack(), ...discardedCards];
-    const drawResult = this.drawCards(currHand, [...this.currentCardStack()], deliveryStack, cardsToDraw);
-    this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
+    this.applyEventToSelf(gameId, playerId, event.name, reportWriteFailure);
+    this.applyEventToOtherPlayers(gameId, playerId, event.name, reportWriteFailure);
 
     const clearedEvent: Mob = { ...event, token: [] };
     this.store.dispatch(new SetNewEnemy(clearedEvent));
     reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, clearedEvent));
     this.checkForNextEnemy(gameId, clearedEvent, reportWriteFailure);
+  }
+
+  private eventDiscardCount(eventName: string, handLength: number): number {
+    switch (eventName) {
+      case 'Ein Wehweh':
+        return Math.min(1, handLength);
+      case 'Falltür':
+        return Math.min(3, handLength);
+      default:
+        // 'Plötzliche Krankheit' und 'Chaos' (vereinfacht, siehe resolveEvent()-Kommentar).
+        return handLength;
+    }
+  }
+
+  private applyEventToSelf(gameId: string, playerId: string, eventName: string, reportWriteFailure: ReportWriteFailure): void {
+    const currHand = [...this.currentHand()];
+    const discardedCards = currHand.splice(0, this.eventDiscardCount(eventName, currHand.length));
+    this.checkHandsize(gameId, playerId, currHand, discardedCards, reportWriteFailure);
+  }
+
+  private async applyEventToOtherPlayers(
+    gameId: string,
+    playerId: string,
+    eventName: string,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    const otherPlayers = await this.repo.queryAll<DocumentData>(
+      ['games', gameId, 'player'],
+      [where('gameId', '==', gameId), where('userId', '!=', playerId)]
+    );
+    otherPlayers.forEach((data) => this.applyEventToPlayerData(gameId, data, eventName, reportWriteFailure));
+  }
+
+  private applyEventToPlayerData(
+    gameId: string,
+    data: DocumentData,
+    eventName: string,
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    const userId = data['userId'];
+    const hand: string[] = [...(data['handstack'] ?? [])];
+    const discardedCards = hand.splice(0, this.eventDiscardCount(eventName, hand.length));
+    const drawCount = Math.max(0, startHandSize(this.currentNumberOfPlayers()) - hand.length);
+    const drawResult = this.drawCards(
+      hand,
+      [...(data['cardstack'] ?? [])],
+      [...(data['deliveryStack'] ?? []), ...discardedCards],
+      drawCount
+    );
+
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, drawResult.hand));
+    reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, drawResult.cardStack));
+    reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, userId, drawResult.deliveryStack));
   }
 
   private playCardfromHandAndUpdateEnemyToken(

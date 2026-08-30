@@ -3,10 +3,10 @@
     <div class="player-hand-error">{{ loadError() }}</div>
   }
 
-  @if (isSoloEventActive()) {
+  @if (isEventActive()) {
     <button
-      class="solo-event-button tw-rounded tw-bg-green-600 tw-px-3 tw-py-1.5 tw-text-sm tw-font-medium tw-text-white tw-shadow tw-transition-colors hover:tw-bg-green-500"
-      (click)="resolveSoloEvent()"
+      class="event-button tw-rounded tw-bg-green-600 tw-px-3 tw-py-1.5 tw-text-sm tw-font-medium tw-text-white tw-shadow tw-transition-colors hover:tw-bg-green-500"
+      (click)="resolveEvent()"
     >Event ausführen</button>
   }
 

@@ -132,8 +132,12 @@ export class Monster {
     }
   }
 
+  /** Singleplayer zieht nur Event-Karten (siehe singleplayer-mode-plan.md: "5 normale Monster +
+   * 1 Event") - 'Chaos' fällt raus, weil es eine Zielspieler-Weitergabe voraussetzt, die es im
+   * Solo-Modus nicht gibt; Mini-Bosse fallen raus, weil sie laut Plan nicht Teil des
+   * Solo-Dungeons sind. */
   loadSoloQuests(numberOfQuestCards: number) {
-    let questCollectionCopy = this.questCollection.filter((quest) => quest.name !== 'Chaos');
+    let questCollectionCopy = this.questCollection.filter((quest) => quest.name !== 'Chaos' && quest.type !== 'Mini-Boss');
     const count = Math.min(numberOfQuestCards, questCollectionCopy.length);
     for (let i = 0; i < count; i++) {
       const randomIndex = Math.floor(

@@ -72,6 +72,36 @@ deterministisch statt spielerseitig frei wählbar — eine bewusste Vereinfachun
 der bereits bestehenden automatischen Doppelsymbol-Karten-Auflösung. Drei neue Unit-Tests in
 `card-play.service.spec.ts`.
 
+TODO 9 umgesetzt (Event-Handling im Mehrspieler + Verhinderung-Karte + Mini-Boss-Reaktivierung):
+- `CardPlayService.resolveSoloEvent()` → `resolveEvent()`, nicht mehr auf `numberOfPlayers === 1`
+  beschränkt (`isSoloEventActive()`/`isEventActive()` in `PlayerHandComponent` entsprechend).
+  Wendet den Ereignis-Effekt jetzt auf **alle** Spieler an (`applyEventToSelf()`/
+  `applyEventToOtherPlayers()`), nicht mehr nur auf den klickenden. "Chaos" ("Jeder gibt seine
+  Handkarten einem Mitspieler") bleibt vereinfacht wie "Plötzliche Krankheit" behandelt (komplette
+  Hand ablegen + auffüllen) — die Anleitung gibt keine feste Weitergabe-Reihenfolge vor, eine
+  korrekte Umsetzung bräuchte eine Zielspieler-Zuordnung pro Spieler.
+- Bug behoben: in `chooseCard()` löste vorher **jede beliebige Doppelkarte** ein aufgedecktes
+  Event auf (nur geprüft, ob der aktuelle Encounter ein Event ist, nicht welche Karte gespielt
+  wurde) — jetzt darf nur die Magier/Zauberin-Karte `verhinderung_event` ein Event stoppen
+  (Anleitung S. 9).
+- `monster-collection.data.ts`: alle 5 Mini-Boss-Quest-Karten reaktiviert (waren auskommentiert).
+  "Hinterhalt" bleibt auskommentiert — sein Zwei-Karten-Reveal-Mechanismus ("Deckt 2 Karten aus
+  dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht") passt nicht in den
+  bestehenden Ein-`currentEnemy`-nach-dem-anderen-Loop und ist nicht umgesetzt — verbleibt als
+  offener Punkt für einen künftigen Plan.
+- `Monster.loadSoloQuests()` filtert zusätzlich Mini-Bosse heraus (`type !== 'Mini-Boss'`), damit
+  der Singleplayer-Modus bei seiner dokumentierten Regel bleibt (`singleplayer-mode-plan.md`:
+  "5 normale Monster + 1 Event").
+
+**TODO 10 (Mini-Bosse vor Heldenfähigkeiten schützen) ist als Nebeneffekt bereits erfüllt, ohne
+Codeänderung nötig gewesen:** `heropower.component.ts`s `heroPowerBarbar()`/`heroPowerGladiator()`/
+`heroPowerZauberin()`/`heroPowerWaldlaeufer()`/`heroPowerNinja()`/`heroPowerPaladin()` (die
+"Array"-Gruppe, deren Heropower den Gegner direkt besiegt) aktivieren die Fähigkeit ohnehin nur
+bei `currentEnemy().type === 'Monster' | 'Person' | 'Hindernis'` — `'Mini-Boss'` erfüllt keine
+dieser Bedingungen und fällt automatisch durch. "Heilige Handgranate" (TODO 7) bleibt davon
+unberührt, da sie den Token unconditional leert, unabhängig vom Typ — genau die in der Anleitung
+vorgesehene Sonderregel.
+
 Wichtiger Hinweis vorab: Der im Repo bereits existierende **Singleplayer-Modus**
 (`docs/planned/singleplayer-mode-plan.md`) ist eine bewusste Erweiterung des Originalspiels, das
 laut Anleitung offiziell **keinen** Einzelspieler-Modus vorsieht. Dieser Plan behandelt ihn daher
@@ -303,7 +333,8 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
   - Verifikation: `ng build`, `ng test`; manueller Test „Joker gegen eine Dungeon-Karte mit
     einzelnem Symbol ausspielen", „Magische Bombe gegen Mehrsymbol-Karte ausspielen".
 
-- [ ] **TODO 9 — Event-Handling im Mehrspieler-Modus + Verhinderung-Karte**
+- [x] **TODO 9 — Event-Handling im Mehrspieler-Modus + Verhinderung-Karte** (Hinterhalt bleibt
+  offen, siehe Status-Abschnitt oben)
   - `isSoloEventActive()`-Gate (`player-hand.component.ts:168-170`) entfernen bzw. so erweitern,
     dass `resolveSoloEvent()` (besser umbenennen, da nicht mehr solo-spezifisch) auch im
     Mehrspieler-Modus greift, sobald eine Ereigniskarte aufgedeckt wird — unabhängig von
@@ -322,7 +353,10 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
     ändert; manueller Test „Event-Karte im 2-Spieler-Spiel aufdecken, Effekt wird sofort
     ausgeführt, Verhinderung stoppt es".
 
-- [ ] **TODO 10 — Mini-Bosse vor Heldenfähigkeiten schützen**
+- [x] **TODO 10 — Mini-Bosse vor Heldenfähigkeiten schützen** (kein Code-Änderung nötig, siehe
+  Status-Abschnitt oben: `heropower.component.ts`s `heroPower*()`-Aktivierungsprüfungen lassen
+  die Array-Heropower ohnehin nur bei `currentEnemy().type === 'Monster' | 'Person' |
+  'Hindernis'` zu — `'Mini-Boss'` fällt schon durch die bestehende Prüfung)
   - Voraussetzung: TODO 9 (Mini-Bosse reaktiviert). In `HeropowerService.resolveArrayHeropower()`
     (`heropower.service.ts:206-240`) prüfen, dass der aktuelle Gegner-Typ `Monster`, `Person`
     oder `Hindernis` ist, nicht ein Mini-Boss-Typ — sonst Fähigkeit ablehnen (UI-Feedback: „Diese

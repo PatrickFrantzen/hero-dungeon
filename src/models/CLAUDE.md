@@ -26,16 +26,26 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   nächstes kommt, ~130 Zeilen). `loadMonster()`/`loadQuests()`/`loadSoloQuests()` deckeln die
   angeforderte Kartenzahl per `Math.min()` auf die tatsächlich verfügbare Anzahl in der
   jeweiligen Collection — ohne den Schutz pusht die Ziehschleife `undefined`-Einträge, sobald
-  mehr Karten angefordert werden als vorhanden sind (aktuell der Fall bei `questCollection`: nur
-  4 von 10 Kartentypen sind aktiv, Mini-Bosse auskommentiert, siehe
-  `docs/planned/five-minute-dungeon-rules-plan.md` TODO 9 — `questTwo`/`-Drei`/`-Vier`/`-Fünf`
-  in `createMob()` sind mit 4/6/8/10 auf die volle spätere Kartenzahl ausgelegt). Ein
-  `undefined`-Mob-Eintrag führt beim `.shift()` in `GameFactoryService.buildNewGame()`/
+  mehr Karten angefordert werden als vorhanden sind. `questTwo`/`-Drei`/`-Vier`/`-Fünf` in
+  `createMob()` sind mit 4/6/8/10 auf die volle spätere Kartenzahl ausgelegt; `questCollection`
+  hat inzwischen 9 von 10 geplanten Kartentypen aktiv (nur "Hinterhalt" bleibt auskommentiert,
+  siehe unten) — bei 5 Spielern (`questFive: 10`) greift der `Math.min()`-Schutz also weiterhin.
+  Ein `undefined`-Mob-Eintrag führt beim `.shift()` in `GameFactoryService.buildNewGame()`/
   `CardPlayService.continueToNextDungeon()` zu einem TypeError, sobald er zufällig zuerst gezogen
   wird — `monster.class.spec.ts` hat einen Regressionstest über alle Boss-/Schwierigkeits-/
-  Spielerzahl-Kombinationen dafür.
+  Spielerzahl-Kombinationen dafür. `loadSoloQuests()` filtert zusätzlich `type !== 'Mini-Boss'`
+  heraus (neben `name !== 'Chaos'`) — der Singleplayer-Modus zieht laut
+  `docs/planned/singleplayer-mode-plan.md` nur normale Event-Karten, keine Mini-Bosse.
 - **`monster-collection.data.ts`** — die eigentlichen Monster-Datenliterale, bewusst aus der
   Klasse ausgelagert (gleiches Prinzip wie `hero-definitions.ts`: Daten getrennt von Logik).
+  `questCollection` enthält alle 5 Mini-Bosse (`type: 'Mini-Boss'`) und 4 Ereigniskarten; nur
+  "Hinterhalt" bleibt auskommentiert, weil sein Zwei-Karten-Reveal-Mechanismus
+  (`docs/planned/five-minute-dungeon-rules-plan.md` TODO 9) nicht umgesetzt ist — der
+  Encounter-Loop kennt nur einen `currentEnemy` nach dem anderen. Mini-Bosse brauchen keinen
+  Sonderschutz vor Heldenfähigkeiten in `heropower.component.ts`: deren `heroPower*()`-Methoden
+  aktivieren die "Array"-Heropower (die den Gegner direkt besiegt) ohnehin nur bei
+  `currentEnemy().type === 'Monster' | 'Person' | 'Hindernis'` — `'Mini-Boss'` fällt da naturgemäß
+  durch.
 
 ## Sonstiges
 
