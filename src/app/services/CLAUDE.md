@@ -26,14 +26,18 @@ Repository-Services unten gebündelt.
 ## Business-Logik-Services (kein/kaum Firestore-Zugriff)
 
 - **`card-play.service.ts`** — Karten-/Encounter-Regeln (Karte ausspielen, Encounter-Auflösung
-  inkl. Singleplayer-Sonderfälle). `chooseCard()` ist der einzige öffentliche Einstiegspunkt —
-  neue Kartenregeln hier einhängen, nicht an der Komponente vorbei. Startet außerdem per
-  `ensureGameTimerStarted()` den Dungeon-Timer bei der ersten wirksam gespielten Karte und
-  beendet per `resumeGameTimerIfPaused()` eine laufende Magier-/Göttlicher-Schild-Pause, sobald
-  eine Karte in die Tischmitte gespielt wird; `resolveGoettlicherSchild()`,
-  `resolveHeiligeHandgranate()` und `resolveHeiltrank()` behandeln die gleichnamigen Karten als
-  Sonderfall (keine passen zu Dungeon-Symbolen, sind aber jederzeit spielbar) — Details
-  zum Gesamt-Feature in `src/app/components/game/CLAUDE.md`.
+  inkl. Singleplayer-Sonderfälle). `chooseCard()` ist der Einstiegspunkt für alle Karten ohne
+  weitere Nutzereingabe — neue Kartenregeln hier einhängen, nicht an der Komponente vorbei.
+  Startet außerdem per `ensureGameTimerStarted()` den Dungeon-Timer bei der ersten wirksam
+  gespielten Karte und beendet per `resumeGameTimerIfPaused()` eine laufende Magier-/
+  Göttlicher-Schild-Pause, sobald eine Karte in die Tischmitte gespielt wird;
+  `resolveGoettlicherSchild()`, `resolveHeiligeHandgranate()` und `resolveHeiltrank()` behandeln
+  die gleichnamigen Karten als Sonderfall (keine passen zu Dungeon-Symbolen, sind aber jederzeit
+  spielbar) — Details zum Gesamt-Feature in `src/app/components/game/CLAUDE.md`. Fünf weitere
+  Aktionskarten mit Zielspieler-Auswahl (Spende, Stehlen, Heilkräuter, Wut, Heilung) haben
+  eigene öffentliche `resolve*()`-Methoden, die **nicht** über `chooseCard()` laufen, sondern
+  direkt von `PlayerHandComponent` aufgerufen werden, nachdem dort ein Zielspieler-Dialog
+  geschlossen wurde (`chooseCard()` selbst würde diese Kartennamen nicht erkennen).
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,

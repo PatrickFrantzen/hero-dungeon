@@ -26,8 +26,12 @@ export type ReportWriteFailure = (write: Promise<void>) => void;
 /**
  * Die eigentlichen Kartenspielregeln aus PlayerHandComponent: welche Karte auf welches
  * Gegner-Token passt, Einzel-/Doppelkarten-Logik, Handgröße nachfüllen, nächster Gegner/Boss.
- * `chooseCard()` ist der einzige öffentliche Einstiegspunkt (Template-Handler); alles andere
- * ist interne Ablauflogik dieser Regeln.
+ * `chooseCard()` ist der Einstiegspunkt für alle Karten, die ohne weitere Nutzereingabe
+ * auflösen (Template-Handler). Fünf Aktionskarten (Spende, Stehlen, Heilkräuter, Wut, Heilung)
+ * brauchen vorher eine Zielspieler-Auswahl per Dialog - für die ruft PlayerHandComponent statt
+ * `chooseCard()` direkt die passende `resolve*()`-Methode unten mit dem/den gewählten
+ * Zielspieler(n) auf; `chooseCard()` selbst würde diese Kartennamen nicht erkennen und sie
+ * folgenlos verpuffen lassen.
  */
 @Injectable({
   providedIn: 'root',
@@ -250,41 +254,55 @@ export class CardPlayService {
     this.ensureGameTimerStarted(gameId, reportWriteFailure);
     this.freezeGameTimer(gameId, reportWriteFailure);
     this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
-    this.drawOneCardIgnoringHandsize(gameId, playerId, reportWriteFailure);
-    this.drawOneCardForOtherPlayers(gameId, playerId, reportWriteFailure);
+    this.drawCardsIgnoringHandsize(gameId, playerId, 1, reportWriteFailure);
+    this.drawCardsForOtherPlayers(gameId, playerId, 1, reportWriteFailure);
   }
 
-  private drawOneCardIgnoringHandsize(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
+  private drawCardsIgnoringHandsize(gameId: string, playerId: string, count: number, reportWriteFailure: ReportWriteFailure): void {
     const drawResult = this.drawCards(
       [...this.currentHand()],
       [...this.currentCardStack()],
       [...this.currentDeliveryStack()],
-      1
+      count
     );
     this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
   }
 
-  private async drawOneCardForOtherPlayers(
+  private async drawCardsForOtherPlayers(
     gameId: string,
     playerId: string,
+    count: number,
     reportWriteFailure: ReportWriteFailure
   ): Promise<void> {
     const otherPlayers = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
       [where('gameId', '==', gameId), where('userId', '!=', playerId)]
     );
-    otherPlayers.forEach((data) => this.drawOneCardForOtherPlayer(gameId, data, reportWriteFailure));
+    otherPlayers.forEach((data) => this.drawCardsForPlayerData(gameId, data, count, reportWriteFailure));
   }
 
-  private drawOneCardForOtherPlayer(gameId: string, data: DocumentData, reportWriteFailure: ReportWriteFailure): void {
-    const userId = data['userId'];
-    const cardStack: string[] = [...(data['cardstack'] ?? [])];
-    const hand: string[] = [...(data['handstack'] ?? [])];
-    if (cardStack.length === 0) return;
+  private async drawCardsForTarget(
+    gameId: string,
+    targetPlayerId: string,
+    count: number,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    const data = await this.playerRepo.getPlayer(gameId, targetPlayerId);
+    if (!data) return;
+    this.drawCardsForPlayerData(gameId, data, count, reportWriteFailure);
+  }
 
-    hand.push(cardStack.shift()!);
-    reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, hand));
-    reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, cardStack));
+  private drawCardsForPlayerData(gameId: string, data: DocumentData, count: number, reportWriteFailure: ReportWriteFailure): void {
+    const userId = data['userId'];
+    const drawResult = this.drawCards(
+      [...(data['handstack'] ?? [])],
+      [...(data['cardstack'] ?? [])],
+      [...(data['deliveryStack'] ?? [])],
+      count
+    );
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, drawResult.hand));
+    reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, drawResult.cardStack));
+    reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, userId, drawResult.deliveryStack));
   }
 
   /** Paladin/Walküre "Heilige Handgranate": besiegt sofort die aktuelle Bedrohung - die einzige
@@ -321,14 +339,14 @@ export class CardPlayService {
     this.ensureGameTimerStarted(gameId, reportWriteFailure);
     this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
     this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
-    this.reclaimCardsFromDeliveryStack(gameId, playerId, reportWriteFailure);
-    this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, reportWriteFailure);
+    this.reclaimCardsFromDeliveryStack(gameId, playerId, 3, reportWriteFailure);
+    this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, 3, reportWriteFailure);
   }
 
-  private reclaimCardsFromDeliveryStack(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
+  private reclaimCardsFromDeliveryStack(gameId: string, playerId: string, count: number, reportWriteFailure: ReportWriteFailure): void {
     const hand = [...this.currentHand()];
     const deliveryStack = [...this.currentDeliveryStack()];
-    const reclaimed = deliveryStack.splice(0, Math.min(3, deliveryStack.length));
+    const reclaimed = deliveryStack.splice(0, Math.min(count, deliveryStack.length));
     if (reclaimed.length === 0) return;
 
     hand.push(...reclaimed);
@@ -341,25 +359,176 @@ export class CardPlayService {
   private async reclaimCardsFromDeliveryStackForOtherPlayers(
     gameId: string,
     playerId: string,
+    count: number,
     reportWriteFailure: ReportWriteFailure
   ): Promise<void> {
     const otherPlayers = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
       [where('gameId', '==', gameId), where('userId', '!=', playerId)]
     );
-    otherPlayers.forEach((data) => this.reclaimCardsFromDeliveryStackForPlayer(gameId, data, reportWriteFailure));
+    otherPlayers.forEach((data) => this.reclaimCardsFromDeliveryStackForPlayerData(gameId, data, count, reportWriteFailure));
   }
 
-  private reclaimCardsFromDeliveryStackForPlayer(gameId: string, data: DocumentData, reportWriteFailure: ReportWriteFailure): void {
+  private async reclaimCardsFromDeliveryStackForTarget(
+    gameId: string,
+    targetPlayerId: string,
+    count: number,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    const data = await this.playerRepo.getPlayer(gameId, targetPlayerId);
+    if (!data) return;
+    this.reclaimCardsFromDeliveryStackForPlayerData(gameId, data, count, reportWriteFailure);
+  }
+
+  private reclaimCardsFromDeliveryStackForPlayerData(
+    gameId: string,
+    data: DocumentData,
+    count: number,
+    reportWriteFailure: ReportWriteFailure
+  ): void {
     const userId = data['userId'];
     const hand: string[] = [...(data['handstack'] ?? [])];
     const deliveryStack: string[] = [...(data['deliveryStack'] ?? [])];
-    const reclaimed = deliveryStack.splice(0, Math.min(3, deliveryStack.length));
+    const reclaimed = deliveryStack.splice(0, Math.min(count, deliveryStack.length));
     if (reclaimed.length === 0) return;
 
     hand.push(...reclaimed);
     reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, hand));
     reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, userId, deliveryStack));
+  }
+
+  /** Dieb/Ninja "Spende": gibst deine komplette (restliche) Hand einem gewählten Mitspieler und
+   * ziehst dafür so viele Karten auf die Hand wie zu Spielbeginn (Anleitung S. 9). Aufgerufen
+   * von PlayerHandComponent, nachdem der Zielspieler-Dialog geschlossen wurde. */
+  async resolveSpende(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+
+    const handToGive = [...this.currentHand()];
+    handToGive.splice(handToGive.indexOf(card), 1);
+
+    const targetData = await this.playerRepo.getPlayer(gameId, targetPlayerId);
+    const targetHand = [...(targetData?.['handstack'] ?? []), ...handToGive];
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, targetPlayerId, targetHand));
+
+    const deliveryStack = [...this.currentDeliveryStack(), card];
+    const drawResult = this.drawCards([], [...this.currentCardStack()], deliveryStack, startHandSize(this.currentNumberOfPlayers()));
+    this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
+  }
+
+  /** Dieb/Ninja "Stehlen": nimmst die komplette Hand eines gewählten Mitspielers zu deiner
+   * eigenen dazu (Anleitung S. 9) - der bestohlene Spieler füllt seine Hand erst wieder auf,
+   * wenn er selbst das nächste Mal eine Karte spielt oder ablegt. */
+  async resolveStehlen(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    const currHand = [...this.currentHand()];
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+
+    const targetData = await this.playerRepo.getPlayer(gameId, targetPlayerId);
+    const stolenCards = [...(targetData?.['handstack'] ?? [])];
+    if (stolenCards.length === 0) return;
+
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, targetPlayerId, []));
+
+    const newOwnHand = [...this.currentHand(), ...stolenCards];
+    this.store.dispatch(new UpdateCurrentHandAction(newOwnHand));
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, newOwnHand));
+  }
+
+  /** Jägerin/Waldläufer "Heilkräuter": ein gewählter Spieler (auch du selbst) nimmt 4 Karten
+   * von seinem eigenen Ablagestapel zurück auf die Hand (Anleitung S. 9). */
+  resolveHeilkraeuter(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    const currHand = [...this.currentHand()];
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+
+    if (targetPlayerId === playerId) {
+      this.reclaimCardsFromDeliveryStack(gameId, playerId, 4, reportWriteFailure);
+    } else {
+      this.reclaimCardsFromDeliveryStackForTarget(gameId, targetPlayerId, 4, reportWriteFailure);
+    }
+  }
+
+  /** Barbar/Gladiator "Wut": zwei gewählte Spieler (auch du selbst als einer von beiden) ziehen
+   * je 3 Karten von ihrem eigenen Nachziehstapel (Anleitung S. 9). */
+  resolveWut(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerIdOne: string,
+    targetPlayerIdTwo: string,
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    const currHand = [...this.currentHand()];
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+
+    this.drawThreeCardsForChosenPlayer(gameId, playerId, targetPlayerIdOne, reportWriteFailure);
+    this.drawThreeCardsForChosenPlayer(gameId, playerId, targetPlayerIdTwo, reportWriteFailure);
+  }
+
+  private drawThreeCardsForChosenPlayer(
+    gameId: string,
+    actingPlayerId: string,
+    targetPlayerId: string,
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    if (targetPlayerId === actingPlayerId) {
+      this.drawCardsIgnoringHandsize(gameId, actingPlayerId, 3, reportWriteFailure);
+    } else {
+      this.drawCardsForTarget(gameId, targetPlayerId, 3, reportWriteFailure);
+    }
+  }
+
+  /** Paladin/Walküre "Heilung" (Karte `heile`): ein gewählter Spieler legt seinen kompletten
+   * Ablagestapel verdeckt zurück auf seinen Nachziehstapel (Anleitung S. 9) - kann einen
+   * Spieler ohne Hand- und Nachziehstapelkarten retten. */
+  async resolveHeilung(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    const currHand = [...this.currentHand()];
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+
+    if (targetPlayerId === playerId) {
+      const cardStack = shuffle([...this.currentCardStack(), ...this.currentDeliveryStack()]);
+      this.store.dispatch(new UpdateCardStackAction(cardStack));
+      this.store.dispatch(new UpdateDeliveryStack([]));
+      reportWriteFailure(this.playerRepo.updateCardstack(gameId, playerId, cardStack));
+      reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, playerId, []));
+      return;
+    }
+
+    const data = await this.playerRepo.getPlayer(gameId, targetPlayerId);
+    const targetCardStack = shuffle([...(data?.['cardstack'] ?? []), ...(data?.['deliveryStack'] ?? [])]);
+    reportWriteFailure(this.playerRepo.updateCardstack(gameId, targetPlayerId, targetCardStack));
+    reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, targetPlayerId, []));
   }
 
   private checkHandsize(

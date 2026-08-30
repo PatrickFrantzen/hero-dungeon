@@ -14,6 +14,7 @@ import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryS
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
+import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { LobbySelectors } from 'src/app/selectors/lobby-selector';
 import { CardPlayService } from 'src/app/services/card-play.service';
 import { FirestoreOperationError } from 'src/app/services/firestore-repository.service';
@@ -48,6 +49,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
 
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
+  heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
+
+  /** Aktionskarten, die vor der Auflösung einen Zielspieler brauchen (Anleitung S. 9) - werden
+   * in chooseCard() abgefangen statt an CardPlayService.chooseCard() weitergereicht, das diese
+   * Kartennamen nicht kennt. "Wut" braucht zwei Zielspieler, siehe openWutDialog(). */
+  private readonly singleTargetActionCards = new Set(['spende', 'stehlen', 'heilkräuter', 'heile']);
 
   loadError = signal<string | null>(null);
 
@@ -157,9 +164,80 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   chooseCard(card: string) {
+    if (!this.heropowerActivated()) {
+      if (this.singleTargetActionCards.has(card)) {
+        this.openTargetPlayerDialog(card);
+        return;
+      }
+      if (card === 'wut') {
+        this.openWutDialog();
+        return;
+      }
+    }
+
     this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
       this.reportWriteFailure(write)
     );
+  }
+
+  /** Öffnet den Zielspieler-Dialog für Spende/Stehlen/Heilkräuter/Heilung (je ein Zielspieler)
+   * und ruft danach die passende CardPlayService-Methode mit dem gewählten Spieler auf. */
+  private openTargetPlayerDialog(card: string) {
+    const dialogRef = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
+      DialogHeropowerComponent,
+      { data: this.currentPlayers() }
+    );
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) return;
+      const targetPlayerId = result.data.playerId;
+      const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
+
+      switch (card) {
+        case 'spende':
+          this.cardPlayService.resolveSpende(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          break;
+        case 'stehlen':
+          this.cardPlayService.resolveStehlen(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          break;
+        case 'heilkräuter':
+          this.cardPlayService.resolveHeilkraeuter(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          break;
+        case 'heile':
+          this.cardPlayService.resolveHeilung(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          break;
+      }
+    });
+  }
+
+  /** Öffnet den Zielspieler-Dialog zweimal nacheinander für "Wut" (zwei Zielspieler, du selbst
+   * darfst einer davon sein). */
+  private openWutDialog() {
+    const dialogRefOne = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
+      DialogHeropowerComponent,
+      { data: this.currentPlayers() }
+    );
+
+    dialogRefOne.afterClosed().subscribe((resultOne) => {
+      if (!resultOne) return;
+
+      const dialogRefTwo = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
+        DialogHeropowerComponent,
+        { data: this.currentPlayers() }
+      );
+
+      dialogRefTwo.afterClosed().subscribe((resultTwo) => {
+        if (!resultTwo) return;
+        this.cardPlayService.resolveWut(
+          this.currentGameId(),
+          this.currentPlayerId(),
+          'wut',
+          resultOne.data.playerId,
+          resultTwo.data.playerId,
+          (write) => this.reportWriteFailure(write)
+        );
+      });
+    });
   }
 
   restCard(card: string) {
