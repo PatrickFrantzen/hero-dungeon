@@ -4,8 +4,8 @@ import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { SetGameTimerPauseState, StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
-import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
+import { ResetGameTimer, SetGameTimerPauseState, StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
@@ -14,7 +14,7 @@ import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
-import { Mob } from 'src/models/monster/monster.class';
+import { Mob, Monster } from 'src/models/monster/monster.class';
 import { shuffle } from 'src/models/shuffle.util';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 import { startHandSize } from 'src/models/start-hand-size.util';
@@ -43,6 +43,8 @@ export class CardPlayService {
   private currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   private currentMob = this.store.selectSignal(EncounterSelectors.currentMob);
   private currentBoss = this.store.selectSignal(EncounterSelectors.currentBoss);
+  private currentAllBosses = this.store.selectSignal(EncounterSelectors.currentAllBosses);
+  private currentDifficulty = this.store.selectSignal(CurrentGameSelectors.currentDifficulty);
   private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
   private timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
   private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
@@ -556,15 +558,44 @@ export class CardPlayService {
   checkForNextEnemy(gameId: string, currentEnemy: Mob, reportWriteFailure: ReportWriteFailure): void {
     if (Array.isArray(currentEnemy.token) && !currentEnemy.token.length) {
       if (currentEnemy.type === 'Boss') {
-        reportWriteFailure(this.gameRepo.updateGameStatus(gameId, 'won'));
-        this.store.dispatch(new UpdateGameStatus('won'));
+        this.prepareNextDungeon(gameId, reportWriteFailure);
       } else if (this.currentMob().length > 0) {
         this.getNextEnemy(gameId, reportWriteFailure);
       } else {
         this.getNextBoss(gameId, reportWriteFailure);
       }
-      // this.loadNextDungeon(); // noch nicht geschrieben - Dungeon-Wechsel nach dem letzten Boss
     }
+  }
+
+  /** Nach besiegtem Boss (Anleitung S. 6): solange `allBosses` (Warteschlange der noch
+   * ausstehenden Bosse #2-#5) nicht leer ist, wird der nächste Dungeon vorbereitet -
+   * neuer Boss, neuer Dungeon-Kartenstapel passend zur Spielerzahl/Schwierigkeit, Timer
+   * zurückgesetzt (läuft erst mit der nächsten wirksam gespielten Karte wieder los, siehe
+   * ensureGameTimerStarted()). Erst nach Boss #5 (Dungeon-Overlord) ist das Spiel gewonnen. */
+  private prepareNextDungeon(gameId: string, reportWriteFailure: ReportWriteFailure): void {
+    const remainingBosses = [...this.currentAllBosses()];
+    const nextBoss = remainingBosses.shift();
+
+    if (!nextBoss) {
+      reportWriteFailure(this.gameRepo.updateGameStatus(gameId, 'won'));
+      this.store.dispatch(new UpdateGameStatus('won'));
+      return;
+    }
+
+    const newMob = new Monster().createMob(this.currentNumberOfPlayers(), nextBoss.name, this.currentDifficulty());
+    const newCurrentEnemy = newMob.shift()!;
+
+    this.store.dispatch(new SetCurrentBoss(nextBoss));
+    this.store.dispatch(new SetRemainingBosses(remainingBosses));
+    this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
+    this.store.dispatch(new UpdateMobAction(newMob));
+    this.store.dispatch(new ResetGameTimer());
+
+    reportWriteFailure(this.gameRepo.updateCurrentBoss(gameId, nextBoss));
+    reportWriteFailure(this.gameRepo.updateRemainingBosses(gameId, remainingBosses));
+    reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, newCurrentEnemy));
+    reportWriteFailure(this.gameRepo.updateNewMob(gameId, newMob));
+    reportWriteFailure(this.gameRepo.resetTimer(gameId));
   }
 
   private playAsOneCard(gameId: string, card: string, currEne: string[], reportWriteFailure: ReportWriteFailure): void {

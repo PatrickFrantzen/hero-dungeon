@@ -20,13 +20,23 @@ einem State. Davon sind bereits herausgelöst:
 
 - **`lobby-state.ts`** (`LobbyState`) — `choosenHeros` (welche Spieler mit welchem Helden).
 - **`encounter-state.ts`** (`EncounterState`) — `currentEnemy`/`currentBoss`/`currentMob`/
-  `allBosses`.
+  `allBosses`. `allBosses` ist seit der Boss-Kampagne (TODO 4,
+  `docs/planned/five-minute-dungeon-rules-plan.md`) die Warteschlange der nach dem aktuellen
+  Boss noch ausstehenden Bosse (analog zu `Mob` als Warteschlange der Dungeon-Karten) — **nicht**
+  mehr die vollständige 5-Boss-Liste. `SetCurrentBoss`/`SetRemainingBosses`-Actions werden von
+  `CardPlayService.prepareNextDungeon()` dispatcht, sobald ein Boss besiegt ist; `PlayerHandComponent.updateFromDatabase()`
+  synct beide Felder bei jedem Firestore-Snapshot, damit der Boss-Wechsel bei allen Mitspielern
+  ankommt.
 - **`currentGame-state.ts`** (`CurrentGameState`) — der Rest: `{ items, numberOfPlayers,
-  gameId, difficulty, isLost, questCardActivated, timerStartedAt, timerDurationSeconds }`.
-  Die beiden Timer-Felder gehören zum Dungeon-Countdown-Timer — Details zum kompletten Feature
-  (Start-Trigger, Anzeige, Firestore-Sync) in `src/app/components/game/CLAUDE.md`, hier nur der
-  State-Teil: `StartGameTimer`-Action, Reducer-Guard `timerStartedAt !== null` (setzt den Timer
-  nur einmal, ein späterer Dispatch überschreibt einen bereits laufenden Timer nicht).
+  gameId, difficulty, isLost, questCardActivated, timerStartedAt, timerDurationSeconds,
+  timerPausedAt, timerPausedSecondsTotal }`. Die Timer-Felder gehören zum Dungeon-Countdown-Timer
+  — Details zum kompletten Feature (Start-Trigger, Pause, Anzeige, Firestore-Sync) in
+  `src/app/components/game/CLAUDE.md`, hier nur der State-Teil: `StartGameTimer`-Action,
+  Reducer-Guard `timerStartedAt !== null` (setzt den Timer nur einmal, ein späterer Dispatch
+  überschreibt einen bereits laufenden Timer nicht); `SetGameTimerPauseState` setzt die
+  Pause-Felder dagegen bedingungslos; `ResetGameTimer` setzt bei einem Boss-Wechsel alle drei
+  Timer-Felder bedingungslos zurück auf "noch nicht gestartet" (umgeht bewusst den
+  `StartGameTimer`-Guard, da der Timer für den nächsten Dungeon wieder von vorn losläuft).
 
 Weitere States: `cardStack-state.ts`/`cardsInHand-state.ts`/`deliveryStack-state.ts` (die drei
 Kartenstapel: Nachziehstapel, Hand, Ablage), `currentUser-state.ts` (eingeloggter Nutzer),

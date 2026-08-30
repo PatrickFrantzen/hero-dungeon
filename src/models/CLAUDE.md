@@ -23,7 +23,17 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
 ## monster/
 
 - **`monster.class.ts`** (`Monster`) — Auswahl-/Schwierigkeitslogik (welcher Gegner als
-  nächstes kommt, ~130 Zeilen).
+  nächstes kommt, ~130 Zeilen). `loadMonster()`/`loadQuests()`/`loadSoloQuests()` deckeln die
+  angeforderte Kartenzahl per `Math.min()` auf die tatsächlich verfügbare Anzahl in der
+  jeweiligen Collection — ohne den Schutz pusht die Ziehschleife `undefined`-Einträge, sobald
+  mehr Karten angefordert werden als vorhanden sind (aktuell der Fall bei `questCollection`: nur
+  4 von 10 Kartentypen sind aktiv, Mini-Bosse auskommentiert, siehe
+  `docs/planned/five-minute-dungeon-rules-plan.md` TODO 9 — `questTwo`/`-Drei`/`-Vier`/`-Fünf`
+  in `createMob()` sind mit 4/6/8/10 auf die volle spätere Kartenzahl ausgelegt). Ein
+  `undefined`-Mob-Eintrag führt beim `.shift()` in `GameFactoryService.buildNewGame()`/
+  `CardPlayService.prepareNextDungeon()` zu einem TypeError, sobald er zufällig zuerst gezogen
+  wird — `monster.class.spec.ts` hat einen Regressionstest über alle Boss-/Schwierigkeits-/
+  Spielerzahl-Kombinationen dafür.
 - **`monster-collection.data.ts`** — die eigentlichen Monster-Datenliterale, bewusst aus der
   Klasse ausgelagert (gleiches Prinzip wie `hero-definitions.ts`: Daten getrennt von Logik).
 
@@ -33,7 +43,10 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   (Felder decken sich mit dem, was die States unter `src/app/states/` verwalten — bei einer
   Feld-Änderung hier auch `firestore.rules`/`firestore.rules.test.js` und den betroffenen State
   mitziehen). Enthält u.a. `timerStartedAt`/`timerDurationSeconds` für den Dungeon-Timer —
-  Gesamt-Feature in `src/app/components/game/CLAUDE.md` beschrieben.
+  Gesamt-Feature in `src/app/components/game/CLAUDE.md` beschrieben. `allBosses` ist die
+  Warteschlange der nach dem aktuellen Boss noch ausstehenden Bosse (nicht die volle 5-Boss-Liste
+  — siehe `EncounterState` in `src/app/states/CLAUDE.md` und `CardPlayService.prepareNextDungeon()`
+  in `src/app/services/CLAUDE.md`).
 - **`user.class.ts`** — Nutzer-Datenstruktur (`CurrentUserService`/`CurrentUserState`).
 - **`shuffle.util.ts`** — reine Shuffle-Funktion, von `Hero.buildCardstack()` genutzt.
 

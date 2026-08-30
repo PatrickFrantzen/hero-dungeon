@@ -102,7 +102,8 @@ export class Monster {
 
   loadMonster(numberOfMonsterCards: number) {
     let monsterCollectionCopy = [...this.monsterCollection];
-    for (let i = 0; i < numberOfMonsterCards; i++) {
+    const count = Math.min(numberOfMonsterCards, monsterCollectionCopy.length);
+    for (let i = 0; i < count; i++) {
       const randomIndex = Math.floor(
         Math.random() * monsterCollectionCopy.length
       );
@@ -111,9 +112,18 @@ export class Monster {
     }
   }
 
+  /** Math.min() schützt davor, mehr Karten zu ziehen als in `questCollection` verfügbar sind -
+   * ohne den Schutz pusht die Schleife `undefined` ins Mob-Array, sobald `questCollectionCopy`
+   * durch vorherige splice()-Aufrufe leer ist (Math.random() * 0 = 0, splice(0,1) auf leerem
+   * Array liefert []). Das tritt konkret ab 3 Spielern auf, weil questTwo/-Drei/-Vier/-Fünf
+   * (4/6/8/10) den aktuell nur 4 aktiven Event-Kartentypen entwachsen sind (Mini-Bosse sind
+   * auskommentiert, siehe docs/planned/five-minute-dungeon-rules-plan.md TODO 9) - ein
+   * `undefined`-Eintrag im Mob-Array führt beim späteren `.shift()` zu einem TypeError, sobald
+   * er zufällig an erster Stelle landet. */
   loadQuests(numberOfQuestCards: number) {
     let questCollectionCopy = [...this.questCollection];
-    for (let i = 0; i < numberOfQuestCards; i++) {
+    const count = Math.min(numberOfQuestCards, questCollectionCopy.length);
+    for (let i = 0; i < count; i++) {
       const randomIndex = Math.floor(
         Math.random() * questCollectionCopy.length
       );
@@ -124,7 +134,8 @@ export class Monster {
 
   loadSoloQuests(numberOfQuestCards: number) {
     let questCollectionCopy = this.questCollection.filter((quest) => quest.name !== 'Chaos');
-    for (let i = 0; i < numberOfQuestCards; i++) {
+    const count = Math.min(numberOfQuestCards, questCollectionCopy.length);
+    for (let i = 0; i < count; i++) {
       const randomIndex = Math.floor(
         Math.random() * questCollectionCopy.length
       );

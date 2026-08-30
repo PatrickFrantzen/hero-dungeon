@@ -48,6 +48,16 @@ bei Ablauf verliert. Beim Anfassen dieses Features müssen mehrere Stellen konsi
     unabhängig von der sonst geltenden Handgrößen-Obergrenze (Anleitung S. 6, Anmerkung Punkt 4).
   - `GameRepositoryService.updateTimerPauseState()` — einziger Firestore-Write für beide
     Pause-Felder gemeinsam.
+- **Timer-Reset (Boss-Kampagne)** — `ResetGameTimer`-Action (`currentGame-action.ts`) setzt
+  bedingungslos alle drei Timer-Felder zurück (`timerStartedAt`/`timerPausedAt: null`,
+  `timerPausedSecondsTotal: 0`), umgeht also bewusst den `StartGameTimer`-Guard. Ausgelöst von
+  `CardPlayService.prepareNextDungeon()` (Anleitung S. 6: "Setzt den Timer wieder auf 5
+  Minuten"), sobald ein Boss besiegt ist und die Kampagne mit dem nächsten Boss weitergeht —
+  Details zur Kampagne in `src/app/services/CLAUDE.md`. `GameRepositoryService.resetTimer()` ist
+  der zugehörige Firestore-Write. `PlayerHandComponent.updateFromDatabase()` dispatcht
+  `ResetGameTimer` auch dann, wenn `data['timerStartedAt']` beim Sync `null` statt einer Zahl
+  ist — sonst würde ein bereits gestarteter lokaler Timer bei anderen Clients nach einem
+  Boss-Wechsel nicht zurückgesetzt.
 - **`src/app/services/to-json.service.ts`** — serialisiert alle vier Timer-Felder mit, wenn ein
   `Game`-Objekt nach Firestore geschrieben wird.
 - **`src/app/components/player-hand/player-hand.component.ts`** (`updateFromDatabase()`) —

@@ -3,6 +3,7 @@ import { Action, State, StateContext } from '@ngxs/store';
 import {
   CurrentGameAction,
   CurrentGameData,
+  ResetGameTimer,
   SetGameTimerPauseState,
   StartGameTimer,
   UpdateGameStatus,
@@ -98,6 +99,15 @@ export class CurrentGameState {
     ctx.patchState({
       timerPausedAt: action.timerPausedAt,
       timerPausedSecondsTotal: action.timerPausedSecondsTotal,
+    });
+  }
+
+  @Action(ResetGameTimer)
+  resetGameTimer(ctx: StateContext<CurrentGameModel>) {
+    ctx.patchState({
+      timerStartedAt: null,
+      timerPausedAt: null,
+      timerPausedSecondsTotal: 0,
     });
   }
 }

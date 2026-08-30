@@ -17,4 +17,9 @@ export class EncounterSelectors {
   static currentBoss(state: EncounterModel): Mob {
     return state.currentBoss;
   }
+
+  @Selector([EncounterState])
+  static currentAllBosses(state: EncounterModel): Mob[] {
+    return state.allBosses;
+  }
 }

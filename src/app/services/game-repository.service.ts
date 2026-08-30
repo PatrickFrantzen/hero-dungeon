@@ -49,4 +49,20 @@ export class GameRepositoryService {
   updateTimerPauseState(gameId: string, timerPausedAt: number | null, timerPausedSecondsTotal: number): Promise<void> {
     return this.repo.updateFields(['games', gameId], { timerPausedAt, timerPausedSecondsTotal });
   }
+
+  resetTimer(gameId: string): Promise<void> {
+    return this.repo.updateFields(['games', gameId], {
+      timerStartedAt: null,
+      timerPausedAt: null,
+      timerPausedSecondsTotal: 0,
+    });
+  }
+
+  updateCurrentBoss(gameId: string, currentBoss: Mob): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { currentBoss });
+  }
+
+  updateRemainingBosses(gameId: string, allBosses: Mob[]): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { allBosses });
+  }
 }

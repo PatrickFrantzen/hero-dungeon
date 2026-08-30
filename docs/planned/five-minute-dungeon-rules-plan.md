@@ -30,6 +30,28 @@ Singleplayer-Modus ohnehin schon eine Erweiterung ist und mit nur 40 Karten schn
 (Jägerin+gelb, Magier+lila), wurde eine feste Rotation über alle 5 Farben ergänzt
 (rot→grün→gelb→blau→lila→rot), die diese beiden Empfehlungen enthält.
 
+TODO 4 umgesetzt: `allBosses` (`EncounterState`/`Game`-Dokument) ist jetzt die Warteschlange der
+nach dem aktuellen Boss noch ausstehenden Bosse (analog zu `Mob` für Dungeon-Karten), nicht mehr
+die volle unbenutzte 5-Boss-Liste. `CardPlayService.prepareNextDungeon()` (aufgerufen aus
+`checkForNextEnemy()`, sobald der aktuelle Boss besiegt ist) zieht den nächsten Boss aus dieser
+Warteschlange, baut per `new Monster().createMob(...)` einen neuen Dungeon-Kartenstapel passend
+zu Spielerzahl/Schwierigkeit und setzt den Timer per neuer `ResetGameTimer`-Action zurück; erst
+wenn die Warteschlange nach Boss #5 (Dungeon-Overlord) leer ist, wird `gameStatus: 'won'`
+gesetzt. `PlayerHandComponent.updateFromDatabase()` synct `currentBoss`/`allBosses` sowie einen
+zurückgesetzten Timer bei jedem Firestore-Snapshot, damit der Boss-Wechsel bei allen Mitspielern
+ankommt (vorher wurden beide Felder nach der initialen Spielerstellung nie wieder synchronisiert).
+
+**Nebenbei gefundener und behobener Bug** (aufgefallen als scheinbar flakiger Test beim
+Implementieren von TODO 4, tatsächlich aber reproduzierbar): `Monster.loadQuests()`/
+`loadSoloQuests()` forderten ab 3 Spielern mehr Quest-Karten an, als die aktuell nur 4 aktiven
+Kartentypen hergeben (Mini-Bosse sind auskommentiert, siehe TODO 9), und pushten dabei
+`undefined`-Einträge ins Mob-Array — führte bei zufälliger Zieh-Reihenfolge zu einem TypeError
+beim `.shift()` in `GameFactoryService.buildNewGame()`/`prepareNextDungeon()`, also praktisch zu
+gelegentlichen Abstürzen bei jeder Spielerstellung mit 3+ Spielern. Mit `Math.min()` auf die
+verfügbare Kartenanzahl gedeckelt, Regressionstest in `monster.class.spec.ts` über alle
+Boss-/Schwierigkeits-/Spielerzahl-Kombinationen ergänzt. Der Bug verschwindet vollständig, sobald
+TODO 9 die restlichen Quest-Kartentypen reaktiviert.
+
 Wichtiger Hinweis vorab: Der im Repo bereits existierende **Singleplayer-Modus**
 (`docs/planned/singleplayer-mode-plan.md`) ist eine bewusste Erweiterung des Originalspiels, das
 laut Anleitung offiziell **keinen** Einzelspieler-Modus vorsieht. Dieser Plan behandelt ihn daher
@@ -182,7 +204,7 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
     (Fähigkeit hängt am gewählten Helden, nicht am Kartendeck).
   - Verifikation: `ng build`, `ng test`; manueller 2-Spieler-Test, Deckgröße 80 prüfen.
 
-- [ ] **TODO 4 — Kampagne über alle 5 Bosse**
+- [x] **TODO 4 — Kampagne über alle 5 Bosse**
   - `GameFactoryService.buildNewGame()` (`game-factory.service.ts:14,26-30`) so ändern, dass der
     erste Boss weiterhin `'Baby-Barbar'` ist, aber `EncounterState`/`Game` eine
     „aktueller Boss-Index"-Information hält (kann `allBosses` + Index sein, statt reinem
