@@ -4,6 +4,40 @@ Meist standalone + signal-basiert (`input()`/`input.required()`, `output()`, `co
 `effect()`) mit `ChangeDetectionStrategy.OnPush`. Details zum Migrationsstand siehe unten und
 Root-`CLAUDE.md`.
 
+## Styling: Angular Material + Tailwind CSS
+
+Neben Angular Material (Komponenten: `mat-card`, `mat-form-field`, `mat-*-button`, …) steht seit
+2026-08-30 **Tailwind CSS v3** als Utility-Layer für Layout/Spacing/Responsive-Anpassungen zur
+Verfügung (`tailwind.config.js`, `.postcssrc.json`, `@tailwind base/components/utilities` in
+`src/styles.scss`). Kein zweites Komponenten-Framework (Bootstrap/DaisyUI) — das würde gegen
+Materials eigene Optik laufen.
+
+- Alle Tailwind-Klassen sind mit `tw-` geprefixt (`tailwind.config.js` → `prefix: 'tw-'`), um
+  Kollisionen mit Material-/CDK-Klassennamen auszuschließen.
+- `preflight` ist deaktiviert (`corePlugins.preflight: false`), damit Tailwinds CSS-Reset nicht
+  gegen Materials eigene Basis-Styles läuft.
+- Tailwind eignet sich für Screens **ohne** Material-Komponenten (reines HTML/CSS wie bisher
+  `startscreen/`) — dort Utility-Klassen statt komponenteneigenem SCSS verwenden. Bei
+  Komponenten, die bereits `mat-*`-Elemente nutzen (`signin/`, `signup/`, Dialoge), Material
+  weiter für Struktur/Formulare nutzen; Tailwind higher dort nur ergänzend für Layout/Spacing,
+  nicht um Material-Komponenten zu ersetzen.
+- Referenzumbau: `startscreen/` (`startscreen.component.html`) — komplett auf `tw-`-Utilities
+  umgestellt, `startscreen.component.scss` ist jetzt leer.
+- Weitere durchgeführte Umstellungen (2026-08-30):
+  - `dialog-choose-hero/`, `dialog-game-settings/`, `dialog-heropower/`: identisches
+    `.dialog`/`.settings`-SCSS-Boilerplate (dreifach dupliziert) durch `tw-`-Klassen direkt im
+    Template ersetzt, `.scss`-Dateien sind jetzt leer. Bestätigungs-Buttons einheitlich auf
+    `mat-flat-button color="primary"` (statt `mat-button`) für klareren Call-to-Action.
+  - `heropower/heropower.component.html`: Inline-`style="..."`-Attribute (Flex-Layout,
+    `color: white`) durch `tw-flex tw-flex-col tw-items-center`/`tw-text-white` ersetzt.
+  - `player-hand/player-hand.component.html`: bis dahin komplett unstyled Buttons
+    (`solo-event-button`, `rest-button`) mit `tw-`-Klassen gestylt (Farben/Radius/Hover
+    passend zu den Akzentfarben aus `startscreen/`: Grün für primäre Aktion, Lila für
+    sekundäre). Positionierung (`position: absolute`, `z-index`) bleibt in
+    `player-hand.component.scss`, da Layout-Konzern.
+  - `enemy/`, `game/` bereits konsistent (Material-Card bzw. eigenes, bereits responsives SCSS
+    mit `clamp()`) — unverändert gelassen.
+
 ## Smart/Dumb-Container-Muster
 
 `enemy/` und `heropower/` haben je ein Container/Presenter-Paar: der `*-container/`-

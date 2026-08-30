@@ -1,16 +1,36 @@
-<div class="mainfield">
-    <h1>Willkommen {{ currentUserName() }}</h1>
-    <div class="start-label-box">
-        
-            <button (click)="newSingleplayerGame()">Singleplayer starten</button>
-            <button (click)="newGame()">Neues Multiplayer-Spiel</button>
-            <input type="text" [(ngModel)]="joinGameId" placeholder="Name eines existierenden Spiels eingeben">
-            <button (click)="joinGame()">Join Game</button>
-            <button (click)="logout()">Logout</button>
+<div class="tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-items-center tw-justify-center tw-bg-cover tw-bg-center tw-bg-no-repeat tw-box-border tw-p-4" style="background-image: url('/assets/img/backgroundimage/background.jpg')">
+    <h1 class="tw-mb-4 tw-text-center tw-text-3xl tw-font-semibold tw-text-white tw-drop-shadow">Willkommen {{ currentUserName() }}</h1>
+
+    <div class="tw-flex tw-w-full tw-max-w-xs tw-flex-col tw-gap-3 tw-rounded-lg tw-bg-black/40 tw-p-6 tw-backdrop-blur-sm">
+        <button
+            (click)="newSingleplayerGame()"
+            class="tw-rounded tw-bg-purple-700 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-purple-600"
+        >Singleplayer starten</button>
+
+        <button
+            (click)="newGame()"
+            class="tw-rounded tw-bg-purple-700 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-purple-600"
+        >Neues Multiplayer-Spiel</button>
+
+        <input
+            type="text"
+            [(ngModel)]="joinGameId"
+            placeholder="Name eines existierenden Spiels eingeben"
+            class="tw-rounded tw-border tw-border-white/30 tw-bg-white/90 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-900 placeholder:tw-text-gray-500 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-green-500"
+        >
+
+        <button
+            (click)="joinGame()"
+            class="tw-rounded tw-bg-green-600 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-green-500"
+        >Join Game</button>
+
+        <button
+            (click)="logout()"
+            class="tw-rounded tw-border tw-border-white/40 tw-bg-transparent tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-white/10"
+        >Logout</button>
 
         @if (startscreenError) {
-            <p class="error-message">{{ startscreenError }}</p>
+            <p class="tw-mt-1 tw-text-center tw-text-sm tw-text-red-300">{{ startscreenError }}</p>
         }
-
     </div>
 </div>
