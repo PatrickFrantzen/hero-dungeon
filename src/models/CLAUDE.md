@@ -40,7 +40,7 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   Klasse ausgelagert (gleiches Prinzip wie `hero-definitions.ts`: Daten getrennt von Logik).
   `questCollection` enthält alle 5 Mini-Bosse (`type: 'Mini-Boss'`) und 4 Ereigniskarten; nur
   "Hinterhalt" bleibt auskommentiert, weil sein Zwei-Karten-Reveal-Mechanismus
-  (`docs/planned/five-minute-dungeon-rules-plan.md` TODO 9) nicht umgesetzt ist — der
+  (`docs/done/five-minute-dungeon-rules-plan.md` TODO 9) nicht umgesetzt ist — der
   Encounter-Loop kennt nur einen `currentEnemy` nach dem anderen. Mini-Bosse brauchen keinen
   Sonderschutz vor Heldenfähigkeiten in `heropower.component.ts`: deren `heroPower*()`-Methoden
   aktivieren die "Array"-Heropower (die den Gegner direkt besiegt) ohnehin nur bei

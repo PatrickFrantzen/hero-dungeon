@@ -34,7 +34,7 @@ export const questCollection: Mob[] = [
   // "Hinterhalt" (deckt 2 Dungeon-Karten gleichzeitig auf, beide müssen besiegt werden, bevor es
   // weitergeht) bleibt auskommentiert - der Encounter-Loop kennt nur einen currentEnemy nach dem
   // anderen, dieser Zwei-Karten-Mechanismus ist nicht umgesetzt (siehe
-  // docs/planned/five-minute-dungeon-rules-plan.md TODO 9).
+  // docs/done/five-minute-dungeon-rules-plan.md TODO 9).
   // {
   //     "name": "Hinterhalt",
   //     "type": "Deckt 2 Karten aus dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht.",
