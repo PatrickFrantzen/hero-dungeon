@@ -50,7 +50,9 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
 - **State Management: NGXS** (`@ngxs/store`, `@ngxs/storage-plugin`) — schließt Signals nicht
   aus (`selectSignal()` ist NGXS' eigene Signal-Schnittstelle). Details: `src/app/states/CLAUDE.md`.
 - **UI**: Angular Material 21 (`@angular/material`, `@angular/cdk`), Theme `purple-green.css`
-  (prebuilt, nicht customized), SCSS pro Komponente.
+  (prebuilt, nicht customized), SCSS pro Komponente. Seit 2026-08-30 zusätzlich **Tailwind CSS
+  v3** als Utility-Layer (geprefixt `tw-`, `preflight` deaktiviert) für Screens ohne
+  Material-Komponenten — Details/Migrationsstand: `src/app/components/CLAUDE.md`.
 - **Backend**: Firebase über `@angular/fire` v20 — Firestore und Auth
   (`@angular/fire/auth-guard`, `redirectLoggedInTo`/`redirectUnauthorizedTo` in
   `app.routes.ts`). Firebase-Config liegt in `src/environments/environment*.ts` (Web-API-Key ist

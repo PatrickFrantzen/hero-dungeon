@@ -4,6 +4,26 @@ Meist standalone + signal-basiert (`input()`/`input.required()`, `output()`, `co
 `effect()`) mit `ChangeDetectionStrategy.OnPush`. Details zum Migrationsstand siehe unten und
 Root-`CLAUDE.md`.
 
+## Styling: Angular Material + Tailwind CSS
+
+Neben Angular Material (Komponenten: `mat-card`, `mat-form-field`, `mat-*-button`, …) steht seit
+2026-08-30 **Tailwind CSS v3** als Utility-Layer für Layout/Spacing/Responsive-Anpassungen zur
+Verfügung (`tailwind.config.js`, `.postcssrc.json`, `@tailwind base/components/utilities` in
+`src/styles.scss`). Kein zweites Komponenten-Framework (Bootstrap/DaisyUI) — das würde gegen
+Materials eigene Optik laufen.
+
+- Alle Tailwind-Klassen sind mit `tw-` geprefixt (`tailwind.config.js` → `prefix: 'tw-'`), um
+  Kollisionen mit Material-/CDK-Klassennamen auszuschließen.
+- `preflight` ist deaktiviert (`corePlugins.preflight: false`), damit Tailwinds CSS-Reset nicht
+  gegen Materials eigene Basis-Styles läuft.
+- Tailwind eignet sich für Screens **ohne** Material-Komponenten (reines HTML/CSS wie bisher
+  `startscreen/`) — dort Utility-Klassen statt komponenteneigenem SCSS verwenden. Bei
+  Komponenten, die bereits `mat-*`-Elemente nutzen (`signin/`, `signup/`, Dialoge), Material
+  weiter für Struktur/Formulare nutzen; Tailwind higher dort nur ergänzend für Layout/Spacing,
+  nicht um Material-Komponenten zu ersetzen.
+- Referenzumbau: `startscreen/` (`startscreen.component.html`) — komplett auf `tw-`-Utilities
+  umgestellt, `startscreen.component.scss` ist jetzt leer.
+
 ## Smart/Dumb-Container-Muster
 
 `enemy/` und `heropower/` haben je ein Container/Presenter-Paar: der `*-container/`-
