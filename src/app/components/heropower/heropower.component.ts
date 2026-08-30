@@ -62,7 +62,9 @@ export class HeropowerComponent {
   }
 
   heroPowerMagier() {
-
+    if (!this.heropowerActivated()) {
+      this.activateHeroPower();
+    } else this.deactivateHeroPower();
   }
 
   heroPowerJaegerin() {

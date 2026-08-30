@@ -24,3 +24,12 @@ export class StartGameTimer {
     static readonly type = "[Game page] starting dungeon timer"
     constructor(public timerStartedAt: number){}
 }
+
+/** Setzt Pause-Felder direkt und bedingungslos (statt eines guard-basierten Toggles), weil sie
+ * sowohl vom auslösenden Client (Magier/Göttlicher Schild) als auch von PlayerHandComponents
+ * Firestore-Sync für alle anderen Clients verwendet werden - letztere muss den zuletzt in
+ * Firestore gespeicherten Stand übernehmen können, unabhängig vom lokalen Vorzustand. */
+export class SetGameTimerPauseState {
+    static readonly type = "[Game page] setting dungeon timer pause state"
+    constructor(public timerPausedAt: number | null, public timerPausedSecondsTotal: number){}
+}

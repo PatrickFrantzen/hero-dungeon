@@ -22,7 +22,9 @@ export class ToJSONService {
             allBosses: game.allBosses,
             questCardActivated: game.questCardActivated,
             timerStartedAt: game.timerStartedAt,
-            timerDurationSeconds: game.timerDurationSeconds
+            timerDurationSeconds: game.timerDurationSeconds,
+            timerPausedAt: game.timerPausedAt,
+            timerPausedSecondsTotal: game.timerPausedSecondsTotal
         }
   }
 }

@@ -5,9 +5,13 @@
   eine Heropower auflöst (Heldenname + `heropowerArray.length == 3` + `heropowerActivated()`).
   Löst die Fähigkeit aber nicht selbst auf, außer beim Dieb (`DiebService.heropower(...)` direkt
   aufgerufen) — für die anderen Helden emittiert es `heropowerResolved` (`'array' | 'jaegerin' |
-  'walkuere'`), das **wie** wird von `PlayerHandComponent` behandelt, weil dort die
+  'walkuere' | 'magier'`), das **wie** wird von `PlayerHandComponent` behandelt, weil dort die
   Hand-/Kartenstapel-Signale liegen, die dieser Container nicht hat. Referenz-Beispiel für das
   Signal-Pattern (`input()`/`output()`/`computed()`/`effect()`) im gesamten Projekt.
+  Magier "Zeit einfrieren" (`case 'Magier':` → `heropowerResolved.emit('magier')` →
+  `HeropowerService.resolveMagierHeropower()`) pausiert zusätzlich den Dungeon-Timer — Details
+  zum Gesamt-Feature (inkl. Walküre/Paladin "Göttlicher Schild") in
+  `src/app/components/game/CLAUDE.md`.
 - **`heropower.component.ts`** (+ `.html`/`.scss`) — reine Darstellung.
 
 Neue Heldenfähigkeit hinzufügen: Prüf-Logik (das "ob überhaupt auflösen") gehört primär in

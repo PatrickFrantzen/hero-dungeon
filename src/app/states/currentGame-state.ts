@@ -3,6 +3,7 @@ import { Action, State, StateContext } from '@ngxs/store';
 import {
   CurrentGameAction,
   CurrentGameData,
+  SetGameTimerPauseState,
   StartGameTimer,
   UpdateGameStatus,
   updateQuestCardActivated,
@@ -19,6 +20,8 @@ export interface CurrentGameModel {
   questCardActivated: boolean;
   timerStartedAt: number | null;
   timerDurationSeconds: number;
+  timerPausedAt: number | null;
+  timerPausedSecondsTotal: number;
 }
 
 @State<CurrentGameModel>({
@@ -33,6 +36,8 @@ export interface CurrentGameModel {
     questCardActivated: false,
     timerStartedAt: null,
     timerDurationSeconds: 300,
+    timerPausedAt: null,
+    timerPausedSecondsTotal: 0,
   },
 })
 @Injectable()
@@ -62,6 +67,8 @@ export class CurrentGameState {
       questCardActivated: game.questCardActivated,
       timerStartedAt: game.timerStartedAt ?? null,
       timerDurationSeconds: game.timerDurationSeconds ?? 300,
+      timerPausedAt: game.timerPausedAt ?? null,
+      timerPausedSecondsTotal: game.timerPausedSecondsTotal ?? 0,
     });
   }
 
@@ -84,5 +91,13 @@ export class CurrentGameState {
   startGameTimer(ctx: StateContext<CurrentGameModel>, action: StartGameTimer) {
     if (ctx.getState().timerStartedAt !== null) return;
     ctx.patchState({ timerStartedAt: action.timerStartedAt });
+  }
+
+  @Action(SetGameTimerPauseState)
+  setGameTimerPauseState(ctx: StateContext<CurrentGameModel>, action: SetGameTimerPauseState) {
+    ctx.patchState({
+      timerPausedAt: action.timerPausedAt,
+      timerPausedSecondsTotal: action.timerPausedSecondsTotal,
+    });
   }
 }

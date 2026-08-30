@@ -34,4 +34,14 @@ export class CurrentGameSelectors {
   static currentTimerDurationSeconds(state: CurrentGameModel): number {
     return state.timerDurationSeconds;
   }
+
+  @Selector([CurrentGameState])
+  static currentTimerPausedAt(state: CurrentGameModel): number | null {
+    return state.timerPausedAt;
+  }
+
+  @Selector([CurrentGameState])
+  static currentTimerPausedSecondsTotal(state: CurrentGameModel): number {
+    return state.timerPausedSecondsTotal;
+  }
 }

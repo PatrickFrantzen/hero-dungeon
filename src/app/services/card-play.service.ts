@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
+import { DocumentData, where } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { SetGameTimerPauseState, StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { UpdateHeropowerArray } from 'src/app/actions/heropower-action';
@@ -15,6 +16,7 @@ import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
 import { shuffle } from 'src/models/shuffle.util';
+import { FirestoreRepositoryService } from './firestore-repository.service';
 import { startHandSize } from 'src/models/start-hand-size.util';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
@@ -38,6 +40,8 @@ export class CardPlayService {
   private currentMob = this.store.selectSignal(EncounterSelectors.currentMob);
   private currentBoss = this.store.selectSignal(EncounterSelectors.currentBoss);
   private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
+  private timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
+  private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
   private heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
   private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
   private currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
@@ -45,7 +49,8 @@ export class CardPlayService {
   constructor(
     private store: Store,
     private gameRepo: GameRepositoryService,
-    private playerRepo: PlayerRepositoryService
+    private playerRepo: PlayerRepositoryService,
+    private repo: FirestoreRepositoryService
   ) {}
 
   chooseCard(gameId: string, playerId: string, card: string, reportWriteFailure: ReportWriteFailure): void {
@@ -69,12 +74,18 @@ export class CardPlayService {
     } else {
       this.store.dispatch(new UpdateHeropowerArray([]));
 
+      if (card === 'göttlicherSchild') {
+        this.resolveGoettlicherSchild(gameId, playerId, card, currHand, reportWriteFailure);
+        return;
+      }
+
       if (card.includes('_')) {
         const isEventCard = currMob.token[0].toLocaleLowerCase().includes('event');
         const isMatchingType = currMob.type.toLocaleLowerCase().includes(doubleCard[1]);
 
         if (isEventCard || isMatchingType) {
           this.ensureGameTimerStarted(gameId, reportWriteFailure);
+          this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
           currEne.length = 0;
           this.store.dispatch(new UpdateMonsterTokenArray(currEne));
           reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
@@ -86,6 +97,7 @@ export class CardPlayService {
           (this.currentEnemy().token.includes(doubleCard[0]) || this.currentEnemy().token.includes(doubleCard[1]))
         ) {
           this.ensureGameTimerStarted(gameId, reportWriteFailure);
+          this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
           if (this.currentEnemy().token.includes(doubleCard[0]) && this.currentEnemy().token.includes(doubleCard[1])) {
             this.playAsTwoCards(gameId, doubleCard[0], doubleCard[1], currEne, reportWriteFailure);
           } else if (this.currentEnemy().token.includes(doubleCard[0])) {
@@ -99,6 +111,7 @@ export class CardPlayService {
 
       if (this.currentEnemy().token.includes(card)) {
         this.ensureGameTimerStarted(gameId, reportWriteFailure);
+        this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
         this.playCardfromHandAndUpdateEnemyToken(gameId, playerId, card, reportWriteFailure);
       }
     }
@@ -193,6 +206,75 @@ export class CardPlayService {
     const startedAt = Date.now();
     this.store.dispatch(new StartGameTimer(startedAt));
     reportWriteFailure(this.gameRepo.updateTimerStartedAt(gameId, startedAt));
+  }
+
+  /** "Zeit bleibt eingefroren, bis ein Spieler eine Karte in die Tischmitte spielt" (S. 8) -
+   * an jeder Stelle aufgerufen, an der chooseCard() tatsächlich eine Ressourcen-/Aktionskarte
+   * in die Tischmitte spielt (nicht bei Heropower-Nutzung oder beim Aufdecken der nächsten
+   * Dungeon-Karte, die laut Anleitung die Pause ausdrücklich NICHT beenden). */
+  private resumeGameTimerIfPaused(gameId: string, reportWriteFailure: ReportWriteFailure): void {
+    const pausedAt = this.timerPausedAt();
+    if (pausedAt === null) return;
+    const pausedSecondsTotal = this.timerPausedSecondsTotal() + Math.max(0, (Date.now() - pausedAt) / 1000);
+    this.store.dispatch(new SetGameTimerPauseState(null, pausedSecondsTotal));
+    reportWriteFailure(this.gameRepo.updateTimerPauseState(gameId, null, pausedSecondsTotal));
+  }
+
+  private freezeGameTimer(gameId: string, reportWriteFailure: ReportWriteFailure): void {
+    if (this.timerPausedAt() !== null) return;
+    const pausedAt = Date.now();
+    this.store.dispatch(new SetGameTimerPauseState(pausedAt, this.timerPausedSecondsTotal()));
+    reportWriteFailure(this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal()));
+  }
+
+  /** Walküre/Paladin "Göttlicher Schild": friert die Zeit ein und lässt jeden Spieler 1 Karte
+   * vom eigenen Nachziehstapel ziehen - unabhängig von der sonst geltenden Handgrößen-Obergrenze
+   * (Anleitung S. 6, Anmerkung Punkt 4: aufgeforderte Zuggaben zählen immer). */
+  private resolveGoettlicherSchild(
+    gameId: string,
+    playerId: string,
+    card: string,
+    currHand: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.freezeGameTimer(gameId, reportWriteFailure);
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+    this.drawOneCardIgnoringHandsize(gameId, playerId, reportWriteFailure);
+    this.drawOneCardForOtherPlayers(gameId, playerId, reportWriteFailure);
+  }
+
+  private drawOneCardIgnoringHandsize(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
+    const drawResult = this.drawCards(
+      [...this.currentHand()],
+      [...this.currentCardStack()],
+      [...this.currentDeliveryStack()],
+      1
+    );
+    this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
+  }
+
+  private async drawOneCardForOtherPlayers(
+    gameId: string,
+    playerId: string,
+    reportWriteFailure: ReportWriteFailure
+  ): Promise<void> {
+    const otherPlayers = await this.repo.queryAll<DocumentData>(
+      ['games', gameId, 'player'],
+      [where('gameId', '==', gameId), where('userId', '!=', playerId)]
+    );
+    otherPlayers.forEach((data) => this.drawOneCardForOtherPlayer(gameId, data, reportWriteFailure));
+  }
+
+  private drawOneCardForOtherPlayer(gameId: string, data: DocumentData, reportWriteFailure: ReportWriteFailure): void {
+    const userId = data['userId'];
+    const cardStack: string[] = [...(data['cardstack'] ?? [])];
+    const hand: string[] = [...(data['handstack'] ?? [])];
+    if (cardStack.length === 0) return;
+
+    hand.push(cardStack.shift()!);
+    reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, hand));
+    reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, cardStack));
   }
 
   private checkHandsize(

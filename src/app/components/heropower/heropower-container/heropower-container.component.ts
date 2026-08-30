@@ -44,7 +44,7 @@ export class HeropowerContainerComponent {
   // PlayerHandComponent owns the actual card-/handstack logic for these heropowers (it holds
   // the hand/cardstack signals this container does not have) — this container only detects
   // *when* a heropower resolves and delegates the *how* back up to its parent.
-  readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere'>();
+  readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere' | 'magier'>();
 
   constructor(private store: Store, private diebService: DiebService) {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
@@ -64,6 +64,7 @@ export class HeropowerContainerComponent {
             this.heropowerResolved.emit('array');
             break;
           case 'Magier':
+            this.heropowerResolved.emit('magier');
             break;
           case 'Jägerin':
             this.heropowerResolved.emit('jaegerin');
