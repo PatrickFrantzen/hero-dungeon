@@ -107,6 +107,12 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
 - Heldendatenmodell: `docs/done/hero-data-model-plan.md`
 - Dialog-/Auth-Vereinheitlichung: `docs/done/dialog-auth-unification-plan.md`
 - Singleplayer-Modus: `docs/planned/singleplayer-mode-plan.md`
+- Mehrspieler-Regelkern weicht an mehreren Stellen von der offiziellen "5 Minute
+  Dungeon"-Anleitung ab (Starthand-/Nachziehgröße nicht spielerzahlabhängig, keine
+  2-Spieler-Doppeldeck-Regel, nur Boss #1 statt Kampagne über 5 Bosse, Timer nicht pausierbar,
+  7 von 10 Heldenfähigkeiten fehlen/wirkungslos, Joker-/Bombenkarten unspielbar, Events nur im
+  Singleplayer behandelt, fehlende Verlustbedingungen):
+  `docs/planned/five-minute-dungeon-rules-plan.md`
 - App ist nicht responsive (kein `@media` im Projekt, feste Pixel-Positionierung v.a. in
   `player-hand`/`heropower`): `docs/done/responsive-design-plan.md` — Layout auf
   Flexbox/`clamp()` umgestellt, voller Multiplayer-Smoke-Test mit Firebase-Login steht laut
