@@ -16,6 +16,7 @@ import { GameRepositoryService } from 'src/app/services/game-repository.service'
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { ChooseHeroDialogResult } from 'src/app/components/dialog-results';
 import { UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { startHandSize } from 'src/models/start-hand-size.util';
 
 interface ChoosenPlayer {
   playerName: string;
@@ -171,7 +172,7 @@ export class GameComponent implements OnInit, OnDestroy {
   async drawInitialHand() {
     const data = await this.playerRepo.getPlayer(this.currentGameId(), this.currentUserId());
     const cardStack: string[] = data?.['choosenHero'].cardstack || [];
-    const handstack: string[] = cardStack.splice(0, 5);
+    const handstack: string[] = cardStack.splice(0, startHandSize(this.currentNumberOfPlayers()));
     this.store.dispatch(new CurrentCardsInHand(handstack));
     this.store.dispatch(new UpdateCardStackAction(cardStack));
     await this.playerRepo.updatePlayerCards(this.currentGameId(), this.currentUserId(), cardStack, handstack);
