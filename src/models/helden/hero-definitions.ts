@@ -158,3 +158,24 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     cardCounts: magierZauberinCardCounts,
   },
 ];
+
+/**
+ * Bei 2 Spielern (Anleitung S. 3) sowie im Singleplayer (Erweiterung ohne Vorbild in der
+ * Originalanleitung, siehe docs/planned/five-minute-dungeon-rules-plan.md TODO 3) bekommt jeder
+ * Held ein zusätzliches Kartendeck eingemischt, damit der Nachziehstapel nicht zu früh leer
+ * wird. Die Anleitung empfiehlt für 2 Spieler nur Jägerin+gelb und Magier+lila; die übrigen
+ * Farben ergänzen dieselbe Rotation (rot -> grün -> gelb -> blau -> lila -> rot), damit jeder
+ * der 10 Helden ein festes, sinnvolles Zusatzdeck hat.
+ */
+export const EXTRA_DECK_FOR_HERO: Record<HeroId, HeroId> = {
+  barbar: 'jägerin',
+  gladiator: 'jägerin',
+  jägerin: 'paladin',
+  waldläufer: 'paladin',
+  paladin: 'magier',
+  walküre: 'magier',
+  magier: 'dieb',
+  zauberin: 'dieb',
+  dieb: 'barbar',
+  ninja: 'barbar',
+};

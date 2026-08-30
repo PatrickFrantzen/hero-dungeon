@@ -154,10 +154,14 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open<DialogChooseHeroComponent, { singleplayerMode: boolean }, { data: ChooseHeroDialogResult }>(
+    const numberOfPlayers = this.currentNumberOfPlayers();
+    let dialogRef = this.dialog.open<
       DialogChooseHeroComponent,
-      { data: { singleplayerMode: this.currentNumberOfPlayers() === 1 } }
-    );
+      { singleplayerMode: boolean; useExtraDeck: boolean },
+      { data: ChooseHeroDialogResult }
+    >(DialogChooseHeroComponent, {
+      data: { singleplayerMode: numberOfPlayers === 1, useExtraDeck: numberOfPlayers === 1 || numberOfPlayers === 2 },
+    });
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) return;
