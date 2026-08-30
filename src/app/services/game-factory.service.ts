@@ -14,7 +14,7 @@ export class GameFactoryService {
     // bossCollection[0] ist immer Baby-Barbar (Boss #1) - allBosses ist ab hier die
     // Warteschlange der NACH dem aktuellen Boss noch ausstehenden Bosse (#2-#5), analog zu
     // `Mob` als Warteschlange der noch ausstehenden Dungeon-Karten. CardPlayService.
-    // prepareNextDungeon() zieht daraus den jeweils nächsten Boss, sobald der aktuelle besiegt
+    // continueToNextDungeon() zieht daraus den jeweils nächsten Boss, sobald der aktuelle besiegt
     // ist (Anleitung S. 6: Kampagne Boss #1 -> #2 -> ... -> #5).
     const [currentBoss, ...allBosses] = new Monster().bossCollection;
     const mob: Mob[] = new Monster().createMob(numberOfPlayer, currentBoss.name, difficulty);

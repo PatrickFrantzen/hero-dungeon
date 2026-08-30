@@ -31,7 +31,7 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   `docs/planned/five-minute-dungeon-rules-plan.md` TODO 9 — `questTwo`/`-Drei`/`-Vier`/`-Fünf`
   in `createMob()` sind mit 4/6/8/10 auf die volle spätere Kartenzahl ausgelegt). Ein
   `undefined`-Mob-Eintrag führt beim `.shift()` in `GameFactoryService.buildNewGame()`/
-  `CardPlayService.prepareNextDungeon()` zu einem TypeError, sobald er zufällig zuerst gezogen
+  `CardPlayService.continueToNextDungeon()` zu einem TypeError, sobald er zufällig zuerst gezogen
   wird — `monster.class.spec.ts` hat einen Regressionstest über alle Boss-/Schwierigkeits-/
   Spielerzahl-Kombinationen dafür.
 - **`monster-collection.data.ts`** — die eigentlichen Monster-Datenliterale, bewusst aus der
@@ -45,7 +45,7 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   mitziehen). Enthält u.a. `timerStartedAt`/`timerDurationSeconds` für den Dungeon-Timer —
   Gesamt-Feature in `src/app/components/game/CLAUDE.md` beschrieben. `allBosses` ist die
   Warteschlange der nach dem aktuellen Boss noch ausstehenden Bosse (nicht die volle 5-Boss-Liste
-  — siehe `EncounterState` in `src/app/states/CLAUDE.md` und `CardPlayService.prepareNextDungeon()`
+  — siehe `EncounterState` in `src/app/states/CLAUDE.md` und `CardPlayService.continueToNextDungeon()`
   in `src/app/services/CLAUDE.md`).
 - **`user.class.ts`** — Nutzer-Datenstruktur (`CurrentUserService`/`CurrentUserState`).
 - **`shuffle.util.ts`** — reine Shuffle-Funktion, von `Hero.buildCardstack()` genutzt.

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
+import { GameStatus } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 
@@ -38,7 +39,7 @@ export class GameRepositoryService {
     return this.repo.updateFields(['games', gameId], { questCardActivated: update });
   }
 
-  updateGameStatus(gameId: string, gameStatus: 'playing' | 'won' | 'lost'): Promise<void> {
+  updateGameStatus(gameId: string, gameStatus: GameStatus): Promise<void> {
     return this.repo.updateFields(['games', gameId], { gameStatus, isLost: gameStatus === 'lost' });
   }
 

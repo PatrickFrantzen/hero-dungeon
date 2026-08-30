@@ -32,22 +32,31 @@ Singleplayer-Modus ohnehin schon eine Erweiterung ist und mit nur 40 Karten schn
 
 TODO 4 umgesetzt: `allBosses` (`EncounterState`/`Game`-Dokument) ist jetzt die Warteschlange der
 nach dem aktuellen Boss noch ausstehenden Bosse (analog zu `Mob` für Dungeon-Karten), nicht mehr
-die volle unbenutzte 5-Boss-Liste. `CardPlayService.prepareNextDungeon()` (aufgerufen aus
-`checkForNextEnemy()`, sobald der aktuelle Boss besiegt ist) zieht den nächsten Boss aus dieser
-Warteschlange, baut per `new Monster().createMob(...)` einen neuen Dungeon-Kartenstapel passend
-zu Spielerzahl/Schwierigkeit und setzt den Timer per neuer `ResetGameTimer`-Action zurück; erst
-wenn die Warteschlange nach Boss #5 (Dungeon-Overlord) leer ist, wird `gameStatus: 'won'`
-gesetzt. `PlayerHandComponent.updateFromDatabase()` synct `currentBoss`/`allBosses` sowie einen
-zurückgesetzten Timer bei jedem Firestore-Snapshot, damit der Boss-Wechsel bei allen Mitspielern
-ankommt (vorher wurden beide Felder nach der initialen Spielerstellung nie wieder synchronisiert).
+die volle unbenutzte 5-Boss-Liste. Auf ausdrücklichen Wunsch **kein** automatisches Weitermachen:
+`CardPlayService.checkForNextEnemy()` setzt bei besiegtem Boss `gameStatus: 'bossDefeated'`
+(sofern noch Bosse ausstehen, sonst direkt `'won'`) statt sofort den nächsten Dungeon zu bauen.
+`GameComponent` zeigt bei diesem Status eine Bestätigung ("Weiter mit dem nächsten Dungeon?");
+erst nach Klick ruft `CardPlayService.continueToNextDungeon(gameId, playerId, ...)` den nächsten
+Boss aus der Warteschlange ab, baut per `new Monster().createMob(...)` einen neuen
+Dungeon-Kartenstapel passend zu Spielerzahl/Schwierigkeit, setzt den Timer per neuer
+`ResetGameTimer`-Action zurück **und mischt jedes Spielers Heldendeck frisch** (Anleitung S. 6:
+"Mischt die 40 Karten eines jeden Helden-Decks... und legt das Deck... auf das Feld
+Nachziehstapel" — im ersten Wurf ohne lokale Persistenz noch übersehen, per Nutzerhinweis
+nachgezogen). Analog: bei `gameStatus === 'lost'` bietet `GameComponent` "Nochmal versuchen"
+(`CardPlayService.restartCampaign()`, zurück auf Boss #1, Anleitung S. 7) oder "Zurück zum
+Startbildschirm" an, statt nur eine Fehlermeldung anzuzeigen. `PlayerHandComponent.
+updateFromDatabase()` synct `currentBoss`/`allBosses` sowie einen zurückgesetzten Timer bei
+jedem Firestore-Snapshot, damit Boss-Wechsel/Neustart bei allen Mitspielern ankommen (vorher
+wurden beide Felder nach der initialen Spielerstellung nie wieder synchronisiert). Details:
+`src/app/components/game/CLAUDE.md`, `src/app/services/CLAUDE.md`.
 
 **Nebenbei gefundener und behobener Bug** (aufgefallen als scheinbar flakiger Test beim
 Implementieren von TODO 4, tatsächlich aber reproduzierbar): `Monster.loadQuests()`/
 `loadSoloQuests()` forderten ab 3 Spielern mehr Quest-Karten an, als die aktuell nur 4 aktiven
 Kartentypen hergeben (Mini-Bosse sind auskommentiert, siehe TODO 9), und pushten dabei
 `undefined`-Einträge ins Mob-Array — führte bei zufälliger Zieh-Reihenfolge zu einem TypeError
-beim `.shift()` in `GameFactoryService.buildNewGame()`/`prepareNextDungeon()`, also praktisch zu
-gelegentlichen Abstürzen bei jeder Spielerstellung mit 3+ Spielern. Mit `Math.min()` auf die
+beim `.shift()` in `GameFactoryService.buildNewGame()`/`continueToNextDungeon()`, also praktisch
+zu gelegentlichen Abstürzen bei jeder Spielerstellung mit 3+ Spielern. Mit `Math.min()` auf die
 verfügbare Kartenanzahl gedeckelt, Regressionstest in `monster.class.spec.ts` über alle
 Boss-/Schwierigkeits-/Spielerzahl-Kombinationen ergänzt. Der Bug verschwindet vollständig, sobald
 TODO 9 die restlichen Quest-Kartentypen reaktiviert.

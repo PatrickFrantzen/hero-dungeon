@@ -129,7 +129,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     if (typeof data['timerStartedAt'] === 'number') {
       this.store.dispatch(new StartGameTimer(data['timerStartedAt']));
     } else {
-      // Neuer Dungeon nach besiegtem Boss (CardPlayService.prepareNextDungeon()) setzt
+      // Neuer Dungeon nach besiegtem Boss (CardPlayService.continueToNextDungeon()) setzt
       // timerStartedAt in Firestore auf null zurück - StartGameTimer allein kann das wegen
       // seines "nur einmal setzen"-Guards nicht an andere Clients weitergeben.
       this.store.dispatch(new ResetGameTimer());

@@ -23,7 +23,7 @@ describe('Monster', () => {
     // Regressionstest: questTwo/-Drei/-Vier/-Fünf (4/6/8/10) übersteigen die aktuell nur 4
     // aktiven Event-Kartentypen ab 3 Spielern (Mini-Bosse sind auskommentiert) - ohne den
     // Math.min()-Schutz in Monster.loadQuests() landet dort ein undefined-Eintrag, der beim
-    // Shiften in GameFactoryService.buildNewGame()/CardPlayService.prepareNextDungeon() zu
+    // Shiften in GameFactoryService.buildNewGame()/CardPlayService.continueToNextDungeon() zu
     // einem TypeError führt.
     for (const bossName of BOSS_NAMES) {
       for (const difficulty of DIFFICULTIES) {

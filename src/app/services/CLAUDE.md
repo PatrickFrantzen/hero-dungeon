@@ -40,11 +40,20 @@ Repository-Services unten gebündelt.
   eigene öffentliche `resolve*()`-Methoden, die **nicht** über `chooseCard()` laufen, sondern
   direkt von `PlayerHandComponent` aufgerufen werden, nachdem dort ein Zielspieler-Dialog
   geschlossen wurde (`chooseCard()` selbst würde diese Kartennamen nicht erkennen).
-  `checkForNextEnemy()` ruft bei besiegtem Boss `prepareNextDungeon()` auf: solange
-  `EncounterSelectors.currentAllBosses()` (die Warteschlange der noch ausstehenden Bosse #2-#5)
-  nicht leer ist, wird per `new Monster().createMob(...)` ein neuer Dungeon-Kartenstapel für den
-  nächsten Boss gebaut und der Timer per `ResetGameTimer` zurückgesetzt (Boss-Kampagne, Anleitung
-  S. 6); erst wenn die Warteschlange leer ist (Boss #5 besiegt), wird `gameStatus: 'won'` gesetzt.
+  `checkForNextEnemy()` setzt bei besiegtem Boss **nicht automatisch** den nächsten Dungeon auf,
+  sondern `gameStatus: 'bossDefeated'` (sofern `EncounterSelectors.currentAllBosses()` — die
+  Warteschlange der noch ausstehenden Bosse #2-#5 — nicht leer ist, sonst direkt `'won'`) — die
+  Gruppe wird erst gefragt, ob sie weitermacht (`GameComponent`, siehe
+  `src/app/components/game/CLAUDE.md`). `continueToNextDungeon(gameId, playerId, ...)` (öffentlich,
+  von `GameComponent` nach Bestätigung aufgerufen) baut per `new Monster().createMob(...)` den
+  Dungeon-Kartenstapel für den nächsten Boss, setzt den Timer per `ResetGameTimer` zurück und
+  mischt über `reshuffleAllPlayersForNewDungeon()` jedes Spielers Heldendeck frisch (Anleitung
+  S. 6: "Mischt die 40 Karten eines jeden Helden-Decks... und legt das Deck... auf das Feld
+  Nachziehstapel") — dafür wird der Heldenname aus dem Spieler-Dokument gegen `HERO_DEFINITIONS`
+  zurückgemappt (Player-Dokumente speichern aktuell keine `HeroId`, nur den Anzeigenamen).
+  `restartCampaign(gameId, playerId, ...)` (nach verlorenem Dungeon) macht dasselbe, aber zurück
+  auf Boss #1 (`GameFactoryService.buildNewGame()`), analog zu Anleitung S. 7 ("versucht euer
+  Glück von neuem mit dem Baby-Barbar").
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,

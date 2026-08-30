@@ -51,13 +51,14 @@ bei Ablauf verliert. Beim Anfassen dieses Features müssen mehrere Stellen konsi
 - **Timer-Reset (Boss-Kampagne)** — `ResetGameTimer`-Action (`currentGame-action.ts`) setzt
   bedingungslos alle drei Timer-Felder zurück (`timerStartedAt`/`timerPausedAt: null`,
   `timerPausedSecondsTotal: 0`), umgeht also bewusst den `StartGameTimer`-Guard. Ausgelöst von
-  `CardPlayService.prepareNextDungeon()` (Anleitung S. 6: "Setzt den Timer wieder auf 5
-  Minuten"), sobald ein Boss besiegt ist und die Kampagne mit dem nächsten Boss weitergeht —
-  Details zur Kampagne in `src/app/services/CLAUDE.md`. `GameRepositoryService.resetTimer()` ist
-  der zugehörige Firestore-Write. `PlayerHandComponent.updateFromDatabase()` dispatcht
+  `CardPlayService.continueToNextDungeon()`/`restartCampaign()` (Anleitung S. 6: "Setzt den
+  Timer wieder auf 5 Minuten"), nachdem ein Spieler bestätigt hat, mit dem nächsten Dungeon
+  weiterzumachen bzw. nach einem verlorenen Dungeon neu zu starten — Details zu diesem
+  Bestätigungs-Flow unten und in `src/app/services/CLAUDE.md`. `GameRepositoryService.resetTimer()`
+  ist der zugehörige Firestore-Write. `PlayerHandComponent.updateFromDatabase()` dispatcht
   `ResetGameTimer` auch dann, wenn `data['timerStartedAt']` beim Sync `null` statt einer Zahl
   ist — sonst würde ein bereits gestarteter lokaler Timer bei anderen Clients nach einem
-  Boss-Wechsel nicht zurückgesetzt.
+  Boss-Wechsel/Neustart nicht zurückgesetzt.
 - **`src/app/services/to-json.service.ts`** — serialisiert alle vier Timer-Felder mit, wenn ein
   `Game`-Objekt nach Firestore geschrieben wird.
 - **`src/app/components/player-hand/player-hand.component.ts`** (`updateFromDatabase()`) —
@@ -79,3 +80,29 @@ Der Timer-Zustand selbst ist reiner Store-State (kein eigener `TimerState`) — 
 Lobby (siehe `src/app/states/CLAUDE.md` zur Aufteilung von `currentGame-state.ts`). Eine
 Änderung an der Timer-Dauer oder ein zusätzlicher Timer-Typ betrifft potenziell alle oben
 genannten Dateien — nicht nur diese Komponente.
+
+## Bestätigungs-Flow: Boss-Kampagne fortsetzen / Dungeon neu starten
+
+`GameStatus` (`src/models/game.ts`) hat vier Werte: `'playing' | 'bossDefeated' | 'won' | 'lost'`.
+`CardPlayService.checkForNextEnemy()` setzt bei besiegtem Boss **nicht automatisch** den
+nächsten Dungeon auf, sondern `gameStatus: 'bossDefeated'` (sofern noch Bosse ausstehen, sonst
+direkt `'won'`) — `PlayerHandComponent`/`EnemyContainerComponent` werden bei diesem Status
+ausgeblendet (`@if (currentGameStatus() === 'playing' || ... === 'won')` in
+`game.component.html`), damit während der Entscheidung nicht weitergespielt werden kann.
+
+- **`gameStatus === 'bossDefeated'`** — Template zeigt "`{{ currentBoss().name }}` ist besiegt!
+  Weiter mit dem nächsten Dungeon?" mit zwei Buttons: `continueToNextDungeon()` (ruft
+  `CardPlayService.continueToNextDungeon(gameId, playerId, ...)` auf) oder `backToStartscreen()`
+  (Client-seitige Navigation zu `/startscreen`, ändert den Firestore-Spielstand nicht — andere
+  Spieler sehen die Bestätigung weiterhin und können selbst entscheiden).
+- **`gameStatus === 'lost'`** — Template zeigt zusätzlich zur bestehenden Fehlermeldung zwei
+  Buttons: `retryCampaign()` (ruft `CardPlayService.restartCampaign(gameId, playerId, ...)` auf,
+  baut den Dungeon zurück auf Boss #1 — Anleitung S. 7: "versucht euer Glück von neuem mit dem
+  Baby-Barbar") oder `backToStartscreen()`.
+- Beide `continueToNextDungeon()`/`retryCampaign()` setzen zusätzlich `this.timeoutReported =
+  false` zurück — ohne das würde `markGameLostWhenTimerRunsOut()` nach dem ersten Timeout in
+  diesem Client nie wieder auslösen, weil das Flag nur beim Neuladen der Seite zurückgesetzt
+  würde.
+- `CardPlayService.continueToNextDungeon()`/`restartCampaign()` mischen als Teil des Neustarts
+  über `reshuffleAllPlayersForNewDungeon()` auch das Heldendeck jedes Spielers frisch (Details:
+  `src/app/services/CLAUDE.md`) — nicht nur den Dungeon-Kartenstapel.

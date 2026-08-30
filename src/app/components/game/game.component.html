@@ -17,15 +17,33 @@
 
     <app-enemy-container></app-enemy-container>
 
+    @if (currentGameStatus() === 'bossDefeated') {
+        <div class="game-prompt">
+            <p>{{ currentBoss().name }} ist besiegt! Weiter mit dem nächsten Dungeon?</p>
+            <div class="game-prompt__actions">
+                <button class="game-prompt__button game-prompt__button--primary" (click)="continueToNextDungeon()">Weiter</button>
+                <button class="game-prompt__button" (click)="backToStartscreen()">Zurück zum Start</button>
+            </div>
+        </div>
+    }
+
     @if (currentGameStatus() === 'won') {
-        <div class="game-success">Du hast Baby-Barbar besiegt!</div>
+        <div class="game-success">Ihr habt {{ currentBoss().name }} besiegt und den Dungeon-Overlord bezwungen!</div>
     }
 
     @if (currentGameStatus() === 'lost') {
-        <div class="game-error">Die Zeit ist abgelaufen. Der Dungeon ist verloren.</div>
+        <div class="game-prompt game-prompt--error">
+            <p>Die Zeit ist abgelaufen. Der Dungeon ist verloren.</p>
+            <div class="game-prompt__actions">
+                <button class="game-prompt__button game-prompt__button--primary" (click)="retryCampaign()">Nochmal versuchen</button>
+                <button class="game-prompt__button" (click)="backToStartscreen()">Zurück zum Startbildschirm</button>
+            </div>
+        </div>
     }
 
-    <app-player-hand></app-player-hand>
+    @if (currentGameStatus() === 'playing' || currentGameStatus() === 'won') {
+        <app-player-hand></app-player-hand>
+    }
 
 
 </div>

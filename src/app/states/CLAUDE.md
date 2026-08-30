@@ -24,7 +24,7 @@ einem State. Davon sind bereits herausgelöst:
   `docs/planned/five-minute-dungeon-rules-plan.md`) die Warteschlange der nach dem aktuellen
   Boss noch ausstehenden Bosse (analog zu `Mob` als Warteschlange der Dungeon-Karten) — **nicht**
   mehr die vollständige 5-Boss-Liste. `SetCurrentBoss`/`SetRemainingBosses`-Actions werden von
-  `CardPlayService.prepareNextDungeon()` dispatcht, sobald ein Boss besiegt ist; `PlayerHandComponent.updateFromDatabase()`
+  `CardPlayService.continueToNextDungeon()` dispatcht, sobald ein Boss besiegt ist; `PlayerHandComponent.updateFromDatabase()`
   synct beide Felder bei jedem Firestore-Snapshot, damit der Boss-Wechsel bei allen Mitspielern
   ankommt.
 - **`currentGame-state.ts`** (`CurrentGameState`) — der Rest: `{ items, numberOfPlayers,
