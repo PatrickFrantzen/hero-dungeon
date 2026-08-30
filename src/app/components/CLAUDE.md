@@ -37,6 +37,12 @@ Materials eigene Optik laufen.
     `player-hand.component.scss`, da Layout-Konzern.
   - `enemy/`, `game/` bereits konsistent (Material-Card bzw. eigenes, bereits responsives SCSS
     mit `clamp()`) — unverändert gelassen.
+  - `enemy/enemy.component.scss` (2026-08-30, Folgeänderung): `.current-Enemy` zog sich vorher
+    trotz `max-width: 100%` auf die volle Breite von `.mainfield` (dessen Flex-Column-Default
+    `align-items: stretch` streckt Kinder ohne eigenes `align-self`, siehe `game-timer` als
+    Gegenbeispiel). Jetzt `align-self: center` + `width: fit-content` + `max-width: min(480px,
+    92vw)`, damit die Karte nur so breit wird wie ihr Inhalt (Name/Token/Typ) und der
+    Hintergrund sichtbar bleibt.
 
 ## Smart/Dumb-Container-Muster
 
