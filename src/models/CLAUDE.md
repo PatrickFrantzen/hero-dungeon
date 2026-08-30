@@ -12,8 +12,12 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   geänderte Kartenverteilung: hier eintragen, keine neue Klasse anlegen.
 - **`hero.class.ts`** — eine `Hero`-Klasse für alle Helden. `buildCardstack(cardCounts)` mischt
   die Kartenverteilung einer `HeroDefinition` zu einem Stapel (`shuffle.util.ts`).
-  `createHero(id: HeroId)` ist die Factory: sucht die `HeroDefinition` zur `id` und baut daraus
-  eine `Hero`-Instanz.
+  `createHero(id: HeroId, useExtraDeck = false)` ist die Factory: sucht die `HeroDefinition` zur
+  `id` und baut daraus eine `Hero`-Instanz. `useExtraDeck: true` mischt zusätzlich das Deck aus
+  `EXTRA_DECK_FOR_HERO[id]` (`hero-definitions.ts`) ein — 2-Spieler-Sonderregel (Anleitung S. 3)
+  bzw. Singleplayer-Erweiterung, aufgerufen von `DialogChooseHeroComponent` über die
+  `useExtraDeck`-Dialog-Data, die `GameComponent.openDialog()` bei `numberOfPlayers === 1 || 2`
+  setzt.
 - **`card.class.ts`** — `Card`/`CardStack`-Interfaces (Token-Strings), keine Logik.
 
 ## monster/

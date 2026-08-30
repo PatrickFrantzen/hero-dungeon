@@ -24,14 +24,14 @@ interface Heros {
 })
 export class DialogChooseHeroComponent extends BaseDialogComponent<ChooseHeroDialogResult> {
 
-  private dialogData = inject<{ singleplayerMode?: boolean } | null>(MAT_DIALOG_DATA, { optional: true });
+  private dialogData = inject<{ singleplayerMode?: boolean; useExtraDeck?: boolean } | null>(MAT_DIALOG_DATA, { optional: true });
   numberOfPlayer!:number;
   selectedValue!: Heros;
 
   heros: Heros[] = HERO_DEFINITIONS
     .filter((def) => !this.dialogData?.singleplayerMode || ['dieb', 'waldläufer'].includes(def.id))
     .map((def) => ({
-      value: createHero(def.id).toJSON(),
+      value: createHero(def.id, this.dialogData?.useExtraDeck ?? false).toJSON(),
       viewValue: def.heroName,
     }));
 

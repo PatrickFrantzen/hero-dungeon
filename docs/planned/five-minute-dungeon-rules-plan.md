@@ -20,6 +20,16 @@ nacheinander) — Details in `src/app/components/player-hand/CLAUDE.md` und
 
 TODO 7 ist damit vollständig abgeschlossen.
 
+TODO 3 umgesetzt: `Hero.createHero(id, useExtraDeck)` mischt bei `useExtraDeck=true` das Deck aus
+`EXTRA_DECK_FOR_HERO[id]` (`hero-definitions.ts`) ein — 80 statt 40 Karten. Bewusst über die
+2-Spieler-Regel aus der Anleitung hinaus erweitert: `GameComponent.openDialog()` setzt
+`useExtraDeck` sowohl bei `numberOfPlayers === 2` (Originalregel) als auch bei
+`numberOfPlayers === 1` (Singleplayer, keine Originalregel — Absprache mit Nutzer, da der
+Singleplayer-Modus ohnehin schon eine Erweiterung ist und mit nur 40 Karten schneller
+"leerläuft" als im 2-Spieler-Fall). Da die Anleitung nur zwei konkrete Kombinationen empfiehlt
+(Jägerin+gelb, Magier+lila), wurde eine feste Rotation über alle 5 Farben ergänzt
+(rot→grün→gelb→blau→lila→rot), die diese beiden Empfehlungen enthält.
+
 Wichtiger Hinweis vorab: Der im Repo bereits existierende **Singleplayer-Modus**
 (`docs/planned/singleplayer-mode-plan.md`) ist eine bewusste Erweiterung des Originalspiels, das
 laut Anleitung offiziell **keinen** Einzelspieler-Modus vorsieht. Dieser Plan behandelt ihn daher
@@ -161,7 +171,7 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
   - Verifikation: `ng build`, `ng test`; manueller Test mit 2- und 4-Spieler-Lobby (Starthand-
     Größe in der UI zählen).
 
-- [ ] **TODO 3 — 2-Spieler-Sonderregel: zweites Heldendeck einmischen**
+- [x] **TODO 3 — 2-Spieler-Sonderregel: zweites Heldendeck einmischen (erweitert auf Singleplayer)**
   - `Hero.buildCardstack()` (`hero.class.ts:18-26`) erweitern: bei `numberOfPlayers === 2`
     zusätzlich das Kartendeck eines zweiten, von den Mitspielern nicht gewählten Helden
     einmischen (Auswahl: entweder empfohlene Kombination aus der Anleitung fix hinterlegen —
