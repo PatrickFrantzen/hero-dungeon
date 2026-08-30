@@ -53,7 +53,13 @@ Repository-Services unten gebündelt.
   zurückgemappt (Player-Dokumente speichern aktuell keine `HeroId`, nur den Anzeigenamen).
   `restartCampaign(gameId, playerId, ...)` (nach verlorenem Dungeon) macht dasselbe, aber zurück
   auf Boss #1 (`GameFactoryService.buildNewGame()`), analog zu Anleitung S. 7 ("versucht euer
-  Glück von neuem mit dem Baby-Barbar").
+  Glück von neuem mit dem Baby-Barbar"). `resolveJoker()`/`resolveMagischeBombe()` behandeln die
+  Jägerin/Waldläufer- bzw. Magier/Zauberin-Karten `joker`/`magischeBombe` als weiteren Sonderfall
+  (matchen kein festes Dungeon-Symbol): Joker verbraucht ein beliebiges (erstes) Token der
+  aktuellen Bedrohung, Magische Bombe je ein Vorkommen jeder der 5 Symbolfarben — beide wirken
+  nicht gegen Ereigniskarten. Da es keine Auswahl-UI für "welches Symbol nutzen" gibt, ist die
+  Tokenwahl deterministisch statt spielerseitig frei wählbar (Vereinfachung, analog zur
+  automatischen Doppelsymbol-Karten-Auflösung).
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,

@@ -61,6 +61,17 @@ verfügbare Kartenanzahl gedeckelt, Regressionstest in `monster.class.spec.ts` �
 Boss-/Schwierigkeits-/Spielerzahl-Kombinationen ergänzt. Der Bug verschwindet vollständig, sobald
 TODO 9 die restlichen Quest-Kartentypen reaktiviert.
 
+TODO 8 umgesetzt: `CardPlayService.resolveJoker()`/`resolveMagischeBombe()` behandeln die Karten
+`joker` (Jägerin/Waldläufer) und `magischeBombe` (Magier/Zauberin) als Sonderfall in
+`chooseCard()`, analog zu `resolveGoettlicherSchild()` & Co. — beide matchten vorher kein festes
+Dungeon-Symbol und waren dadurch unspielbar. Joker verbraucht ein beliebiges (das erste) Token
+der aktuellen Bedrohung, Magische Bombe je ein Vorkommen jeder der 5 Symbolfarben, falls
+vorhanden (Anleitung S. 8: "müsst nicht alle Symbole nutzen"); beide wirken nicht gegen
+Ereigniskarten. Da es keine Auswahl-UI für "welches Symbol nutzen" gibt, ist die Tokenwahl
+deterministisch statt spielerseitig frei wählbar — eine bewusste Vereinfachung, konsistent mit
+der bereits bestehenden automatischen Doppelsymbol-Karten-Auflösung. Drei neue Unit-Tests in
+`card-play.service.spec.ts`.
+
 Wichtiger Hinweis vorab: Der im Repo bereits existierende **Singleplayer-Modus**
 (`docs/planned/singleplayer-mode-plan.md`) ist eine bewusste Erweiterung des Originalspiels, das
 laut Anleitung offiziell **keinen** Einzelspieler-Modus vorsieht. Dieser Plan behandelt ihn daher
@@ -283,7 +294,7 @@ Firestore-Strukturänderung ohne Anpassung von `firestore.rules`/`firestore.rule
   - Verifikation je Karte: `ng build`, `ng test`, manueller Test mit der jeweiligen Karte in
     einer laufenden Partie.
 
-- [ ] **TODO 8 — Joker- und Bombenkarten spielbar machen**
+- [x] **TODO 8 — Joker- und Bombenkarten spielbar machen**
   - `CardPlayService.chooseCard()`/die Matching-Logik (`card-play.service.ts:82-101`) um zwei
     Sonderfälle erweitern: `joker`-Karten zählen als beliebiges der aktuell auf der Dungeon-Karte
     geforderten Symbole (freie Wahl, ggf. UI-Auswahl nötig, falls mehrere Symbole gefordert

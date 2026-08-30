@@ -99,6 +99,16 @@ export class CardPlayService {
         return;
       }
 
+      if (card === 'joker') {
+        this.resolveJoker(gameId, playerId, card, currHand, reportWriteFailure);
+        return;
+      }
+
+      if (card === 'magischeBombe') {
+        this.resolveMagischeBombe(gameId, playerId, card, currHand, reportWriteFailure);
+        return;
+      }
+
       if (card.includes('_')) {
         const isEventCard = currMob.token[0].toLocaleLowerCase().includes('event');
         const isMatchingType = currMob.type.toLocaleLowerCase().includes(doubleCard[1]);
@@ -535,6 +545,60 @@ export class CardPlayService {
     const targetCardStack = shuffle([...(data?.['cardstack'] ?? []), ...(data?.['deliveryStack'] ?? [])]);
     reportWriteFailure(this.playerRepo.updateCardstack(gameId, targetPlayerId, targetCardStack));
     reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, targetPlayerId, []));
+  }
+
+  /** Jägerin/Waldläufer "Joker": zählt als ein beliebiges Symbol (Anleitung S. 8) - da es keine
+   * Auswahl-UI für "welches Symbol" gibt, wird einfach das erste Token der aktuellen Bedrohung
+   * verbraucht (deterministisch, aber ohne Spielereinfluss auf die Wahl - eine Vereinfachung
+   * analog zu den bereits automatisch aufgelösten Doppelsymbol-Karten). Wirkt nicht gegen
+   * Ereigniskarten (dort gibt es keine Symbole zu ersetzen). */
+  private resolveJoker(
+    gameId: string,
+    playerId: string,
+    card: string,
+    currHand: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    const currEne = [...this.currentEnemy().token];
+    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return;
+
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+
+    currEne.shift();
+    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
+    reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
+    this.checkForNextEnemy(gameId, this.currentEnemy(), reportWriteFailure);
+
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+  }
+
+  /** Magier/Zauberin "Magische Bombe": bringt alle 5 Symbole auf einmal, muss aber nicht alle
+   * nutzen (Anleitung S. 8) - entfernt von der aktuellen Bedrohung je ein Vorkommen jeder der 5
+   * Symbolfarben, falls vorhanden. Wirkt nicht gegen Ereigniskarten. */
+  private resolveMagischeBombe(
+    gameId: string,
+    playerId: string,
+    card: string,
+    currHand: string[],
+    reportWriteFailure: ReportWriteFailure
+  ): void {
+    const currEne = [...this.currentEnemy().token];
+    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return;
+
+    this.ensureGameTimerStarted(gameId, reportWriteFailure);
+    this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
+
+    ['red', 'yellow', 'green', 'blue', 'purple'].forEach((symbol) => {
+      const index = currEne.indexOf(symbol);
+      if (index !== -1) currEne.splice(index, 1);
+    });
+
+    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
+    reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
+    this.checkForNextEnemy(gameId, this.currentEnemy(), reportWriteFailure);
+
+    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
   }
 
   private checkHandsize(
