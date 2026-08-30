@@ -17,6 +17,7 @@ import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
 import { shuffle } from 'src/models/shuffle.util';
 import { FirestoreRepositoryService } from './firestore-repository.service';
+import { startHandSize } from 'src/models/start-hand-size.util';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
 
@@ -43,6 +44,7 @@ export class CardPlayService {
   private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
   private heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
   private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
+  private currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
 
   constructor(
     private store: Store,
@@ -282,7 +284,7 @@ export class CardPlayService {
     discardedCards: string[],
     reportWriteFailure: ReportWriteFailure
   ): string[] {
-    const drawCount = Math.max(0, 5 - handsize.length);
+    const drawCount = Math.max(0, startHandSize(this.currentNumberOfPlayers()) - handsize.length);
     const drawResult = this.drawCards(
       [...handsize],
       [...this.currentCardStack()],
