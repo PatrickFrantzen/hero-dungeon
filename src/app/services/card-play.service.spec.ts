@@ -134,6 +134,63 @@ describe('CardPlayService', () => {
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
   });
 
+  it('chooseCard resolves a Joker card as any single symbol of the current threat', () => {
+    seedGameState({
+      hand: ['joker'],
+      cardStack: ['blue'],
+      enemy: { name: 'Goblin', type: 'Monster', token: ['red', 'green'] },
+    });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
+    spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    spyOn(playerRepo, 'updateHandstack').and.resolveTo();
+    spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    service.chooseCard('game-1', 'player-1', 'joker', reportWriteFailure);
+
+    expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['green']);
+    expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ token: ['green'] }));
+  });
+
+  it('chooseCard does nothing for a Joker card against an event threat', () => {
+    seedGameState({
+      hand: ['joker'],
+      enemy: { name: 'Chaos', type: 'Jeder gibt seine Handkarten einem Mitspieler.', token: ['event'] },
+    });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    service.chooseCard('game-1', 'player-1', 'joker', reportWriteFailure);
+
+    expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
+    expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack)).toEqual(['joker']);
+  });
+
+  it('chooseCard resolves a Magische Bombe by removing one occurrence of each present symbol', () => {
+    seedGameState({
+      hand: ['magischeBombe'],
+      cardStack: ['blue'],
+      enemy: { name: 'Zola, die Gorgone', type: 'Boss', token: ['red', 'red', 'yellow', 'purple'] },
+    });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
+    spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    spyOn(playerRepo, 'updateHandstack').and.resolveTo();
+    spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    service.chooseCard('game-1', 'player-1', 'magischeBombe', reportWriteFailure);
+
+    expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['red']);
+  });
+
   it('chooseCard marks the game as won when Baby-Barbar is defeated after the mob stack is empty', () => {
     seedGameState({ hand: ['red'], enemy: { name: 'Baby-Barbar', type: 'Boss', token: ['red'] }, mob: [] });
 
