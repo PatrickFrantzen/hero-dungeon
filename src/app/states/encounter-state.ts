@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Action, State, StateContext } from '@ngxs/store';
 import { CurrentGameData } from '../actions/currentGame-action';
-import { SetNewEnemy, UpdateMonsterTokenArray } from '../actions/encounter-action';
+import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from '../actions/encounter-action';
 import { UpdateMobAction } from '../actions/MonsterStack-action';
 import { Mob } from 'src/models/monster/monster.class';
 
@@ -57,6 +57,20 @@ export class EncounterState {
     }
     const newMob: Mob[] = mob;
     ctx.patchState({ Mob: newMob });
+  }
+
+  @Action(SetCurrentBoss)
+  setCurrentBoss(ctx: StateContext<EncounterModel>, action: SetCurrentBoss) {
+    const { currentBoss } = action;
+    if (!currentBoss) return;
+    ctx.patchState({ currentBoss });
+  }
+
+  @Action(SetRemainingBosses)
+  setRemainingBosses(ctx: StateContext<EncounterModel>, action: SetRemainingBosses) {
+    const { remainingBosses } = action;
+    if (!remainingBosses) return;
+    ctx.patchState({ allBosses: remainingBosses });
   }
 
   @Action(CurrentGameData)

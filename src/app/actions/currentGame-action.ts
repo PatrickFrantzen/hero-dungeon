@@ -33,3 +33,11 @@ export class SetGameTimerPauseState {
     static readonly type = "[Game page] setting dungeon timer pause state"
     constructor(public timerPausedAt: number | null, public timerPausedSecondsTotal: number){}
 }
+
+/** Setzt den Timer bedingungslos zurück auf "noch nicht gestartet" (im Gegensatz zu
+ * StartGameTimer, das per Guard nur einmal greift) - für den Übergang in den nächsten Dungeon
+ * nach einem besiegten Boss (Anleitung S. 6: "Setzt den Timer wieder auf 5 Minuten"). */
+export class ResetGameTimer {
+    static readonly type = "[Game page] resetting dungeon timer for the next dungeon"
+    constructor(){}
+}

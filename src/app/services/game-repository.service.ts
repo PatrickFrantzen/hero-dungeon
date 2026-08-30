@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
+import { GameStatus } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 
@@ -38,7 +39,7 @@ export class GameRepositoryService {
     return this.repo.updateFields(['games', gameId], { questCardActivated: update });
   }
 
-  updateGameStatus(gameId: string, gameStatus: 'playing' | 'won' | 'lost'): Promise<void> {
+  updateGameStatus(gameId: string, gameStatus: GameStatus): Promise<void> {
     return this.repo.updateFields(['games', gameId], { gameStatus, isLost: gameStatus === 'lost' });
   }
 
@@ -48,5 +49,21 @@ export class GameRepositoryService {
 
   updateTimerPauseState(gameId: string, timerPausedAt: number | null, timerPausedSecondsTotal: number): Promise<void> {
     return this.repo.updateFields(['games', gameId], { timerPausedAt, timerPausedSecondsTotal });
+  }
+
+  resetTimer(gameId: string): Promise<void> {
+    return this.repo.updateFields(['games', gameId], {
+      timerStartedAt: null,
+      timerPausedAt: null,
+      timerPausedSecondsTotal: 0,
+    });
+  }
+
+  updateCurrentBoss(gameId: string, currentBoss: Mob): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { currentBoss });
+  }
+
+  updateRemainingBosses(gameId: string, allBosses: Mob[]): Promise<void> {
+    return this.repo.updateFields(['games', gameId], { allBosses });
   }
 }

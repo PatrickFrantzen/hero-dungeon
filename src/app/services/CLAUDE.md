@@ -18,8 +18,10 @@ Repository-Services unten gebündelt.
 - **`game-repository.service.ts`** / **`player-repository.service.ts`** — Lesen/Schreiben von
   Spiel- bzw. Spieler-Dokumenten. Ersetzen die früheren `SaveGameService`/`LoadGameService`/
   `GamePlayerService` (konsolidiert, siehe Plan oben). `updateTimerStartedAt()`/
-  `updateTimerPauseState()` sind die Firestore-Writes für den Dungeon-Timer inkl. Pause
-  (`src/app/components/game/CLAUDE.md`).
+  `updateTimerPauseState()`/`resetTimer()` sind die Firestore-Writes für den Dungeon-Timer inkl.
+  Pause/Reset (`src/app/components/game/CLAUDE.md`); `updateCurrentBoss()`/
+  `updateRemainingBosses()` sind die Firestore-Writes für die Boss-Kampagne (siehe
+  `card-play.service.ts` unten).
 - **`current-user.service.ts`** — Auth-State (`@angular/fire/auth`) + zugehöriges
   Firestore-Nutzerdokument.
 
@@ -38,6 +40,20 @@ Repository-Services unten gebündelt.
   eigene öffentliche `resolve*()`-Methoden, die **nicht** über `chooseCard()` laufen, sondern
   direkt von `PlayerHandComponent` aufgerufen werden, nachdem dort ein Zielspieler-Dialog
   geschlossen wurde (`chooseCard()` selbst würde diese Kartennamen nicht erkennen).
+  `checkForNextEnemy()` setzt bei besiegtem Boss **nicht automatisch** den nächsten Dungeon auf,
+  sondern `gameStatus: 'bossDefeated'` (sofern `EncounterSelectors.currentAllBosses()` — die
+  Warteschlange der noch ausstehenden Bosse #2-#5 — nicht leer ist, sonst direkt `'won'`) — die
+  Gruppe wird erst gefragt, ob sie weitermacht (`GameComponent`, siehe
+  `src/app/components/game/CLAUDE.md`). `continueToNextDungeon(gameId, playerId, ...)` (öffentlich,
+  von `GameComponent` nach Bestätigung aufgerufen) baut per `new Monster().createMob(...)` den
+  Dungeon-Kartenstapel für den nächsten Boss, setzt den Timer per `ResetGameTimer` zurück und
+  mischt über `reshuffleAllPlayersForNewDungeon()` jedes Spielers Heldendeck frisch (Anleitung
+  S. 6: "Mischt die 40 Karten eines jeden Helden-Decks... und legt das Deck... auf das Feld
+  Nachziehstapel") — dafür wird der Heldenname aus dem Spieler-Dokument gegen `HERO_DEFINITIONS`
+  zurückgemappt (Player-Dokumente speichern aktuell keine `HeroId`, nur den Anzeigenamen).
+  `restartCampaign(gameId, playerId, ...)` (nach verlorenem Dungeon) macht dasselbe, aber zurück
+  auf Boss #1 (`GameFactoryService.buildNewGame()`), analog zu Anleitung S. 7 ("versucht euer
+  Glück von neuem mit dem Baby-Barbar").
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,

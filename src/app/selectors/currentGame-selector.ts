@@ -44,4 +44,9 @@ export class CurrentGameSelectors {
   static currentTimerPausedSecondsTotal(state: CurrentGameModel): number {
     return state.timerPausedSecondsTotal;
   }
+
+  @Selector([CurrentGameState])
+  static currentDifficulty(state: CurrentGameModel): string {
+    return state.difficulty;
+  }
 }

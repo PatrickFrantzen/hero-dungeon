@@ -1,17 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, OnDestroy, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { User } from 'src/models/user.class';
 import { Store } from '@ngxs/store';
 import { CreateNewCardStackAction, UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
+import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { CurrentCardsInHand } from 'src/app/actions/cardsInHand-action';
 import { CurrentDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { CurrentUserHeroAction } from 'src/app/actions/currentUser-action';
 import { updateChoosenHeros } from 'src/app/actions/lobby-action';
 import { EnemyContainerComponent } from '../enemy/enemy-container/enemy-container.component';
 import { PlayerHandComponent } from '../player-hand/player-hand.component';
+import { CardPlayService } from 'src/app/services/card-play.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { ChooseHeroDialogResult } from 'src/app/components/dialog-results';
@@ -41,6 +44,7 @@ export class GameComponent implements OnInit, OnDestroy {
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
   currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
   currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
+  currentBoss = this.store.selectSignal(EncounterSelectors.currentBoss);
   timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
   timerDurationSeconds = this.store.selectSignal(CurrentGameSelectors.currentTimerDurationSeconds);
   timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
@@ -75,8 +79,10 @@ export class GameComponent implements OnInit, OnDestroy {
   constructor(
     public dialog: MatDialog,
     private store: Store,
+    private router: Router,
     private gameRepo: GameRepositoryService,
     private playerRepo: PlayerRepositoryService,
+    private cardPlayService: CardPlayService,
   ) { }
 
   ngOnInit(): void {
@@ -187,4 +193,25 @@ export class GameComponent implements OnInit, OnDestroy {
     await this.playerRepo.updatePlayerCards(this.currentGameId(), this.currentUserId(), cardStack, handstack);
   }
 
+  /** Bestätigung nach besiegtem Boss (gameStatus 'bossDefeated'): jeder Spieler kann den
+   * nächsten Dungeon starten - mischt alle Heldendecks frisch (siehe CardPlayService). */
+  continueToNextDungeon(): void {
+    this.timeoutReported = false;
+    this.cardPlayService.continueToNextDungeon(this.currentGameId(), this.currentUserId(), (write) =>
+      write.catch(() => this.loadError.set('Der nächste Dungeon konnte nicht gestartet werden. Bitte erneut versuchen.'))
+    );
+  }
+
+  /** Bestätigung nach verlorenem Dungeon (gameStatus 'lost'): zurück zu Boss #1 mit frisch
+   * gemischten Heldendecks für alle Spieler (Anleitung S. 7). */
+  retryCampaign(): void {
+    this.timeoutReported = false;
+    this.cardPlayService.restartCampaign(this.currentGameId(), this.currentUserId(), (write) =>
+      write.catch(() => this.loadError.set('Der Dungeon konnte nicht neu gestartet werden. Bitte erneut versuchen.'))
+    );
+  }
+
+  backToStartscreen(): void {
+    this.router.navigate(['/startscreen']);
+  }
 }

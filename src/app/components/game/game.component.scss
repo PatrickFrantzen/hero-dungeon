@@ -23,6 +23,38 @@
     text-align: center;
 }
 
+.game-prompt {
+    background-color: #1a1a2e;
+    color: white;
+    padding: 16px;
+    text-align: center;
+}
+
+.game-prompt--error {
+    background-color: #b00020;
+}
+
+.game-prompt__actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.game-prompt__button {
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    background: transparent;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.game-prompt__button--primary {
+    background-color: #0f7b2f;
+    border-color: #0f7b2f;
+}
+
 .game-timer {
     align-self: center;
     margin-top: 16px;

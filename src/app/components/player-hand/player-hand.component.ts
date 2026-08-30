@@ -6,8 +6,8 @@ import { Subscription } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { SetGameTimerPauseState, StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
-import { SetNewEnemy, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
+import { ResetGameTimer, SetGameTimerPauseState, StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
+import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
@@ -121,11 +121,18 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new SetNewEnemy(currentEnemy));
     this.store.dispatch(new UpdateMonsterTokenArray(currentEnemy.token));
     this.store.dispatch(new UpdateMobAction(data['Mob']));
+    this.store.dispatch(new SetCurrentBoss(data['currentBoss']));
+    this.store.dispatch(new SetRemainingBosses(data['allBosses']));
     this.store.dispatch(new SetChoosenHeros(data['choosenHeros']));
     this.store.dispatch(new updateQuestCardActivated(data['questCardActivated']));
     this.store.dispatch(new UpdateGameStatus(data['gameStatus'] ?? (data['isLost'] ? 'lost' : 'playing')));
     if (typeof data['timerStartedAt'] === 'number') {
       this.store.dispatch(new StartGameTimer(data['timerStartedAt']));
+    } else {
+      // Neuer Dungeon nach besiegtem Boss (CardPlayService.continueToNextDungeon()) setzt
+      // timerStartedAt in Firestore auf null zurück - StartGameTimer allein kann das wegen
+      // seines "nur einmal setzen"-Guards nicht an andere Clients weitergeben.
+      this.store.dispatch(new ResetGameTimer());
     }
     this.store.dispatch(
       new SetGameTimerPauseState(
