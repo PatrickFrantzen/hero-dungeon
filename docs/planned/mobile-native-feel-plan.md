@@ -2,7 +2,47 @@
 
 ## Status (2026-08-31)
 
-Neuer Plan. `docs/done/responsive-design-plan.md` hat die App überhaupt erst responsive gemacht
+Stufe A (TODO 1–4, 6) umgesetzt, TODO 5 (PWA-Manifest) offen gelassen (fehlende Icon-Assets),
+siehe PR #45.
+
+**TODO 7 (Handkarten als fixe Bottom-Leiste) umgesetzt**, inkl. Fächer-Layout für den Fall, dass
+die Hand über 5 Karten wächst (Dieb "Stehlen": 3 Handkarten ablegen, 5 nachziehen —
+`dieb.service.ts` deckelt die Handgröße dabei nicht, siehe Diagnosepunkt 9 unten war ursprünglich
+nur mit ≤5 Karten gerechnet, das war zu optimistisch):
+
+- `player-hand.component.scss` — `.card-area` ist jetzt `position: fixed` am unteren Rand
+  (Daumenzone), `.currentHandStack` nicht mehr `flex-wrap: wrap` sondern `flex-wrap: nowrap` mit
+  `overflow-x: auto`-Fallback. `.event-button`/`.card-stack` an die neue, flachere Leiste
+  angepasst (Deko-Kartenstapel verkleinert, damit er in der schmaleren Leiste nicht dominiert).
+- `player-hand.component.ts` — neues `handCardStyles`-`computed()`: bei ≤5 Karten unverändert
+  (flache Reihe, kein Verhaltensunterschied zu vorher), darüber Hearthstone/Slay-the-Spire-
+  Prinzip: Karten überlappen (negativer `margin-left` relativ zur Kartenbreite) statt in eine
+  zweite Reihe umzubrechen, fächern sich per Rotation (`--rot`) + Hochversatz (`--y`) auf und
+  schrumpfen ab 7 Karten leicht (`--scale`). Die eigentliche `transform`-Deklaration bleibt in
+  der `.scss` (inkl. `:active`-Press-Feedback über dieselben CSS-Custom-Properties), damit
+  Inline-Styles nicht mit dem `:active`-Zustand kollidieren.
+- `game.component.scss` — `.mainfield` bekommt `padding-bottom`, damit Content (v.a. `.game-stats`
+  im Status `'won'`, wo Hand + Statistik laut `game.component.html` gleichzeitig sichtbar sind)
+  nicht hinter der jetzt fixen Leiste verschwindet.
+- Verifiziert: `ng build` grün, `ng test --watch=false --browsers=ChromeHeadlessCI` 54/54 grün,
+  plus eine aus der echten `handCardStyles()`-Formel nachgebaute statische Testseite
+  (Playwright/Chromium, 375×700) zeigt bei 3/5/7/8/10 Karten keine Überlappung mit dem
+  Viewport-Rand. Design-Vorschau/Mockup (Vorher/Nachher + Fächer-Demo mit Live-Tweak-Regler) vor
+  der Umsetzung mit dem Nutzer abgestimmt.
+- **Nicht durchgeführt**: der reale Multiplayer-Smoke-Test mit echtem Firebase-Backend (siehe
+  `player-hand/CLAUDE.md`) — in dieser Sandbox-Umgebung ohne Netzwerkzugriff nicht möglich,
+  insbesondere: Heropower-Icon-Antippbarkeit direkt über der neuen Leiste auf einem echten Gerät,
+  Verhalten bei aktivem `.color-effect`-Rahmen kombiniert mit der Fächer-Rotation.
+- TODO 8 (Querformat) weiterhin offen.
+
+Ursprünglicher Diagnosepunkt 9 unten ging von einer ohnehin auf 5 gedeckelten Hand aus — das ist
+ungenau: `card-play.service.ts` deckelt nur das *Nachziehen* auf 5, Dieb/Ninjas "Stehlen"
+(`dieb.service.ts`, 3 Karten ablegen + bis zu 5 nachziehen) kann die Hand auf bis zu 7 Karten
+wachsen lassen, ohne dass eine Obergrenze greift.
+
+---
+
+Ursprünglicher Plan-Text (2026-08-31, vor Umsetzung von TODO 7): `docs/done/responsive-design-plan.md` hat die App überhaupt erst responsive gemacht
 (kein horizontales Scrollen, `clamp()` statt fixer Pixel). Dieser Plan geht einen Schritt weiter:
 "passt auf den Bildschirm" ist nicht dasselbe wie "fühlt sich auf dem Handy wie ein Spiel an".
 Ausgelöst durch Nutzeranfrage, Mobile-Best-Practices zu recherchieren und zu prüfen, was Hero
@@ -156,7 +196,7 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
 
 ## TODOs — Stufe B (Design-Entscheidung, vor Umsetzung mit Nutzer abstimmen)
 
-- [ ] **TODO 7 — Handkarten als fixe Bottom-Leiste statt Dokumentfluss**
+- [x] **TODO 7 — Handkarten als fixe Bottom-Leiste statt Dokumentfluss**
   - Vorschlag: `.currentHandStack` (`player-hand.component.scss`) auf `position: fixed; bottom:
     0; left: 0; right: 0;` mit eigenem Hintergrund (leicht abgedunkelt/`backdrop-filter: blur()`,
     passend zum bestehenden `.color-effect`-Look aus `heropower/`) — Daumenzone, immer sichtbar,

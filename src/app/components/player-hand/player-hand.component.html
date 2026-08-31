@@ -18,8 +18,8 @@
     </div>
 
     <div class="currentHandStack">
-      @for (card of currentHand() ; track card) {
-        <div class="hand-card">
+      @for (card of currentHand() ; track card; let i = $index) {
+        <div class="hand-card" [ngStyle]="handCardStyles()[i]">
           <img (click)="chooseCard(card)" src="./assets/img/cards/{{card}}.png">
           @if (isSingleplayer()) {
             <button
