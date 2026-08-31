@@ -2,8 +2,13 @@
 
 ## Status (2026-08-31)
 
-Stufe A (TODO 1–4, 6) umgesetzt, TODO 5 (PWA-Manifest) offen gelassen (fehlende Icon-Assets),
+Stufe A (TODO 1–4, 6) umgesetzt, TODO 5 (PWA-Manifest) offen gelassen (fehlende Icon-Assets,
+jetzt als [Issue #46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) getrackt),
 siehe PR #45.
+
+Alle noch offenen Punkte aus diesem Plan (TODO 5, TODO 8, sowie die Stufe-B-Ideenliste
+2026-08-31) sind als GitHub Issues angelegt — siehe Tabelle am Ende des jeweiligen Abschnitts
+unten bzw. "Referenzen".
 
 **TODO 7 (Handkarten als fixe Bottom-Leiste) umgesetzt**, inkl. Fächer-Layout für den Fall, dass
 die Hand über 5 Karten wächst (Dieb "Stehlen": 3 Handkarten ablegen, 5 nachziehen —
@@ -33,7 +38,8 @@ nur mit ≤5 Karten gerechnet, das war zu optimistisch):
   `player-hand/CLAUDE.md`) — in dieser Sandbox-Umgebung ohne Netzwerkzugriff nicht möglich,
   insbesondere: Heropower-Icon-Antippbarkeit direkt über der neuen Leiste auf einem echten Gerät,
   Verhalten bei aktivem `.color-effect`-Rahmen kombiniert mit der Fächer-Rotation.
-- TODO 8 (Querformat) weiterhin offen.
+- TODO 8 (Querformat) weiterhin offen, jetzt als
+  [Issue #47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47) getrackt.
 
 Ursprünglicher Diagnosepunkt 9 unten ging von einer ohnehin auf 5 gedeckelten Hand aus — das ist
 ungenau: `card-play.service.ts` deckelt nur das *Nachziehen* auf 5, Dieb/Ninjas "Stehlen"
@@ -137,7 +143,7 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
 
 ## TODOs — Stufe A
 
-- [ ] **TODO 1 — Globale Touch-Härtung in `src/styles.scss`**
+- [x] **TODO 1 — Globale Touch-Härtung in `src/styles.scss`**
   - `html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }` — killt
     300ms-Delay und Standard-Tap-Highlight projektweit.
   - `body { overscroll-behavior-y: contain; }` — verhindert, dass ein vertikaler Swipe am
@@ -145,7 +151,7 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
     Geste des mobilen Browsers auslöst.
   - Verifikation: `ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI`.
 
-- [ ] **TODO 2 — `user-select: none` auf Spielgrafik, nicht auf Text**
+- [x] **TODO 2 — `user-select: none` auf Spielgrafik, nicht auf Text**
   - Neue Utility-Klasse (oder direkt auf `img`-Selektoren in `player-hand.component.scss`,
     `enemy.component.scss`, `heropower.component.scss`) `-webkit-user-select: none; user-select:
     none; -webkit-touch-callout: none;` für Handkarten-, Kartenstapel-, Gegner-Token-Bilder —
@@ -153,7 +159,7 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
     (Signin/Signup-Inputs, Enemy-Beschreibungstext sollen selektierbar bleiben).
   - Verifikation: `ng build`, `ng test`.
 
-- [ ] **TODO 3 — Sichtbares `:active`-Feedback für Handkarten/Buttons**
+- [x] **TODO 3 — Sichtbares `:active`-Feedback für Handkarten/Buttons**
   - `.hand-card img:active { transform: scale(0.96); }` (analog für Heropower-Icon,
     `game-prompt__button`, `rest-button`/`event-button`) mit kurzer `transition` — gibt beim
     Antippen sofortiges visuelles Feedback statt der wirkungslosen `:hover`-Regel.
@@ -161,7 +167,7 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
     nur `:active` ergänzen.
   - Verifikation: `ng build`, `ng test`, visueller Check im Chrome-DevTools-Touch-Emulationsmodus.
 
-- [ ] **TODO 4 — `100dvh` statt `100vh`, Safe-Area-Grundgerüst**
+- [x] **TODO 4 — `100dvh` statt `100vh`, Safe-Area-Grundgerüst**
   - `game.component.scss:7`: `min-height: 100vh;` beibehalten (Fallback), direkt danach
     `min-height: 100dvh;` ergänzen.
   - `src/index.html:7`: `viewport`-Meta um `viewport-fit=cover` ergänzen
@@ -176,7 +182,9 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
   - Verifikation: `ng build`, `ng test`, visueller Check mit Chrome-DevTools-Geräte-Presets, die
     eine Notch simulieren (z.B. "iPhone 15 Pro").
 
-- [ ] **TODO 5 — PWA-Grundgerüst (Manifest + Theme-Color, ohne Offline-Anspruch)**
+- [ ] **TODO 5 — PWA-Grundgerüst (Manifest + Theme-Color, ohne Offline-Anspruch)** — getrackt in
+  [Issue #46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) (blockiert durch
+  fehlende Icon-Assets)
   - `ng add @angular/pwa` **nicht** blind ausführen (bringt Service-Worker-Caching mit, das bei
     einem Firestore-Realtime-Spiel eher schadet, wenn veraltete Assets/Chunks gecacht werden,
     ohne dass das hier separat durchdacht wurde) — stattdessen manuell nur
@@ -189,7 +197,7 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
   - Verifikation: `ng build`, Chrome-DevTools "Add to Home Screen"-Prompt-Simulation
     (Application-Tab → Manifest) zeigt keine Fehler.
 
-- [ ] **TODO 6 — Globale Verifikation Stufe A**
+- [x] **TODO 6 — Globale Verifikation Stufe A**
   - `ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI`.
   - Visueller Check Chrome-DevTools Touch-Emulation + Geräte-Presets mit Notch, mind. einmal
     Startscreen + laufendes Spiel.
@@ -210,7 +218,8 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
   - Auswirkung: sichtbarer Redesign-Schritt, kein reiner CSS-Fix — vor Umsetzung kurz Skizze/
     Beschreibung mit Nutzer abstimmen.
 
-- [ ] **TODO 8 — Querformat: Kompaktlayout oder "Bitte drehen"-Hinweis**
+- [ ] **TODO 8 — Querformat: Kompaktlayout oder "Bitte drehen"-Hinweis** — getrackt in
+  [Issue #47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47)
   - Zwei Optionen zur Wahl (Nutzerentscheidung):
     a) `@media (max-height: 500px) and (orientation: landscape)`-Kompaktvariante: Timer/Enemy-
        Card nebeneinander statt gestapelt (`flex-direction: row` in `.mainfield` in diesem
@@ -221,12 +230,27 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
   - Verifikation: `ng build`, `ng test`, DevTools-Querformat-Emulation bei mind. 2–3
     gängigen Phone-Auflösungen.
 
+## Stufe B — Ideenliste (2026-08-31, im Chat mit dem Nutzer entwickelt)
+
+Über TODO 7/8 hinaus im Gespräch entstandene weitere Mobile-Ideen, jeweils als eigenes GitHub
+Issue getrackt statt als weitere nummerierte Plan-TODOs — kleiner im Zuschnitt als TODO 7/8, aber
+architektonisch/optisch trotzdem eigene Entscheidungen, kein reiner CSS-Fix:
+
+| # | Idee | Issue |
+|---|---|---|
+| 1 | Handkarten als fixe Bottom-Leiste | TODO 7 oben, umgesetzt (PR #45) |
+| 1b | Fächer-Layout bei >5 Handkarten (Hearthstone/Slay the Spire) | umgesetzt (PR #45) |
+| 2 | Querformat: Kompaktlayout oder "Bitte drehen" | TODO 8 oben, [#47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47) |
+| 3 | Kartenstapel-Deko → Nachziehstapel-Icon mit Zähler-Badge | [#48](https://github.com/PatrickFrantzen/hero-dungeon/issues/48) |
+| 4 | Heropower als andockbarer FAB statt permanentem Overlay | [#49](https://github.com/PatrickFrantzen/hero-dungeon/issues/49) |
+| 5 | Enemy-Card kollabierbar (Beschreibung ein-/ausklappbar) | [#50](https://github.com/PatrickFrantzen/hero-dungeon/issues/50) |
+| 6 | Haptisches Feedback (`navigator.vibrate`) | [#51](https://github.com/PatrickFrantzen/hero-dungeon/issues/51) |
+| 7 | Swipe-Geste zum Karte-Spielen (Ergänzung zu Tap) | [#52](https://github.com/PatrickFrantzen/hero-dungeon/issues/52) |
+
 ## Nicht im Scope dieses Plans
 
-- Kein Service-Worker/Offline-Caching (siehe TODO 5 — bewusst zurückgestellt, eigene Abwägung
-  nötig wegen Firestore-Realtime-Daten).
-- Keine Gesten-Steuerung (Swipe-to-play einer Handkarte statt Tap) — reine Zusatz-Idee, kein
-  aktuelles Defizit, das Spiel funktioniert mit Tap.
+- Kein Service-Worker/Offline-Caching (siehe TODO 5/Issue #46 — bewusst zurückgestellt, eigene
+  Abwägung nötig wegen Firestore-Realtime-Daten).
 - Keine Bild-Optimierung (`srcset`/`loading="lazy"`) in diesem Plan (Diagnosepunkt 11) — erst
   nach Prüfung der tatsächlichen Dateigrößen in `src/assets/img/` als eigener, kleiner Plan.
 - Keine Vereinheitlichung kleiner Schriftgrößen (Diagnosepunkt 10) — Feinschliff, kein
@@ -241,3 +265,13 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
 - Recherche 2026-08-31 (WebSearch): Apple HIG/Material-Touch-Target-Richtwerte, Mobile-CSS-
   Konsistenz-Artikel 2026 (`touch-action`, Safe-Area, `dvh`), Mobile-UX-Grundsätze (Daumenzone,
   mobile UX als eigene Disziplin).
+- **GitHub Issues** (alle offenen Punkte dieses Plans, 2026-08-31 angelegt):
+  [#46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) PWA-Manifest (TODO 5),
+  [#47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47) Querformat (TODO 8),
+  [#48](https://github.com/PatrickFrantzen/hero-dungeon/issues/48) Kartenstapel-Zähler,
+  [#49](https://github.com/PatrickFrantzen/hero-dungeon/issues/49) Heropower-FAB,
+  [#50](https://github.com/PatrickFrantzen/hero-dungeon/issues/50) Enemy-Card kollabierbar,
+  [#51](https://github.com/PatrickFrantzen/hero-dungeon/issues/51) Haptisches Feedback,
+  [#52](https://github.com/PatrickFrantzen/hero-dungeon/issues/52) Swipe-Geste. Bei Umsetzung
+  eines dieser Punkte zuerst das jeweilige Issue lesen (kann seit Anlage aktualisiert worden
+  sein) statt nur diesen Plan-Abschnitt.
