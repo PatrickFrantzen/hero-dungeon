@@ -31,6 +31,9 @@
         left: clamp(8px, 5vw, 50px);
         bottom: 15px;
         width: clamp(70px, 15vw, 150px);
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
     }
 }
 
@@ -52,8 +55,17 @@
 
     img {
         width: clamp(70px, 15vw, 150px);
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        transition: transform 0.1s ease-out;
+
         &:hover {
             cursor: pointer;
+        }
+
+        &:active {
+            transform: scale(0.96);
         }
     }
 }
