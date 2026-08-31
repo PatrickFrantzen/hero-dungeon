@@ -31,6 +31,9 @@
         width: clamp(28px, 6vw, 44px);
         height: clamp(28px, 6vw, 44px);
         padding: 0;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
     }
 }
 

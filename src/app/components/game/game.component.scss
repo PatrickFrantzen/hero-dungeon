@@ -5,8 +5,18 @@
     background-image: url('^assets/img/backgroundimage/background.png');
     background-size: cover;
     min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
     background-repeat: no-repeat;
+    box-sizing: border-box;
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+
+    // app-player-hand's .card-area ist als fixe Leiste am unteren Bildschirmrand verankert
+    // (player-hand.component.scss) und liegt daher außerhalb des normalen Dokumentflusses hier -
+    // Reserve schafft Platz, damit der letzte Content (Statistik/Prompts) im Zustand "won" nicht
+    // dahinter verschwindet.
+    padding-bottom: clamp(160px, 32vh, 230px);
 }
 
 .game-error {

@@ -8,9 +8,18 @@
     justify-content: center;
     align-items: center;
 z-index: 1;
-    img{
-        &:hover{
+    img {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        transition: transform 0.1s ease-out;
+
+        &:hover {
             cursor: pointer;
+        }
+
+        &:active {
+            transform: scale(0.94);
         }
     }
 }

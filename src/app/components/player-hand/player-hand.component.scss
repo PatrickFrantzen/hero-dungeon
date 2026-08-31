@@ -1,9 +1,20 @@
+// Idee 1 (docs/planned/mobile-native-feel-plan.md, Stufe B): Handkarten als fixe Leiste am
+// unteren Bildschirmrand statt im normalen Dokumentfluss verankert - bleibt in der Daumenzone
+// sichtbar, unabhängig davon, wie viel Content (Statistik/Boss-Bestätigung) darüber gerendert
+// wird. `.mainfield` (game.component.scss) reserviert dafür `padding-bottom`.
 .card-area {
-    position: relative;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     width: 100%;
+    box-sizing: border-box;
+    padding: 18px 10px calc(14px + env(safe-area-inset-bottom));
+    background: linear-gradient(0deg, rgba(6, 6, 10, 0.94) 0%, rgba(20, 14, 26, 0.88) 70%, rgba(20, 14, 26, 0) 100%);
 }
 
 .player-hand-error {
@@ -20,8 +31,8 @@
 
 .event-button {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    bottom: calc(100% + clamp(8px, 2vh, 16px));
+    right: 14px;
     z-index: 2;
 }
 
@@ -29,32 +40,60 @@
     img {
         position: absolute;
         left: clamp(8px, 5vw, 50px);
-        bottom: 15px;
-        width: clamp(70px, 15vw, 150px);
+        bottom: clamp(14px, 2vh, 20px);
+        width: clamp(48px, 10vw, 90px);
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
     }
 }
 
 .currentHandStack {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     align-items: flex-end;
-    gap: clamp(4px, 1.5vw, 16px);
+    gap: clamp(2px, 1vw, 12px);
     max-width: 100%;
-    padding: 0 clamp(8px, 4vw, 32px);
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 4px clamp(8px, 4vw, 32px) 0;
     box-sizing: border-box;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
+// Fächer-Layout (Hearthstone/Slay-the-Spire-Prinzip, siehe player-hand.component.ts
+// handCardStyles()): Rotation/Hochversatz/Skalierung kommen als CSS-Custom-Properties per
+// [ngStyle] rein, die transform-Deklaration selbst bleibt hier - so kollidiert das :active-
+// Press-Feedback unten nicht mit den Inline-Styles (Inline-style transform würde jede
+// Stylesheet-Regel gleicher Eigenschaft überstimmen, Custom Properties dagegen nicht).
 .hand-card {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 0 0 auto;
+    transform: rotate(var(--rot, 0deg)) translateY(var(--y, 0px)) scale(var(--scale, 1));
+    transform-origin: 50% 130%;
+    transition: transform 0.18s ease-out, margin-left 0.18s ease-out;
 
     img {
         width: clamp(70px, 15vw, 150px);
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+
         &:hover {
             cursor: pointer;
         }
+    }
+
+    &:active {
+        transform: rotate(var(--rot, 0deg)) translateY(calc(var(--y, 0px) - 10px)) scale(calc(var(--scale, 1) * 0.97));
+        z-index: 999 !important;
     }
 }
 

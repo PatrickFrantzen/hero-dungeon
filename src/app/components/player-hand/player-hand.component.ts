@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
@@ -57,6 +57,42 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   private readonly singleTargetActionCards = new Set(['spende', 'stehlen', 'heilkräuter', 'heile']);
 
   loadError = signal<string | null>(null);
+
+  /** Fächer-Layout für die Handkarten, sobald mehr als 5 Karten gehalten werden (Dieb "Stehlen":
+   * 3 Handkarten ablegen, 5 nachziehen - kann die Hand auf bis zu 7 Karten wachsen lassen, siehe
+   * dieb.service.ts). Bei ≤5 Karten bleibt die bestehende, nicht überlappende Reihe (Flexbox-
+   * `gap`) unverändert - Inspiration Hearthstone/Slay the Spire: Karten überlappen statt in eine
+   * zweite Reihe umzubrechen, fächern sich in einem Bogen auf und schrumpfen ab 7 Karten leicht,
+   * damit die Reihe auch auf schmalen Screens eine einzige bleibt. Gesetzt werden nur CSS-Custom-
+   * Properties (`--rot`/`--y`/`--scale`) plus `margin-left`/`z-index` - die eigentliche
+   * `transform`-Deklaration (inkl. `:active`-Press-Feedback) steht in player-hand.component.scss,
+   * damit Inline-Styles nicht mit dem CSS-`:active`-Zustand kollidieren. */
+  readonly handCardStyles = computed(() => {
+    const hand = this.currentHand();
+    const total = hand.length;
+    if (total <= 5) {
+      return hand.map(() => ({}));
+    }
+
+    const spread = Math.min(56, (total - 1) * 9);
+    const overlapFraction = Math.min(0.62, (total - 5) * 0.14);
+    const shrink = total > 7 ? Math.max(0.78, 1 - (total - 7) * 0.06) : 1;
+
+    return hand.map((_, index) => {
+      const t = total === 1 ? 0 : index / (total - 1) - 0.5;
+      const edgeBias = Math.abs(t) * 2;
+      const style: Record<string, string> = {
+        '--rot': `${(t * spread).toFixed(1)}deg`,
+        '--y': `${(edgeBias * edgeBias * 12).toFixed(1)}px`,
+        '--scale': `${shrink}`,
+        'z-index': `${index}`,
+      };
+      if (index > 0) {
+        style['margin-left'] = `calc(clamp(70px, 15vw, 150px) * -${overlapFraction.toFixed(2)})`;
+      }
+      return style;
+    });
+  });
 
   gameSubscr!: Subscription;
   playerSubsc?: Subscription;
