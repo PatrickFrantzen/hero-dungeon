@@ -7,6 +7,9 @@
     @for (token of currentEnemy().token; track token; let x = $index) {
       <img src="./assets/img/monsterToken/{{token}}.png" alt="{{token}}" decoding="async">
     }
+    @if (typeIcon(); as icon) {
+      <img src="./assets/img/monsterToken/{{icon}}.png" alt="{{currentEnemy().type}}" decoding="async">
+    }
   </mat-card-content>
   @if (descriptionExpanded()) {
     <mat-card-footer class="enemy-description">{{ currentEnemy().type }}</mat-card-footer>
