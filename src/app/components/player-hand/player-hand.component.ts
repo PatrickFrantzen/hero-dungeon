@@ -10,6 +10,7 @@ import { ResetGameTimer, SetGameStats, SetGameTimerPauseState, StartGameTimer, u
 import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
+import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
@@ -45,6 +46,8 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   currentPlayers = this.store.selectSignal(LobbySelectors.currentPlayers);
 
   currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
+
+  currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
 
   currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
 
@@ -129,6 +132,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Kurzer Vibrations-Pulse bei Karte spielen/Heropower auslösen (Issue #51). iOS Safari kennt
+   * `navigator.vibrate` nicht (dort `undefined`) - der Optional-Call degradiert dann automatisch
+   * ohne Fehler, kein Feature-Check nötig. */
+  private vibrate(durationMs = 15): void {
+    navigator.vibrate?.(durationMs);
+  }
+
   /**
    * Firestore-Writes in dieser Komponente laufen "fire and forget" (das lokale NGXS-Update
    * passiert sofort, unabhängig vom Schreib-Ergebnis - die Live-Subscription oben synchronisiert
@@ -184,6 +194,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere' | 'magier') {
+    this.vibrate();
     const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
     switch (kind) {
       case 'magier':
@@ -212,6 +223,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   chooseCard(card: string) {
+    this.vibrate();
     if (!this.heropowerActivated()) {
       if (this.singleTargetActionCards.has(card)) {
         this.openTargetPlayerDialog(card);

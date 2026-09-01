@@ -137,5 +137,30 @@
     font-size: clamp(0.85rem, 2.3vw, 1rem);
 }
 
+// Querformat-Kompaktlayout (Issue #47, TODO 8 Option a): auf kurzen Viewports (Phone quer,
+// ~375-430px Höhe) übersteigt der gestapelte Content (Timer + Enemy-Card + Handkarten-Leiste)
+// die Viewporthöhe deutlich. Timer/Enemy-Card wandern hier von "column" (übereinander) zu "row"
+// (nebeneinander) - .card-area (player-hand.component.scss) bleibt "position: fixed" und damit
+// von diesem Flex-Layout unberührt.
+@media (orientation: landscape) and (max-height: 500px) {
+    .mainfield {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        gap: clamp(8px, 2vw, 16px);
+        padding-bottom: clamp(90px, 20vh, 130px);
+    }
 
+    .game-timer {
+        margin-top: 0;
+        min-width: min(180px, 40vw);
+        padding: 8px 14px;
+    }
+
+    .game-timer__time {
+        font-size: 1.8rem;
+        margin: 2px 0;
+    }
+}
 

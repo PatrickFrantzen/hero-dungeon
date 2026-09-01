@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { Store} from '@ngxs/store';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
@@ -27,11 +27,23 @@ export class HeropowerComponent {
   heropower = computed(() => this.currentUserHeroData()?.heroPower ?? '');
   description = computed(() => this.currentUserHeroData()?.description ?? '');
 
+  /** Rein UI-lokaler Zustand (Issue #49) - die Heropower-Karte ist kein permanentes Overlay
+   * mehr, sondern klappt per FAB-Tap als Bottom-Sheet auf/zu. Heropower-Auslösung selbst
+   * (heropowerActivated/heropowerArray) bleibt unverändert, nur die Präsentation ändert sich. */
+  readonly sheetOpen = signal(false);
+
+  toggleSheet(): void {
+    this.sheetOpen.update((open) => !open);
+  }
+
   constructor(
     private store: Store
   ) {}
 
   activateHeroPower() {
+    // iOS Safari kennt navigator.vibrate nicht (dort undefined) - der Optional-Call
+    // degradiert dann automatisch ohne Fehler, kein Feature-Check nötig (Issue #51).
+    navigator.vibrate?.(15);
     this.store.dispatch(new UpdateHeropowerActivated(true))
     this.store.dispatch(new UpdateHeropowerArray([]))
   }
