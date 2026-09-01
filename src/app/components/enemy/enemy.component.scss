@@ -13,10 +13,20 @@
     box-sizing: border-box;
     padding: clamp(8px, 2vw, 16px);
     text-align: center;
+    cursor: pointer;
 }
 
 .enemy-name {
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.enemy-description-toggle {
+    font-size: 0.75em;
+    opacity: 0.7;
 }
 
 .enemy-tokens {
