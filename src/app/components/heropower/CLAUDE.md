@@ -12,7 +12,15 @@
   `HeropowerService.resolveMagierHeropower()`) pausiert zusätzlich den Dungeon-Timer — Details
   zum Gesamt-Feature (inkl. Walküre/Paladin "Göttlicher Schild") in
   `src/app/components/game/CLAUDE.md`.
-- **`heropower.component.ts`** (+ `.html`/`.scss`) — reine Darstellung.
+- **`heropower.component.ts`** (+ `.html`/`.scss`) — reine Darstellung. Seit Issue #49 kein
+  permanentes Overlay mehr: ein immer sichtbarer `.heropower-fab`-Button (unten rechts,
+  außerhalb der Handkarten-Fächerreihe) toggelt ein lokales `sheetOpen`-Signal, das die
+  eigentliche Heropower-Karte (`.heropower-sheet`, vormals `.heropower-position`) als
+  Bottom-Sheet ein-/ausblendet. `heropowerActivated()` (Store-State) steuert weiterhin
+  `color-effect` auf der Karte selbst und zusätzlich einen gelben Ring auf dem FAB
+  (`.heropower-fab--active`), damit eine aktive Fähigkeit auch bei geschlossenem Sheet sichtbar
+  bleibt. Reine UI-Präsentation — `activateHeroPower()`/`deactivateHeroPower()`/die zehn
+  `heroPower*()`-Methoden sind unverändert.
 
 Neue Heldenfähigkeit hinzufügen: Prüf-Logik (das "ob überhaupt auflösen") gehört primär in
 `HeropowerService` (`services/CLAUDE.md`, dort auch der Hinweis auf die bewusst nicht

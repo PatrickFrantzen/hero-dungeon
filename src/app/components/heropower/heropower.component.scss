@@ -1,4 +1,8 @@
-.heropower-position {
+// Bottom-Sheet (Issue #49) - dockt wie vorher .heropower-position direkt über der Handkarten-
+// Leiste an (.card-area ist position: fixed und damit Containing Block, siehe Nachtrag
+// 2026-08-29 in docs/done/responsive-design-plan.md), erscheint aber nur bei geöffnetem FAB
+// statt permanent.
+.heropower-sheet {
     position: absolute;
     right: 25%;
     left: 25%;
@@ -7,7 +11,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-z-index: 1;
+    z-index: 1;
+
     img {
         user-select: none;
         -webkit-user-select: none;
@@ -22,6 +27,37 @@ z-index: 1;
             transform: scale(0.94);
         }
     }
+}
+
+// Immer sichtbarer, kleiner Einstiegspunkt statt permanentem Overlay - unten rechts, außerhalb
+// der zentrierten Handkarten-Fächerreihe (player-hand.component.ts handCardStyles()).
+.heropower-fab {
+    position: absolute;
+    right: 12px;
+    bottom: calc(100% + clamp(8px, 2vh, 16px));
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.72);
+    color: white;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: transform 0.1s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+
+    &:active {
+        transform: scale(0.94);
+    }
+}
+
+.heropower-fab--active {
+    border-color: #ffe066;
+    box-shadow: 0 0 12px rgba(255, 224, 102, 0.6);
 }
 
 .color-effect {
