@@ -47,6 +47,46 @@ ungenau: `card-play.service.ts` deckelt nur das *Nachziehen* auf 5, Dieb/Ninjas 
 (`dieb.service.ts`, 3 Karten ablegen + bis zu 5 nachziehen) kann die Hand auf bis zu 7 Karten
 wachsen lassen, ohne dass eine Obergrenze greift.
 
+### Nachtrag (2026-09-01) — Live-Test auf echtem Gerät: Fächer-Bug + Ladezeit + kaputtes Kartenbild
+
+Der Nutzer testete den GitHub-Pages-Build auf einem echten Android-Gerät und meldete drei
+Befunde:
+
+1. **Fächer-Layout riss bei 7-8 Handkarten seitlich auf.** Ursache: `margin-left` in
+   `handCardStyles()` reservierte nur die UNROTIERTE Kartenbreite im Flex-Layout (CSS
+   `transform` ändert die Layout-Box nicht), die tatsächlich sichtbare Bounding-Box einer
+   rotierten Karte ist aber breiter (`W*cos(θ) + H*sin(θ)`) — bei der vorherigen Rotation von bis
+   zu ±28° wuchs die äußerste Karte dadurch über ihre reservierte Breite hinaus und wurde vom
+   Viewport-Rand abgeschnitten. Fix: Rotation auf max. ±17° gedeckelt (vorher ±28°), Überlappung
+   (`overlapFraction`) und Schrumpfung (`shrink`) in `player-hand.component.ts` nachgezogen,
+   seitliches Padding in `.currentHandStack` (`player-hand.component.scss`) leicht erhöht.
+   Verifiziert mit einer aus der echten Formel nachgebauten statischen Testseite
+   (Playwright/Chromium) bei 8 und 10 Karten auf 320px und 375px Viewportbreite — keine
+   Überlappung mit dem Viewport-Rand mehr.
+2. **Kartenbild "Heiltrank" war kaputt.** `hero-definitions.ts` referenziert überall
+   `card === 'heiltrank'` (Kleinschreibung), die Bilddatei hieß aber `Heiltrank.png`
+   (Großschreibung). Auf einem case-insensitiven Dateisystem (lokale Entwicklung) fiel das nicht
+   auf, GitHub Pages läuft aber auf einem case-sensitiven Linux-Server — dort schlug der
+   Bild-Request fehl. Fix: Datei zu `heiltrank.png` umbenannt (Code nicht angefasst, da die
+   Kleinschreibung überall sonst konsistent verwendet wird). Keine weiteren Groß-/
+   Kleinschreibungs-Mismatches gefunden (Kartennamen aus `hero-definitions.ts` und Monster-Token
+   aus `monster-collection.data.ts` gegen alle Dateien in `src/assets/img/cards/` bzw.
+   `monsterToken/` abgeglichen).
+3. **Kartenbilder luden spürbar langsam** (Diagnosepunkt 11 unten, bisher zurückgestellt).
+   Prüfung ergab: alle 33 Bilder in `src/assets/img/cards/` lagen als 16-bit-PNG mit
+   durchschnittlich ~530 KB vor (Gesamtordner 18 MB) bei einer Darstellungsgröße von max. 150px
+   Breite — deutlich überdimensioniert. Fix: alle Kartenbilder auf eine 256-Farben-Palette
+   requantisiert (`PIL.Image.quantize(colors=256, method=Image.FASTOCTREE)`, `optimize=True`) —
+   bei diesem flächigen Illustrationsstil ohne sichtbaren Qualitätsverlust (visuell geprüft,
+   inkl. der texturreichsten Bilder `quest.png`/`monster.png`). Ergebnis: 18 MB → 2,24 MB
+   (-87 %). Zusätzlich `loading="lazy"`/`decoding="async"` auf Kartenstapel-Icon und Gegner-
+   Token-Bilder ergänzt, `decoding="async"` auf Handkarten-Bilder (nicht `loading="lazy"`, da
+   permanent sichtbar in der fixen Bottom-Leiste — verzögertes Laden brächte hier keinen Vorteil,
+   nur Risiko für einen sichtbaren Ladeversatz).
+
+Verifiziert: `ng build` grün, `ng test --watch=false --browsers=ChromeHeadlessCI` 54/54 grün.
+**Nicht durchgeführt**: erneuter Live-Test auf echtem Gerät (kein Testgerät in dieser Sandbox).
+
 ---
 
 Ursprünglicher Plan-Text (2026-08-31, vor Umsetzung von TODO 7): `docs/done/responsive-design-plan.md` hat die App überhaupt erst responsive gemacht

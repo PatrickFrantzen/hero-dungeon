@@ -65,11 +65,21 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
    * 3 Handkarten ablegen, 5 nachziehen - kann die Hand auf bis zu 7 Karten wachsen lassen, siehe
    * dieb.service.ts). Bei ≤5 Karten bleibt die bestehende, nicht überlappende Reihe (Flexbox-
    * `gap`) unverändert - Inspiration Hearthstone/Slay the Spire: Karten überlappen statt in eine
-   * zweite Reihe umzubrechen, fächern sich in einem Bogen auf und schrumpfen ab 7 Karten leicht,
+   * zweite Reihe umzubrechen, fächern sich in einem Bogen auf und schrumpfen ab 6 Karten leicht,
    * damit die Reihe auch auf schmalen Screens eine einzige bleibt. Gesetzt werden nur CSS-Custom-
    * Properties (`--rot`/`--y`/`--scale`) plus `margin-left`/`z-index` - die eigentliche
    * `transform`-Deklaration (inkl. `:active`-Press-Feedback) steht in player-hand.component.scss,
-   * damit Inline-Styles nicht mit dem CSS-`:active`-Zustand kollidieren. */
+   * damit Inline-Styles nicht mit dem CSS-`:active`-Zustand kollidieren.
+   *
+   * Live-Test (2026-09-01) zeigte: die äußeren Karten rutschten bei 7-8 Karten seitlich aus dem
+   * sichtbaren Bereich. Ursache: `margin-left` reserviert nur die UNROTIERTE Kartenbreite im
+   * Flex-Layout (CSS `transform` ändert die Layout-Box nicht), die tatsächlich sichtbare
+   * Bounding-Box einer rotierten Karte ist aber breiter (`W*cos(θ) + H*sin(θ)`) - bei der
+   * vorherigen Rotation von bis zu ±28° und einem Höhen-/Breitenverhältnis von ~1.5 wuchs die
+   * äußerste Karte dadurch spürbar über ihre reservierte Breite hinaus. Fix: Rotation deutlich
+   * gedeckelt (max. ±17° statt ±28°) und Überlappung/Schrumpfung so nachgezogen, dass die
+   * inkl. Rotationszuwachs sichtbare Gesamtbreite auch bei 8-10 Karten innerhalb eines typischen
+   * Phone-Viewports (ab ~320px) bleibt, ohne dass horizontales Scrollen nötig wird. */
   readonly handCardStyles = computed(() => {
     const hand = this.currentHand();
     const total = hand.length;
@@ -77,9 +87,9 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       return hand.map(() => ({}));
     }
 
-    const spread = Math.min(56, (total - 1) * 9);
-    const overlapFraction = Math.min(0.62, (total - 5) * 0.14);
-    const shrink = total > 7 ? Math.max(0.78, 1 - (total - 7) * 0.06) : 1;
+    const spread = Math.min(34, (total - 5) * 8);
+    const overlapFraction = Math.min(0.7, 0.18 + (total - 5) * 0.09);
+    const shrink = total > 6 ? Math.max(0.68, 1 - (total - 6) * 0.07) : 1;
 
     return hand.map((_, index) => {
       const t = total === 1 ? 0 : index / (total - 1) - 0.5;
