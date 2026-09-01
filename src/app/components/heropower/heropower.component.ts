@@ -32,6 +32,9 @@ export class HeropowerComponent {
   ) {}
 
   activateHeroPower() {
+    // iOS Safari kennt navigator.vibrate nicht (dort undefined) - der Optional-Call
+    // degradiert dann automatisch ohne Fehler, kein Feature-Check nötig (Issue #51).
+    navigator.vibrate?.(15);
     this.store.dispatch(new UpdateHeropowerActivated(true))
     this.store.dispatch(new UpdateHeropowerArray([]))
   }
