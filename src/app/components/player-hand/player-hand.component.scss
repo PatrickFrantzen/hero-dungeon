@@ -37,15 +37,36 @@
 }
 
 .card-stack {
+    position: absolute;
+    left: clamp(8px, 5vw, 50px);
+    bottom: clamp(14px, 2vh, 20px);
+
     img {
-        position: absolute;
-        left: clamp(8px, 5vw, 50px);
-        bottom: clamp(14px, 2vh, 20px);
+        display: block;
         width: clamp(48px, 10vw, 90px);
         user-select: none;
         -webkit-user-select: none;
         -webkit-touch-callout: none;
     }
+}
+
+.card-stack-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #6a1b9a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .currentHandStack {

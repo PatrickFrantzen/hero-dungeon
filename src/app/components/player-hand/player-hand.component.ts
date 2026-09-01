@@ -10,6 +10,7 @@ import { ResetGameTimer, SetGameStats, SetGameTimerPauseState, StartGameTimer, u
 import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
+import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
@@ -45,6 +46,8 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   currentPlayers = this.store.selectSignal(LobbySelectors.currentPlayers);
 
   currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
+
+  currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
 
   currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
 

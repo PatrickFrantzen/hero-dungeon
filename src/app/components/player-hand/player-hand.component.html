@@ -10,12 +10,10 @@
     >Event ausführen</button>
   }
 
-  <div class="card-stack">
-    @for (c of [0,1,2,3]; track c; let i = $index) {
-      <img [ngStyle]="{'left.px': i * 5}"
-        src="./assets/img/cards/monster.png">
-      }
-    </div>
+  <div class="card-stack" title="Karten im Nachziehstapel">
+    <img src="./assets/img/cards/monster.png" alt="Nachziehstapel">
+    <span class="card-stack-badge">{{ currentCardStack().length }}</span>
+  </div>
 
     <div class="currentHandStack">
       @for (card of currentHand() ; track card; let i = $index) {
