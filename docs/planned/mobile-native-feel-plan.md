@@ -1,14 +1,15 @@
 # Plan: Mobile-Native-Feel statt nur "passt auf den Bildschirm"
 
-## Status (2026-08-31)
+## Status (2026-09-01)
 
-Stufe A (TODO 1–4, 6) umgesetzt, TODO 5 (PWA-Manifest) offen gelassen (fehlende Icon-Assets,
-jetzt als [Issue #46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) getrackt),
-siehe PR #45.
+Stufe A (TODO 1–6) umgesetzt, siehe PR #45 (TODO 1–4, 6) und
+[Issue #46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) (TODO 5, PWA-Manifest —
+war durch fehlende Icon-Assets blockiert, Blocker durch vom Nutzer bereitgestelltes Rund-Emblem
+gelöst).
 
-Alle noch offenen Punkte aus diesem Plan (TODO 5, TODO 8, sowie die Stufe-B-Ideenliste
-2026-08-31) sind als GitHub Issues angelegt — siehe Tabelle am Ende des jeweiligen Abschnitts
-unten bzw. "Referenzen".
+Alle noch offenen Punkte aus diesem Plan (TODO 8, sowie die Stufe-B-Ideenliste 2026-08-31) sind
+als GitHub Issues angelegt — siehe Tabelle am Ende des jeweiligen Abschnitts unten bzw.
+"Referenzen".
 
 **TODO 7 (Handkarten als fixe Bottom-Leiste) umgesetzt**, inkl. Fächer-Layout für den Fall, dass
 die Hand über 5 Karten wächst (Dieb "Stehlen": 3 Handkarten ablegen, 5 nachziehen —
@@ -182,20 +183,24 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
   - Verifikation: `ng build`, `ng test`, visueller Check mit Chrome-DevTools-Geräte-Presets, die
     eine Notch simulieren (z.B. "iPhone 15 Pro").
 
-- [ ] **TODO 5 — PWA-Grundgerüst (Manifest + Theme-Color, ohne Offline-Anspruch)** — getrackt in
-  [Issue #46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) (blockiert durch
-  fehlende Icon-Assets)
-  - `ng add @angular/pwa` **nicht** blind ausführen (bringt Service-Worker-Caching mit, das bei
-    einem Firestore-Realtime-Spiel eher schadet, wenn veraltete Assets/Chunks gecacht werden,
-    ohne dass das hier separat durchdacht wurde) — stattdessen manuell nur
-    `src/manifest.webmanifest` anlegen (`name`, `short_name`, `display: "standalone"`,
-    `theme_color`, `background_color`, Icons aus vorhandenen Assets ableiten/neu exportieren)
-    plus `<link rel="manifest" href="manifest.webmanifest">` und
-    `<meta name="theme-color" content="...">` in `src/index.html`. Service-Worker-Caching-
-    Strategie bewusst als eigenes, separates Thema zurückstellen (Firestore-Realtime-Daten vs.
-    Offline-Cache ist eine eigene Abwägung, kein Nebeneffekt dieses Plans).
-  - Verifikation: `ng build`, Chrome-DevTools "Add to Home Screen"-Prompt-Simulation
-    (Application-Tab → Manifest) zeigt keine Fehler.
+- [x] **TODO 5 — PWA-Grundgerüst (Manifest + Theme-Color, ohne Offline-Anspruch)** — umgesetzt in
+  [Issue #46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46). Icon-Blocker gelöst:
+  vom Nutzer bereitgestelltes Rund-Emblem (Helm + gekreuzte Waffen, Runenring) freigestellt und
+  als `src/assets/img/pwa/icon-192.png`/`icon-512.png` exportiert (Badge auf ~74% Durchmesser
+  zentriert vor `#1a1a2e`-Fläche, damit der Runenring innerhalb der Android-"maskable"-
+  Sicherheitszone bleibt, `purpose: "any maskable"`). `src/manifest.webmanifest` neu angelegt
+  (`name`/`short_name: "Hero Dungeon"`, `display: "standalone"`, `background_color`/
+  `theme_color: "#1a1a2e"`, `start_url: "startscreen"`), verlinkt über
+  `<link rel="manifest" href="manifest.webmanifest">` in `src/index.html`. Kein
+  `ng add @angular/pwa` (kein Service-Worker/Offline-Caching, siehe Begründung unten bei
+  "Nicht im Scope"). Manifest-Pfade sind bewusst relativ (kein führendes `/`) statt absolut,
+  damit sie wie das Hintergrundbild-Fix aus PR #53 unter dem GitHub-Pages-Unterpfad
+  (`--base-href /hero-dungeon/`) korrekt auflösen — `src/manifest.webmanifest` zusätzlich in
+  `angular.json` → `assets` eingetragen, sonst landet die Datei nicht im Build-Output.
+  - Verifikation: `ng build` (Standard und mit `--base-href /hero-dungeon/`) grün,
+    `ng test --watch=false --browsers=ChromeHeadlessCI` (54/54), Chrome-DevTools-Protokoll
+    `Page.getAppManifest` liefert `"errors": []` sowohl lokal als auch unter simuliertem
+    GitHub-Pages-Unterpfad.
 
 - [x] **TODO 6 — Globale Verifikation Stufe A**
   - `ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI`.
