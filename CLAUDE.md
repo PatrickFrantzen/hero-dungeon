@@ -121,6 +121,10 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
   `docs/planned/mobile-native-feel-plan.md` — Stufe A (inkl. PWA-Manifest, Issue #46) + TODO 7
   umgesetzt, restliche offene Punkte (Querformat, Heropower-FAB, Kartenstapel-Zähler, Haptik,
   Swipe-Geste) als GitHub Issues #47–#52 getrackt, siehe Referenzen-Abschnitt im Plan.
+- Kein Onboarding für neue Spieler (kein Tutorial, keine Hilfe-Seite): `docs/planned/
+  tutorial-plan.md` — Diagnose + PR-Schnitt für ein interaktives In-Game-Tutorial (Startscreen,
+  Heldenauswahl, Dungeon-Timer, Encounter-Symbol-Matching, Handkarten, Heldenfähigkeit,
+  Sieg/Niederlage), getrackt in [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues/54).
 - Deutsche und englische Bezeichner gemischt (`heropower-selector.ts` vs. `Heldenfähigkeiten`
   in Commit-Messages) — beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit
   beauftragt.
