@@ -33,3 +33,22 @@ Diese Komponente ist der zentrale Ort, an dem Store-Dispatches, Firestore-Reads 
 Spielregeln zusammenlaufen — bei jeder Änderung hier ist ein manueller Multiplayer-Smoke-Test
 (Karte spielen, jede Heropower-Variante auslösen, zweiter Spieler tritt bei, Kartenstapel geht
 zur Neige) sinnvoll, auch wenn `ng build`/`ng test` grün sind.
+
+## Swipe-Geste zum Karte-Spielen (Issue #52)
+
+Zusätzlich zu `(click)` auf dem Handkarten-`<img>` (weiterhin die primäre, verlässliche
+Interaktion) gibt es `touchstart`/`touchmove`/`touchend`/`touchcancel`-Handler
+(`onCardTouchStart()`/`onCardTouchMove()`/`onCardTouchEnd()`/`onCardTouchCancel()`), die ein
+Wischen nach oben über `swipeThresholdPx` (70px) wie einen Tap behandeln und `chooseCard()`
+aufrufen. Reiner UI-Zustand über zwei lokale Signale (`draggingIndex`/`dragDeltaY`, kein
+Store-State) — `handCardStyle(index)` mischt diesen Drag-Offset als `--drag-y`-Custom-Property
+in den bestehenden Fächer-Basisstil aus `handCardStyles()` (siehe dort), die eigentliche
+`transform`-Berechnung inkl. `--drag-y` steht in `player-hand.component.scss`. Wird der
+Schwellwert beim Loslassen nicht erreicht, snappt die Karte rein visuell (CSS-Transition, kein
+Dispatch) zurück in ihre Fächer-Position. `event.preventDefault()` in `onCardTouchMove()`/
+`onCardTouchEnd()` verhindert sowohl Seiten-Scroll/Pull-to-Refresh während des Ziehens als auch
+den synthetischen `click`, den mobile Browser nach `touchend` sonst zusätzlich auslösen würden
+(Doppel-Ausspielen der Karte) — bei einem reinen Tap ohne nennenswerte Bewegung feuert
+`touchmove` gar nicht, dort bleibt der normale `click`-Pfad unverändert. `touch-action: pan-x`
+auf dem Bild überlässt vertikales Wischen komplett dieser JS-Logik (keine Konkurrenz mit
+nativem Scroll), horizontales Scrollen der Fächer-Reihe (`.currentHandStack`) bleibt möglich.

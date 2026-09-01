@@ -107,6 +107,72 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     });
   });
 
+  /** Swipe-Geste zum Karte-Spielen (Issue #52), additiv zu Tap - Tap bleibt über das
+   * bestehende (click) auf dem Bild unverändert die primäre, verlässliche Interaktion. Nach
+   * oben wischen über `swipeThresholdPx` löst `chooseCard()` genauso aus wie ein Tap; wird der
+   * Schwellwert nicht erreicht, snappt die Karte per CSS-Transition zurück in ihre
+   * Fächer-Position (kein Store-Dispatch, rein visuell). Reiner UI-Zustand, deshalb lokale
+   * Signale statt Store. */
+  private readonly swipeThresholdPx = 70;
+  private dragStartY = 0;
+  readonly draggingIndex = signal<number | null>(null);
+  readonly dragDeltaY = signal(0);
+
+  /** Merge aus dem Fächer-Basisstil (handCardStyles()) und, während eines aktiven Swipes an
+   * genau diesem Index, dem zusätzlichen `--drag-y`-Custom-Property (siehe `.hand-card`-
+   * Transform in player-hand.component.scss), das die Karte dem Finger folgen lässt. */
+  handCardStyle(index: number): Record<string, string> {
+    const base = this.handCardStyles()[index] ?? {};
+    if (this.draggingIndex() === index && this.dragDeltaY() !== 0) {
+      return { ...base, '--drag-y': `${this.dragDeltaY().toFixed(1)}px` };
+    }
+    return base;
+  }
+
+  onCardTouchStart(event: TouchEvent, index: number): void {
+    this.dragStartY = event.touches[0].clientY;
+    this.draggingIndex.set(index);
+    this.dragDeltaY.set(0);
+  }
+
+  onCardTouchMove(event: TouchEvent, index: number): void {
+    if (this.draggingIndex() !== index) {
+      return;
+    }
+    const delta = this.dragStartY - event.touches[0].clientY;
+    // Nach unten nur wenig zulassen (Finger leicht verrutscht bleibt ein Tap-Kandidat), nach
+    // oben auf das ~1.6-fache des Schwellwerts deckeln, damit die Karte dem Finger nicht
+    // beliebig weit folgt.
+    this.dragDeltaY.set(Math.max(-20, Math.min(delta, this.swipeThresholdPx * 1.6)));
+    if (Math.abs(delta) > 8) {
+      // Verhindert Seiten-Scroll/Pull-to-Refresh während des Ziehens UND den synthetischen
+      // `click`, den mobile Browser nach touchend sonst zusätzlich zum direkten
+      // chooseCard()-Aufruf unten auslösen würden (Doppel-Ausspielen der Karte).
+      event.preventDefault();
+    }
+  }
+
+  onCardTouchEnd(event: TouchEvent, index: number, card: string): void {
+    if (this.draggingIndex() !== index) {
+      return;
+    }
+    const delta = this.dragDeltaY();
+    this.draggingIndex.set(null);
+    this.dragDeltaY.set(0);
+    if (delta >= this.swipeThresholdPx) {
+      event.preventDefault();
+      this.chooseCard(card);
+    }
+  }
+
+  onCardTouchCancel(index: number): void {
+    if (this.draggingIndex() !== index) {
+      return;
+    }
+    this.draggingIndex.set(null);
+    this.dragDeltaY.set(0);
+  }
+
   gameSubscr!: Subscription;
   playerSubsc?: Subscription;
 

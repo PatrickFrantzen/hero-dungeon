@@ -17,8 +17,14 @@
 
     <div class="currentHandStack">
       @for (card of currentHand() ; track card; let i = $index) {
-        <div class="hand-card" [ngStyle]="handCardStyles()[i]">
-          <img (click)="chooseCard(card)" src="./assets/img/cards/{{card}}.png" alt="{{card}}" decoding="async">
+        <div class="hand-card" [ngStyle]="handCardStyle(i)" [class.dragging]="draggingIndex() === i">
+          <img
+            (click)="chooseCard(card)"
+            (touchstart)="onCardTouchStart($event, i)"
+            (touchmove)="onCardTouchMove($event, i)"
+            (touchend)="onCardTouchEnd($event, i, card)"
+            (touchcancel)="onCardTouchCancel(i)"
+            src="./assets/img/cards/{{card}}.png" alt="{{card}}" decoding="async">
           @if (isSingleplayer()) {
             <button
               class="rest-button tw-rounded tw-bg-purple-700 tw-px-2 tw-py-1 tw-text-xs tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-purple-600"
