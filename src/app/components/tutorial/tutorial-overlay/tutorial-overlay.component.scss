@@ -1,0 +1,35 @@
+// `.tutorial-overlay` selbst nimmt keine Klicks entgegen (pointer-events: none) - laut
+// tutorial-plan.md (PR 3) soll der Spieler waehrend eines laufenden Singleplayer-Spiels
+// weiterspielen koennen, waehrend die Schritte 3-5 (Timer/Encounter/Handkarten) durchgeklickt
+// werden. Nur die Karte selbst (Text + Buttons) ist interaktiv.
+.tutorial-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.tutorial-dim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+// Abdunklung ausserhalb des Zielelements per box-shadow-Trick (ein "unendlich" grosser Schatten
+// rund um ein transparentes Rechteck) statt eines SVG-Cutouts - braucht kein zusaetzliches
+// Markup und folgt der Position aus TutorialOverlayComponent 1:1.
+.tutorial-spotlight {
+    position: fixed;
+    border-radius: 8px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+    transition: top 0.2s ease-out, left 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out;
+}
+
+.tutorial-card {
+    position: fixed;
+    left: 50%;
+    bottom: clamp(16px, 6vh, 64px);
+    transform: translateX(-50%);
+    width: min(360px, calc(100vw - 32px));
+    pointer-events: auto;
+}

@@ -27,6 +27,7 @@ diesem Verzeichnis gelesen/bearbeitet wird — dafür ist diese Tabelle da, nich
 | `src/app/components/player-hand/` | Hotspot-Komponente — vor Änderungen lesen |
 | `src/app/components/enemy/` | Container/Presenter-Paar für den Gegner-Screen |
 | `src/app/components/heropower/` | Container/Presenter-Paar für Heldenfähigkeiten |
+| `src/app/components/tutorial/` | Interaktives Onboarding-Overlay (Issue #54), PR-Stand des Plans |
 | `src/app/services/` | Repository- vs. Business-Logik-Services, welcher Service wofür zuständig ist |
 | `src/app/states/` | NGXS-States, Registrierung, Zusammenspiel actions/states/selectors |
 | `src/models/` | Helden-/Monster-/Spiel-Datenmodell |
@@ -125,6 +126,8 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
   tutorial-plan.md` — Diagnose + PR-Schnitt für ein interaktives In-Game-Tutorial (Startscreen,
   Heldenauswahl, Dungeon-Timer, Encounter-Symbol-Matching, Handkarten, Heldenfähigkeit,
   Sieg/Niederlage), getrackt in [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues/54).
+  PR 1 (Grundgerüst: Overlay/Spotlight/Navigation, noch Platzhalter-Inhalte) ist umgesetzt,
+  siehe `src/app/components/tutorial/CLAUDE.md` und Status-Abschnitt im Plan.
 - Deutsche und englische Bezeichner gemischt (`heropower-selector.ts` vs. `Heldenfähigkeiten`
   in Commit-Messages) — beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit
   beauftragt.

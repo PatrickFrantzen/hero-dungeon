@@ -11,7 +11,7 @@ registrierter `MobState` wurde deswegen entfernt, siehe
 
 Aktuell registriert (Stand des letzten Abgleichs): `cardsInHandState`, `CardStackState`,
 `CurrentGameState`, `CurrentUserState`, `DeliveryStackState`, `heropowerState`, `LobbyState`,
-`EncounterState`.
+`EncounterState`, `TutorialState`.
 
 ## Aufteilung (nach `docs/planned/currentGame-state-split-plan.md` bzw. dessen aktuellem Status)
 
@@ -44,7 +44,9 @@ einem State. Davon sind bereits herausgelöst:
 
 Weitere States: `cardStack-state.ts`/`cardsInHand-state.ts`/`deliveryStack-state.ts` (die drei
 Kartenstapel: Nachziehstapel, Hand, Ablage), `currentUser-state.ts` (eingeloggter Nutzer),
-`heropower-state.ts` (aktuell aktive Heldenfähigkeit).
+`heropower-state.ts` (aktuell aktive Heldenfähigkeit), `tutorial-state.ts` (`TutorialState`) —
+Onboarding-Overlay aus Issue #54 (`hasSeenTutorial`/`active`/`currentStepIndex`), Details in
+`src/app/components/tutorial/CLAUDE.md`.
 
 **Wichtig für mehrere States, die dieselbe Action behandeln:** Mehrere States können
 `@Action(CurrentGameData)`-Handler für dieselbe dispatchte Action-Klasse haben — jeder patcht

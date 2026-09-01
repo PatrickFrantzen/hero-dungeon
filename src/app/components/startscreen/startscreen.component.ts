@@ -11,6 +11,7 @@ import { CurrentGameAction, CurrentGameData } from 'src/app/actions/currentGame-
 import { SetNewEnemy } from 'src/app/actions/encounter-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
 import { CreateNewMobAction, UpdateMobAction } from 'src/app/actions/MonsterStack-action';
+import { StartTutorial } from 'src/app/actions/tutorial-action';
 import { GameFactoryService } from 'src/app/services/game-factory.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
@@ -85,6 +86,10 @@ export class StartscreenComponent implements OnInit {
     } catch {
       this.startscreenError = 'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
     }
+  }
+
+  startTutorial(): void {
+    this.store.dispatch(new StartTutorial());
   }
 
   logout() {

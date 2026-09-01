@@ -1,5 +1,18 @@
 # Plan: Interaktives Tutorial
 
+## Status (2026-09-01)
+
+**PR 1 (Tutorial-Infrastruktur) ist umgesetzt** — siehe `src/app/components/tutorial/CLAUDE.md`
+für den Code-Stand. `TutorialState`/`TutorialSelectors`/`tutorial-action.ts` existieren und sind
+in `app.config.ts` registriert, `TutorialOverlayContainerComponent`/`TutorialOverlayComponent`
+sind global in `app.component.html` eingehängt, Spotlight-Highlight + Abdunklung + Weiter/
+Zurück/Überspringen funktionieren mit einer Platzhalter-Schrittliste (`tutorial-steps.data.ts`).
+Manueller Hilfe-Button auf `StartscreenComponent`. `ng build`/`ng test` grün (54/54).
+
+**Noch offen:** PR 2–4 (echte Schrittinhalte für alle sieben Stationen) und PR 5
+(Auto-Trigger beim ersten Singleplayer-Spiel) — siehe PR-Schnitt unten, an den Design-
+Entscheidungen hat sich nichts geändert.
+
 ## Referenzen
 
 [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues/54) — Interaktives Tutorial
