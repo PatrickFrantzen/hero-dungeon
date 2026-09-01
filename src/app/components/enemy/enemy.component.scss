@@ -51,3 +51,17 @@
     font-size: clamp(0.85rem, 2.3vw, 1rem);
     line-height: 1.35;
 }
+
+// Querformat-Kompaktlayout (Issue #47, TODO 8 Option a) - Enemy-Card sitzt hier neben statt
+// unter dem Timer (game.component.scss), braucht also weniger Höhe, dafür ist mehr Breite frei.
+@media (orientation: landscape) and (max-height: 500px) {
+    .current-Enemy {
+        max-height: clamp(90px, 45vh, 160px);
+        padding: clamp(6px, 1.5vw, 10px);
+    }
+
+    .enemy-tokens img {
+        width: clamp(22px, 5vw, 34px);
+        height: clamp(22px, 5vw, 34px);
+    }
+}

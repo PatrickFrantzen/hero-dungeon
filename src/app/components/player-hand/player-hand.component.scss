@@ -121,3 +121,20 @@
 .rest-button {
     margin-top: 8px;
 }
+
+// Querformat-Kompaktlayout (Issue #47, TODO 8 Option a) - engere Leiste, kleinere Handkarten,
+// damit auf ~375-430px Viewporthöhe noch Platz für Timer/Enemy-Card (game.component.scss,
+// enemy.component.scss) bleibt.
+@media (orientation: landscape) and (max-height: 500px) {
+    .card-area {
+        padding: 8px 6px calc(6px + env(safe-area-inset-bottom));
+    }
+
+    .hand-card img {
+        width: clamp(50px, 10vw, 90px);
+    }
+
+    .card-stack img {
+        width: clamp(36px, 7vw, 60px);
+    }
+}
