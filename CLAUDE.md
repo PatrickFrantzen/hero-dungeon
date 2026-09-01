@@ -118,9 +118,9 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
   Flexbox/`clamp()` umgestellt, voller Multiplayer-Smoke-Test mit Firebase-Login steht laut
   Status-Abschnitt im Plan noch aus. Folgearbeit "fühlt sich mobil wie ein Spiel an" (Touch-
   Härtung, Safe-Area, Handkarten als fixe Fächer-Leiste u.a.):
-  `docs/planned/mobile-native-feel-plan.md` — Stufe A + TODO 7 umgesetzt, restliche offene Punkte
-  (Querformat, Heropower-FAB, Kartenstapel-Zähler, Haptik, Swipe-Geste, PWA-Manifest) als GitHub
-  Issues #46–#52 getrackt, siehe Referenzen-Abschnitt im Plan.
+  `docs/planned/mobile-native-feel-plan.md` — Stufe A (inkl. PWA-Manifest, Issue #46) + TODO 7
+  umgesetzt, restliche offene Punkte (Querformat, Heropower-FAB, Kartenstapel-Zähler, Haptik,
+  Swipe-Geste) als GitHub Issues #47–#52 getrackt, siehe Referenzen-Abschnitt im Plan.
 - Deutsche und englische Bezeichner gemischt (`heropower-selector.ts` vs. `Heldenfähigkeiten`
   in Commit-Messages) — beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit
   beauftragt.
