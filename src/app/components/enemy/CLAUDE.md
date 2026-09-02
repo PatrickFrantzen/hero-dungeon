@@ -21,5 +21,20 @@ und die freitextigen Ereigniskarten-Beschreibungen (siehe `Mob.type` in
 `@if (typeIcon(); as icon)` im Template rendert dann nichts. Das Icon wird im `@for` über
 `currentEnemy().token` als zusätzliches, letztes `<img>` in `.enemy-tokens` angehängt (gleiches
 Styling wie die Kampf-Token-Icons, kein eigener CSS-Block nötig). Die drei Bilder sind wie die
-Kartenbilder auf 256 Farben quantisiert und auf 160×160px zugeschnitten (Rendergröße max. 44px,
-siehe `enemy.component.scss`).
+Kartenbilder auf 256 Farben quantisiert und auf 160×160px zugeschnitten.
+
+## Dynamische Token-Icon-Größe (Live-Test-Feedback, 2026-09-02)
+
+`EnemyComponent.tokenIconCount` (Kampf-Token + ggf. Kategorie-Icon) und `tokenIconSizePx`
+(lineare Interpolation zwischen `TOKEN_ICON_MAX_PX` (64px, wenige Icons) und `TOKEN_ICON_MIN_PX`
+(30px, `TOKEN_ICON_MAX_COUNT` = 12 Icons) sorgen dafür, dass Encounter mit wenigen Tokens
+(normale Monster/Personen/Hindernisse, meist 2-5 Icons inkl. Kategorie-Icon) deutlich größer
+dargestellt werden als früher (vorher fix `clamp(28px, 6vw, 44px)`), während die tokenreichsten
+Bosse (`monster-collection.data.ts`, aktuell max. 12 Token bei "Verdammt, ein Drache!!!"/"Der
+Dungeon-Overlord") nicht überlaufen. `TOKEN_ICON_MAX_COUNT` ist bewusst an der höchsten
+tatsächlich vorkommenden Boss-Tokenzahl verankert, kein Schätzwert — bekommt ein künftiger Boss
+mehr Token, muss diese Konstante mitgezogen werden. Folgt demselben Muster wie
+`player-hand.component.scss` (`--rot`/`--y`/`--scale`): JS berechnet den fertigen Pixel-Wert,
+`[ngStyle]` bindet ihn als `--token-size`-Custom-Property auf `.enemy-tokens`, `enemy.component.
+scss` wendet ihn nur noch per `clamp()` an (Sicherheitsnetz gegen extreme Viewport-Breiten,
+eigener, engerer Clamp für die Querformat-Kompaktansicht).
