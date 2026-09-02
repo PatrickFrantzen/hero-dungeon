@@ -3,9 +3,12 @@
     {{ currentEnemy().name }}
     <span class="enemy-description-toggle">{{ descriptionExpanded() ? '▴' : '▾' }}</span>
   </mat-card-header>
-  <mat-card-content class="enemy-tokens">
+  <mat-card-content class="enemy-tokens" [ngStyle]="{'--token-size': tokenIconSizePx() + 'px'}">
     @for (token of currentEnemy().token; track token; let x = $index) {
       <img src="./assets/img/monsterToken/{{token}}.png" alt="{{token}}" decoding="async">
+    }
+    @if (typeIcon(); as icon) {
+      <img src="./assets/img/monsterToken/{{icon}}.png" alt="{{currentEnemy().type}}" decoding="async">
     }
   </mat-card-content>
   @if (descriptionExpanded()) {

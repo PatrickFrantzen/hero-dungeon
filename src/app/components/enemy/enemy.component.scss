@@ -1,3 +1,9 @@
+// Wappen/Schild-Rahmen (Live-Test-Feedback, 2026-09-02, Abstimmung mit Patrick): metallischer
+// Rahmen + dunkler Pergament-Hintergrund + dezenter Glow, passend zur Bildsprache der neuen
+// Person/Hindernis/Monster-Icons (geprägte Münze auf Holz). `--mdc-elevated-card-container-color:
+// transparent` neutralisiert zuerst Materials eigenen mat-card-Hintergrund-Token, bevor die
+// beiden background-Layer unten (Pergament-Verlauf als padding-box, Metall-Verlauf als
+// border-box) ihn ersetzen - sonst würde die MDC-Theme-Farbe je nach Spezifität durchscheinen.
 .current-Enemy {
     align-self: center;
     width: fit-content;
@@ -11,13 +17,30 @@
     gap: clamp(4px, 1.2vh, 10px);
     max-width: min(480px, 92vw);
     box-sizing: border-box;
-    padding: clamp(8px, 2vw, 16px);
+    padding: clamp(10px, 2.4vw, 18px);
     text-align: center;
     cursor: pointer;
+
+    --mdc-elevated-card-container-color: transparent;
+    border-radius: 14px;
+    border: 3px solid transparent;
+    background:
+        linear-gradient(180deg, rgba(32, 23, 16, 0.94), rgba(14, 10, 8, 0.96)) padding-box,
+        linear-gradient(135deg, #e2c384, #7a5a2e, #e2c384) border-box;
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.55),
+        0 0 20px rgba(154, 92, 219, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -14px 26px rgba(0, 0, 0, 0.45);
 }
 
 .enemy-name {
+    font-family: var(--font-heading);
     font-weight: 700;
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    letter-spacing: 0.03em;
+    color: #f1dcae;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -37,9 +60,12 @@
     gap: clamp(4px, 1vw, 10px);
     width: 100%;
 
+    // --token-size kommt fertig berechnet aus EnemyComponent.tokenIconSizePx() (Live-Test-
+    // Feedback: Icons wirkten bei wenigen Tokens unnötig klein) - clamp() hier ist nur ein
+    // Sicherheitsnetz gegen extreme Viewport-Breiten, nicht die eigentliche Größenlogik.
     img {
-        width: clamp(28px, 6vw, 44px);
-        height: clamp(28px, 6vw, 44px);
+        width: clamp(28px, var(--token-size, 40px), 72px);
+        height: clamp(28px, var(--token-size, 40px), 72px);
         padding: 0;
         user-select: none;
         -webkit-user-select: none;
@@ -50,6 +76,7 @@
 .enemy-description {
     font-size: clamp(0.85rem, 2.3vw, 1rem);
     line-height: 1.35;
+    color: rgba(255, 255, 255, 0.85);
 }
 
 // Querformat-Kompaktlayout (Issue #47, TODO 8 Option a) - Enemy-Card sitzt hier neben statt
@@ -61,7 +88,7 @@
     }
 
     .enemy-tokens img {
-        width: clamp(22px, 5vw, 34px);
-        height: clamp(22px, 5vw, 34px);
+        width: clamp(22px, var(--token-size, 30px), 40px);
+        height: clamp(22px, var(--token-size, 30px), 40px);
     }
 }

@@ -53,7 +53,10 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
 - **UI**: Angular Material 21 (`@angular/material`, `@angular/cdk`), Theme `purple-green.css`
   (prebuilt, nicht customized), SCSS pro Komponente. Seit 2026-08-30 zusätzlich **Tailwind CSS
   v3** als Utility-Layer (geprefixt `tw-`, `preflight` deaktiviert) für Screens ohne
-  Material-Komponenten — Details/Migrationsstand: `src/app/components/CLAUDE.md`.
+  Material-Komponenten — Details/Migrationsstand: `src/app/components/CLAUDE.md`. Seit
+  2026-09-02 zusätzlich **Cinzel** (Google Font, `index.html`) als Fantasy-Serife für
+  Überschriften/Titel (`--font-heading`-CSS-Variable, `src/styles.scss`) — Fließtext bleibt
+  Roboto, Details: `src/app/components/CLAUDE.md`.
 - **Backend**: Firebase über `@angular/fire` v20 — Firestore und Auth
   (`@angular/fire/auth-guard`, `redirectLoggedInTo`/`redirectUnauthorizedTo` in
   `app.routes.ts`). Firebase-Config liegt in `src/environments/environment*.ts` (Web-API-Key ist
