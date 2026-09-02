@@ -26,7 +26,10 @@ export class DialogChooseHeroComponent extends BaseDialogComponent<ChooseHeroDia
 
   private dialogData = inject<{ singleplayerMode?: boolean; useExtraDeck?: boolean } | null>(MAT_DIALOG_DATA, { optional: true });
   numberOfPlayer!:number;
-  selectedValue!: Heros;
+  // Bewusst kein Default-Held - der "Ok"-Button bleibt disabled, bis der Spieler aktiv eine
+  // Auswahl trifft (Bugfix: Dialog liess sich vorher per Backdrop-Klick/Escape ohne jede
+  // Auswahl schliessen, siehe disableClose an den open()-Aufrufstellen).
+  selectedValue?: Heros;
 
   heros: Heros[] = HERO_DEFINITIONS
     .filter((def) => !this.dialogData?.singleplayerMode || ['dieb', 'waldläufer'].includes(def.id))
@@ -39,7 +42,10 @@ export class DialogChooseHeroComponent extends BaseDialogComponent<ChooseHeroDia
     super(dialogRef);
   }
 
-  getChoosenHero(choosenHero: Heros) {
+  getChoosenHero(choosenHero: Heros | undefined) {
+    if (!choosenHero) {
+      return;
+    }
     const { heroName, heroPower, cardstack, description } = choosenHero.value;
     this.closeWith({
       choosenHero: { heroname: heroName, heropower: heroPower, cardstack, description },

@@ -92,3 +92,15 @@ Dateien konkret angefasst wird.
 `dialog-base.component.ts` (`BaseDialogComponent<TResult>`) und `dialog-results.ts` (typisierte
 Ergebnis-Interfaces) statt jeweils eigenes `MatDialogRef`-Boilerplate zu wiederholen — neue
 Dialoge sollten davon erben statt bei null anzufangen.
+
+**Kein Wegklicken ohne Auswahl** (Live-Test-Bugfix, 2026-09-02): `DialogGameSettingsComponent`
+(`startscreen.component.ts`, `openDialog()`) und `DialogChooseHeroComponent`
+(`game.component.ts`, `openDialog()`) werden mit `disableClose: true` geöffnet — vorher liess
+sich beides per Backdrop-Klick/Escape ohne jede Auswahl schliessen, der Aufrufer bekam dann kein
+Ergebnis und der Spieler stand ohne Held/Spiel fest, ohne Fehlermeldung. Zusätzlich hat
+`DialogChooseHeroComponent.selectedValue` jetzt keinen impliziten Default mehr (`Heros |
+undefined`) und der "Ok"-Button ist disabled, solange kein Held gewählt ist — analog zum
+bereits bestehenden `[disabled]`-Pattern in `DialogGameSettingsComponent` (dort über
+`FormControl.invalid`). Ein neuer Dialog mit Pflichtauswahl sollte demselben Muster folgen:
+`disableClose: true` an der `.open()`-Aufrufstelle + `[disabled]` auf dem Bestätigungs-Button,
+solange keine gültige Auswahl vorliegt.

@@ -168,6 +168,9 @@ export class GameComponent implements OnInit, OnDestroy {
       { data: ChooseHeroDialogResult }
     >(DialogChooseHeroComponent, {
       data: { singleplayerMode: numberOfPlayers === 1, useExtraDeck: numberOfPlayers === 1 || numberOfPlayers === 2 },
+      // disableClose: der Dialog liess sich vorher per Backdrop-Klick/Escape ohne Heldenwahl
+      // schliessen - der Spieler stand danach ohne Held/Kartenstapel im Spiel fest.
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe(async (result) => {

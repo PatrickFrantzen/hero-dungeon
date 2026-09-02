@@ -59,7 +59,10 @@ export class StartscreenComponent implements OnInit {
   openDialog(singleplayerMode = false) {
     let dialogRef = this.dialog.open<DialogGameSettingsComponent, { singleplayerMode: boolean }, { data: GameSettingsDialogResult }>(
       DialogGameSettingsComponent,
-      { data: { singleplayerMode } }
+      // disableClose: ohne Auswahl (Schwierigkeit ist zwar vorbelegt, Spiele-ID/Spielerzahl
+      // aber nicht) durfte der Dialog vorher per Backdrop-Klick/Escape verschwinden, ohne dass
+      // ein Spiel erstellt wurde - wirkte wie ein Bug ("Klick geht ins Leere").
+      { data: { singleplayerMode }, disableClose: true }
     );
 
     dialogRef.afterClosed().subscribe(async (result) => {
