@@ -101,8 +101,13 @@
     text-transform: uppercase;
 }
 
+.game-timer__label {
+    font-family: var(--font-heading);
+}
+
 .game-timer__time {
     display: block;
+    font-family: var(--font-heading);
     font-size: 2.5rem;
     font-weight: 700;
     line-height: 1;

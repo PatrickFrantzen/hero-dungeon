@@ -38,3 +38,16 @@ mehr Token, muss diese Konstante mitgezogen werden. Folgt demselben Muster wie
 `[ngStyle]` bindet ihn als `--token-size`-Custom-Property auf `.enemy-tokens`, `enemy.component.
 scss` wendet ihn nur noch per `clamp()` an (Sicherheitsnetz gegen extreme Viewport-Breiten,
 eigener, engerer Clamp für die Querformat-Kompaktansicht).
+
+## Wappen/Schild-Rahmen (Restyling, Abstimmung mit Patrick, 2026-09-02)
+
+`.current-Enemy` hat einen metallischen Rahmen (Gradient-Border-Trick: `padding-box`/
+`border-box`-Layering, kein Bild-Asset) + dunklen Pergament-Hintergrund + dezenten violetten
+Glow bekommen, passend zur Bildsprache der neuen Person/Hindernis/Monster-Icons (geprägte Münze
+auf Holz, siehe Kategorie-Icon-Abschnitt oben). `--mdc-elevated-card-container-color:
+transparent` neutralisiert zuerst Materials eigenen `mat-card`-Hintergrund-Token, bevor die
+beiden `background`-Layer ihn ersetzen — ohne das könnte je nach Spezifität die MDC-Theme-Farbe
+durchscheinen. `.enemy-name` nutzt `var(--font-heading)` (Cinzel, siehe
+`src/app/components/CLAUDE.md`) statt Roboto. Bei einer künftigen Anpassung dieses Looks bitte
+`--mdc-elevated-card-container-color` nicht vergessen, falls die neue Variante wieder einen
+undurchsichtigen Hintergrund braucht.
