@@ -6,21 +6,25 @@ export interface TutorialStep {
   targetSelector?: string;
 }
 
-// Echte Inhalte fuer Station 1+2 (Startscreen, Heldenauswahl, PR 2) und Station 3-5
-// (Dungeon-Timer, Encounter, Handkarten, PR 3) aus docs/planned/tutorial-plan.md. Station 6+7
-// (Heldenfaehigkeit, Sieg/Niederlage) folgen in PR 4 - bis dahin endet das Tutorial hier mit
-// "Fertig". Die Heldenauswahl-Schritte haben bewusst keinen targetSelector: der Dialog
-// (DialogChooseHeroComponent) ist zu diesem Zeitpunkt nicht geoeffnet, das Tutorial startet
-// nur vom Startscreen aus (siehe PR-2-Beschreibung im Plan: targetSelector nur fuer
-// startscreen.component.html). Die Timer-/Encounter-/Handkarten-Schritte targeten dagegen
-// echte, bereits im Markup vorhandene Klassen aus `game.component.html`/`enemy.component.html`/
-// `player-hand.component.html` (`.game-timer`/`.current-Enemy`/`.currentHandStack`) - die
-// existieren nur, waehrend `GameComponent` gemountet ist (laufendes Spiel). Weil
-// `.tutorial-overlay` selbst `pointer-events: none` ist (siehe tutorial-overlay.component.ts),
-// kann ein Spieler waehrend dieser Schritte reell weiterspielen bzw. erst ein Singleplayer-Spiel
-// starten, ohne das Overlay schliessen zu muessen - findet `document.querySelector()` das
-// Element (noch) nicht (z.B. Overlay auf dem Startscreen geoeffnet, bevor ein Spiel laeuft),
-// dimmt das Overlay stattdessen den ganzen Screen ohne Ausschnitt (siehe Fallback oben).
+// Echte Inhalte fuer alle sieben Stationen aus docs/planned/tutorial-plan.md: Startscreen,
+// Heldenauswahl (PR 2), Dungeon-Timer, Encounter, Handkarten (PR 3), Heldenfaehigkeit und
+// Sieg/Niederlage/Boss-Bestaetigung (PR 4). Die Heldenauswahl- und Sieg/Niederlage-Schritte
+// haben bewusst keinen targetSelector: `DialogChooseHeroComponent` ist zu diesem Zeitpunkt
+// nicht geoeffnet (Tutorial startet nur vom Startscreen aus, siehe PR-2-Beschreibung im Plan)
+// und `.game-prompt`/`.game-success` existieren nur in den seltenen `bossDefeated`/`won`/
+// `lost`-Zustaenden (siehe game.component.html) - beide Faelle laufen ins selbe
+// Volldimmung-ohne-Ausschnitt-Fallback (siehe TutorialOverlayComponent.spotlightRect). Die
+// Timer-/Encounter-/Handkarten-/Heropower-Schritte targeten dagegen echte, bereits im Markup
+// vorhandene Klassen aus `game.component.html`/`enemy.component.html`/
+// `player-hand.component.html`/`heropower.component.html` (`.game-timer`/`.current-Enemy`/
+// `.currentHandStack`/`.heropower-fab`) - Timer/Encounter/Handkarten existieren nur, waehrend
+// `GameComponent` gemountet ist (laufendes Spiel), der Heropower-FAB zusaetzlich nur, solange
+// `PlayerHandComponent` sichtbar ist (also nicht bei `bossDefeated`/`lost`, siehe
+// `game.component.html`). Weil `.tutorial-overlay` selbst `pointer-events: none` ist (siehe
+// tutorial-overlay.component.ts), kann ein Spieler waehrend dieser Schritte reell weiterspielen
+// bzw. erst ein Singleplayer-Spiel starten, ohne das Overlay schliessen zu muessen - findet
+// `document.querySelector()` das Element (noch) nicht, dimmt das Overlay stattdessen den ganzen
+// Screen ohne Ausschnitt (siehe Fallback oben).
 export const tutorialSteps: TutorialStep[] = [
   {
     title: 'Willkommen im Hero Dungeon',
@@ -72,8 +76,23 @@ export const tutorialSteps: TutorialStep[] = [
     targetSelector: '.currentHandStack'
   },
   {
-    title: 'Und weiter?',
-    body: 'Die nächsten Schritte - Heldenfähigkeit und Sieg/Niederlage - kommen als Ergänzung in ' +
-      'einer der nächsten Versionen dazu. "Fertig" schließt das Tutorial und merkt es als gesehen.'
+    title: 'Heldenfähigkeit',
+    body: 'Über den Kreis-Button unten rechts öffnet ihr eure Heldenfähigkeit - jeder Held hat ' +
+      'eine eigene, oft an eine Bedingung geknüpfte Sonderaktion (z.B. Karten spenden, stehlen ' +
+      'oder heilen). Der Magier friert damit sogar den Dungeon-Timer ein, bis wieder jemand eine ' +
+      'Karte spielt. Ein gelber Ring am Button zeigt euch, wenn eine Fähigkeit gerade aktiv ist.',
+    targetSelector: '.heropower-fab'
+  },
+  {
+    title: 'Sieg, Niederlage und der nächste Dungeon',
+    body: 'Besiegt ihr einen Boss, entscheidet ihr per Bestätigung, ob es in den nächsten Dungeon ' +
+      'weitergeht - der Timer startet dabei wieder bei 5 Minuten. Läuft die Zeit vorher ab, ist ' +
+      'der Dungeon verloren und ihr könnt die Kampagne von vorn versuchen. Nach dem letzten Boss ' +
+      'habt ihr den Dungeon-Overlord bezwungen und das Spiel gewonnen.'
+  },
+  {
+    title: 'Und los geht’s!',
+    body: 'Das war’s mit den Grundlagen - ihr könnt dieses Tutorial jederzeit über den Hilfe-' +
+      'Button auf dem Startscreen erneut öffnen. "Fertig" schließt es und merkt es als gesehen.'
   }
 ];

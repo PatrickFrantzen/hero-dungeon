@@ -129,8 +129,9 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
   tutorial-plan.md` — Diagnose + PR-Schnitt für ein interaktives In-Game-Tutorial (Startscreen,
   Heldenauswahl, Dungeon-Timer, Encounter-Symbol-Matching, Handkarten, Heldenfähigkeit,
   Sieg/Niederlage), getrackt in [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues/54).
-  PR 1 (Grundgerüst: Overlay/Spotlight/Navigation), PR 2 (Inhalt Startscreen/Heldenauswahl) und
-  PR 3 (Inhalt Dungeon-Timer/Encounter/Handkarten) sind umgesetzt, siehe
+  PR 1–4 (Grundgerüst + Inhalte für alle sieben Stationen: Startscreen, Heldenauswahl,
+  Dungeon-Timer, Encounter, Handkarten, Heldenfähigkeit, Sieg/Niederlage) sind umgesetzt, nur PR
+  5 (Auto-Trigger beim ersten Singleplayer-Spiel) fehlt noch — siehe
   `src/app/components/tutorial/CLAUDE.md` und Status-Abschnitt im Plan.
 - Deutsche und englische Bezeichner gemischt (`heropower-selector.ts` vs. `Heldenfähigkeiten`
   in Commit-Messages) — beim Umbau nicht zusätzlich vereinheitlichen, wenn nicht explizit

@@ -19,12 +19,17 @@ bekommen.
 Station 3–5, targeten die bereits vorhandenen Klassen `.game-timer`/`.current-Enemy`/
 `.currentHandStack` (kein neues Markup nötig). Diese Elemente existieren nur im laufenden Spiel;
 da `.tutorial-overlay` `pointer-events: none` ist, kann ein Spieler mit offenem Overlay ein
-Singleplayer-Spiel starten und die Schritte dort live mit echtem Spotlight sehen. Details:
-`src/app/components/tutorial/CLAUDE.md`.
+Singleplayer-Spiel starten und die Schritte dort live mit echtem Spotlight sehen.
 
-**Noch offen:** PR 4 (echte Schrittinhalte für Station 6+7: Heldenfähigkeit, Sieg/Niederlage)
-und PR 5 (Auto-Trigger beim ersten Singleplayer-Spiel) — siehe PR-Schnitt unten, an den
-Design-Entscheidungen hat sich nichts geändert.
+**PR 4 (Inhalt Heldenfähigkeit/Sieg-Niederlage) ist umgesetzt** — Station 6 targetet
+`.heropower-fab` (`heropower.component.html`, immer sichtbar solange `PlayerHandComponent`
+gerendert ist), Station 7 (Boss-Bestätigung/Sieg/Niederlage) erklärt den Ablauf rein textuell
+ohne `targetSelector`, weil `.game-prompt`/`.game-success` nur in den seltenen
+`bossDefeated`/`won`/`lost`-Zuständen existieren. Damit hat `tutorialSteps` jetzt echte Inhalte
+für alle sieben Stationen. Details: `src/app/components/tutorial/CLAUDE.md`.
+
+**Noch offen:** nur noch PR 5 (Auto-Trigger beim ersten Singleplayer-Spiel) — siehe PR-Schnitt
+unten, an den Design-Entscheidungen hat sich nichts geändert.
 
 ## Referenzen
 

@@ -4,14 +4,14 @@ Umsetzung von [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues
 `docs/planned/tutorial-plan.md` — **vor jeder Änderung hier zuerst den Status-Abschnitt in
 diesem Plan lesen** (welcher der 5 geplanten PRs ist bereits umgesetzt).
 
-## Aufbau (PR 1 — Infrastruktur, PR 2 — Startscreen/Heldenauswahl, PR 3 — Timer/Encounter/Handkarten)
+## Aufbau (PR 1–4: Infrastruktur, alle 7 Stationen inhaltlich fertig)
 
 - **`tutorial-steps.data.ts`** — reines Datenarray (`TutorialStep[]`, Felder `title`/`body`/
-  optional `targetSelector`), analog zum `monster-collection.data.ts`-Muster. Enthält acht echte
-  Schritte für Station 1–5 (Startscreen-Überblick, Singleplayer, Multiplayer erstellen/
-  beitreten, Heldenauswahl, Dungeon-Timer, Encounter-Symbole, Handkarten, Abschluss-Hinweis) —
-  Station 6+7 (Heldenfähigkeit, Sieg/Niederlage) kommt in PR 4 dazu, bis dahin endet das Tutorial
-  nach dem Handkarten-Schritt mit "Fertig".
+  optional `targetSelector`), analog zum `monster-collection.data.ts`-Muster. Enthält zehn echte
+  Schritte für alle sieben Stationen (Startscreen-Überblick, Singleplayer, Multiplayer
+  erstellen/beitreten, Heldenauswahl, Dungeon-Timer, Encounter-Symbole, Handkarten,
+  Heldenfähigkeit, Sieg/Niederlage/Boss-Bestätigung, Abschluss-Hinweis) — nur PR 5
+  (Auto-Trigger) fehlt noch.
 - Die `targetSelector`e für Station 1+2 (`#tutorial-target-singleplayer`,
   `#tutorial-target-multiplayer`) sitzen als stabile `id`s in `startscreen.component.html`
   (Singleplayer-Button bzw. ein umschließendes `<div>` um Multiplayer-Button + Join-Input +
@@ -31,6 +31,14 @@ diesem Plan lesen** (welcher der 5 geplanten PRs ist bereits umgesetzt).
   Singleplayer-Spiel starten und sieht die Timer-/Encounter-/Handkarten-Schritte dann live mit
   Spotlight auf den echten Elementen (kein separater Tutorial-Modus mit Fake-Daten, siehe
   Design-Entscheidung 3 im Plan).
+- Der `targetSelector` für Station 6 (`.heropower-fab`, `heropower.component.html`) folgt
+  demselben Muster wie Station 3–5 — der FAB ist immer sichtbar, solange `PlayerHandComponent`
+  gerendert ist (nicht bei `bossDefeated`/`lost`, siehe `game.component.html`). Station 7
+  (Sieg/Niederlage/Boss-Bestätigung) hat **bewusst keinen** `targetSelector`: `.game-prompt`/
+  `.game-success` existieren nur in den seltenen `bossDefeated`/`won`/`lost`-Zuständen — statt
+  auf einen Zustand zu warten, der beim Durchklicken des Tutorials i.d.R. nicht vorliegt, erklärt
+  dieser Schritt den Ablauf rein textuell (derselbe Volldimmung-Fallback wie bei der
+  Heldenauswahl).
 - **`tutorial-overlay/tutorial-overlay-container/tutorial-overlay-container.component.ts`** —
   Container (Smart/Dumb-Muster wie `enemy/`/`heropower/`, siehe
   `src/app/components/CLAUDE.md`): liest `TutorialSelectors.isTutorialActive`/`currentStepIndex`
@@ -63,5 +71,5 @@ diesem Plan lesen** (welcher der 5 geplanten PRs ist bereits umgesetzt).
 
 ## Was noch fehlt (siehe PR-Schnitt im Plan)
 
-Echte Schrittinhalte für Station 6+7 (Heldenfähigkeit, Sieg/Niederlage, PR 4) und der
-Auto-Trigger beim ersten Singleplayer-Spiel (PR 5) fehlen noch.
+Nur noch der Auto-Trigger beim ersten Singleplayer-Spiel (PR 5, `GameComponent` dispatcht
+`StartTutorial`, wenn `numberOfPlayers === 1` und `!hasSeenTutorial()`).
