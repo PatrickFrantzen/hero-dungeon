@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   input,
+  output,
   signal
 } from '@angular/core';
 import { NgStyle } from '@angular/common';
@@ -38,6 +39,13 @@ export class EnemyComponent {
   readonly gameId = input<string>('');
   readonly questCardStatus = input<boolean>(false);
 
+  /** Jägerin/Waldläufer "Joker" (siehe `joker-selection-state.ts`): solange aktiv, leuchten alle
+   * Kampf-Token der aktuellen Bedrohung (nicht das Kategorie-Icon) und sind klickbar. Reine
+   * Darstellung/Weiterleitung - `EnemyContainerComponent` entscheidet, ob überhaupt aktiv, und
+   * löst die Karte nach einem Klick auf. */
+  readonly tokenSelectable = input(false);
+  readonly tokenChosen = output<string>();
+
   /** Rein UI-lokaler Zustand (Issue #50) - Name + Token-Icons bleiben immer sichtbar, die
    * Beschreibung klappt per Tap auf die Karte ein/aus. Kein Store-State nötig, da nichts
    * Spielrelevantes betroffen ist. */
@@ -65,5 +73,14 @@ export class EnemyComponent {
 
   toggleDescription(): void {
     this.descriptionExpanded.update((expanded) => !expanded);
+  }
+
+  onTokenClick(token: string, event: Event): void {
+    if (!this.tokenSelectable()) return;
+    // Sonst öffnet/schließt der (click) auf der umschließenden mat-card zusätzlich die
+    // Beschreibung (toggleDescription()) - während der Joker-Auswahl soll ausschließlich das
+    // Token selbst reagieren.
+    event.stopPropagation();
+    this.tokenChosen.emit(token);
   }
 }

@@ -138,6 +138,23 @@
     margin-top: 8px;
 }
 
+// Jägerin/Waldläufer "Joker" (joker-selection-state.ts): zeigt an, dass die Karte bereits
+// "aktiviert" ist und auf ein Token-Klick in enemy.component.ts (dieselbe Glow-Animation dort)
+// wartet, statt erneut wirkungslos anklickbar zu wirken.
+.joker-card--active {
+    border-radius: 12px;
+    animation: joker-card-glow 1.1s ease-in-out infinite;
+}
+
+@keyframes joker-card-glow {
+    0%, 100% {
+        box-shadow: 0 0 6px 2px rgba(255, 224, 102, 0.55);
+    }
+    50% {
+        box-shadow: 0 0 14px 5px rgba(255, 224, 102, 0.9);
+    }
+}
+
 // Querformat-Kompaktlayout (Issue #47, TODO 8 Option a) - engere Leiste, kleinere Handkarten,
 // damit auf ~375-430px Viewporthöhe noch Platz für Timer/Enemy-Card (game.component.scss,
 // enemy.component.scss) bleibt.

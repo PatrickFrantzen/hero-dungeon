@@ -24,6 +24,7 @@
             (touchmove)="onCardTouchMove($event, i)"
             (touchend)="onCardTouchEnd($event, i, card)"
             (touchcancel)="onCardTouchCancel(i)"
+            [class.joker-card--active]="card === 'joker' && jokerSelectionActive()"
             src="./assets/img/cards/{{card}}.png" alt="{{card}}" decoding="async">
           @if (isSingleplayer()) {
             <button

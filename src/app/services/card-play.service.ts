@@ -107,11 +107,6 @@ export class CardPlayService {
         return;
       }
 
-      if (card === 'joker') {
-        this.resolveJoker(gameId, playerId, card, currHand, reportWriteFailure);
-        return;
-      }
-
       if (card === 'magischeBombe') {
         this.resolveMagischeBombe(gameId, playerId, card, currHand, reportWriteFailure);
         return;
@@ -622,30 +617,32 @@ export class CardPlayService {
     reportWriteFailure(this.playerRepo.updateDeliveryStack(gameId, targetPlayerId, []));
   }
 
-  /** Jägerin/Waldläufer "Joker": zählt als ein beliebiges Symbol (Anleitung S. 8) - da es keine
-   * Auswahl-UI für "welches Symbol" gibt, wird einfach das erste Token der aktuellen Bedrohung
-   * verbraucht (deterministisch, aber ohne Spielereinfluss auf die Wahl - eine Vereinfachung
-   * analog zu den bereits automatisch aufgelösten Doppelsymbol-Karten). Wirkt nicht gegen
-   * Ereigniskarten (dort gibt es keine Symbole zu ersetzen). */
-  private resolveJoker(
-    gameId: string,
-    playerId: string,
-    card: string,
-    currHand: string[],
-    reportWriteFailure: ReportWriteFailure
-  ): void {
+  /** Jägerin/Waldläufer "Joker": zählt als ein beliebiges Symbol (Anleitung S. 8) - der Spieler
+   * wählt das zu besiegende Token selbst aus (`PlayerHandComponent`/`EnemyContainerComponent`,
+   * über `JokerSelectionState` vermittelt: alle Tokens der aktuellen Bedrohung leuchten, ein
+   * Klick auf eines davon liefert `chosenToken` hierher). Wirkt nicht gegen Ereigniskarten (dort
+   * gibt es keine Symbole zu ersetzen) - dafür sorgt bereits `PlayerHandComponent`, das die
+   * Joker-Auswahl nur bei einer echten Bedrohung aktiviert.
+   *
+   * `chosenToken` kann inzwischen nicht mehr in `currentEnemy().token` stehen, wenn ein anderer
+   * Spieler es zwischen Auswahl und Klick bereits selbst besiegt hat (Multiplayer-Race) - dann
+   * passiert nichts, die Karte bleibt in der Hand und der Spieler muss erneut wählen. */
+  resolveJoker(gameId: string, playerId: string, card: string, chosenToken: string, reportWriteFailure: ReportWriteFailure): void {
     const currEne = [...this.currentEnemy().token];
     if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return;
+
+    const index = currEne.indexOf(chosenToken);
+    if (index === -1) return;
 
     this.ensureGameTimerStarted(gameId, reportWriteFailure);
     this.resumeGameTimerIfPaused(gameId, reportWriteFailure);
 
-    currEne.shift();
+    currEne.splice(index, 1);
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
     reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
     this.checkForNextEnemy(gameId, this.currentEnemy(), reportWriteFailure);
 
-    this.saveHand(gameId, playerId, card, currHand, reportWriteFailure);
+    this.saveHand(gameId, playerId, card, [...this.currentHand()], reportWriteFailure);
   }
 
   /** Magier/Zauberin "Magische Bombe": bringt alle 5 Symbole auf einmal, muss aber nicht alle

@@ -9,6 +9,7 @@ import { DeliveryStackState } from 'src/app/states/deliveryStack-state';
 import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { EncounterState } from 'src/app/states/encounter-state';
 import { heropowerState } from 'src/app/states/heropower-state';
+import { JokerSelectionState } from 'src/app/states/joker-selection-state';
 import { LobbyState } from 'src/app/states/lobby-state';
 import {
   ensureAngularFireSchedulersInitialized,
@@ -26,7 +27,7 @@ describe('PlayerHandComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState]), PlayerHandComponent],
+    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, JokerSelectionState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState]), PlayerHandComponent],
     providers: firestoreTestProviders(),
     schemas: [NO_ERRORS_SCHEMA],
 })

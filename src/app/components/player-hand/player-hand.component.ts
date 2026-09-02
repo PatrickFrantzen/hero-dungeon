@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, computed, effect, signal } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
@@ -10,12 +10,14 @@ import { ResetGameTimer, SetGameStats, SetGameTimerPauseState, StartGameTimer, u
 import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
+import { ActivateJokerSelection, ClearJokerToken, DeactivateJokerSelection } from 'src/app/actions/joker-selection-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
+import { JokerSelectionSelectors } from 'src/app/selectors/joker-selection-selector';
 import { LobbySelectors } from 'src/app/selectors/lobby-selector';
 import { CardPlayService } from 'src/app/services/card-play.service';
 import { FirestoreOperationError } from 'src/app/services/firestore-repository.service';
@@ -53,6 +55,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
   heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
+
+  /** Jägerin/Waldläufer "Joker" (siehe joker-selection-state.ts) - true, solange der Spieler
+   * eines der leuchtenden Enemy-Tokens antippen soll (EnemyContainerComponent, Geschwister-
+   * Komponente unter GameComponent, ist über den Store angebunden statt über eine direkte
+   * Eltern-Kind-Bindung). */
+  jokerSelectionActive = this.store.selectSignal(JokerSelectionSelectors.isActive);
+  private jokerChosenToken = this.store.selectSignal(JokerSelectionSelectors.chosenToken);
 
   /** Aktionskarten, die vor der Auflösung einen Zielspieler brauchen (Anleitung S. 9) - werden
    * in chooseCard() abgefangen statt an CardPlayService.chooseCard() weitergereicht, das diese
@@ -183,7 +192,22 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     private heropowerService: HeropowerService,
     private cardPlayService: CardPlayService,
     public dialog: MatDialog
-  ) {}
+  ) {
+    // Löst den Joker auf, sobald EnemyContainerComponent (über den Store, siehe
+    // joker-selection-state.ts) ein angeklicktes Token meldet. Läuft bewusst als effect() statt
+    // als direkter Callback, weil beide Komponenten Geschwister unter GameComponent sind (kein
+    // Output von enemy-container erreicht player-hand direkt).
+    effect(() => {
+      const token = this.jokerChosenToken();
+      if (token === null) return;
+
+      this.cardPlayService.resolveJoker(this.currentGameId(), this.currentPlayerId(), 'joker', token, (write) =>
+        this.reportWriteFailure(write)
+      );
+      this.store.dispatch(new ClearJokerToken());
+      this.store.dispatch(new DeactivateJokerSelection());
+    });
+  }
 
   ngOnInit(): void {
     this.gameSubscr = this.firestoreSync.watchGamesCollection().subscribe(async () => {
@@ -309,11 +333,30 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         this.openWutDialog();
         return;
       }
+      if (card === 'joker') {
+        this.toggleJokerSelection();
+        return;
+      }
     }
 
     this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
       this.reportWriteFailure(write)
     );
+  }
+
+  /** Erster Klick auf den Joker aktiviert die Token-Auswahl (Enemy-Tokens leuchten, siehe
+   * EnemyComponent), ein erneuter Klick bricht sie wieder ab, ohne die Karte zu verbrauchen -
+   * analog zum activate/deactivate-Muster der Heropowers. Wirkt nicht gegen Ereigniskarten
+   * (Anleitung S. 8, siehe CardPlayService.resolveJoker()) - bei aktivem Event bleibt der Klick
+   * folgenlos, statt Tokens der Ereigniskarte selbst leuchten zu lassen. */
+  private toggleJokerSelection(): void {
+    if (this.isEventActive()) return;
+
+    if (this.jokerSelectionActive()) {
+      this.store.dispatch(new DeactivateJokerSelection());
+    } else {
+      this.store.dispatch(new ActivateJokerSelection());
+    }
   }
 
   /** Öffnet den Zielspieler-Dialog für Spende/Stehlen/Heilkräuter/Heilung (je ein Zielspieler)

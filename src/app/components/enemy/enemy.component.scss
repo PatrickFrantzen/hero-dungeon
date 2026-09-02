@@ -73,6 +73,25 @@
     }
 }
 
+// Jägerin/Waldläufer "Joker" (joker-selection-state.ts): dieselbe gelbe Akzentfarbe wie
+// .heropower-fab--active, hier zusätzlich pulsierend, damit auf den ersten Blick klar ist,
+// welche Tokens gerade klickbar sind (nicht nur das Kategorie-Icon, das nie tokenSelectable
+// bekommt, siehe enemy.component.html).
+.enemy-token--selectable {
+    border-radius: 50%;
+    cursor: pointer;
+    animation: enemy-token-glow 1.1s ease-in-out infinite;
+}
+
+@keyframes enemy-token-glow {
+    0%, 100% {
+        box-shadow: 0 0 6px 2px rgba(255, 224, 102, 0.55);
+    }
+    50% {
+        box-shadow: 0 0 14px 5px rgba(255, 224, 102, 0.9);
+    }
+}
+
 .enemy-description {
     font-size: clamp(0.85rem, 2.3vw, 1rem);
     line-height: 1.35;

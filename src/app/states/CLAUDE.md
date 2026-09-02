@@ -10,8 +10,8 @@ registrierter `MobState` wurde deswegen entfernt, siehe
 `app.config.ts` gegenlesen statt dieser Liste zu vertrauen.
 
 Aktuell registriert (Stand des letzten Abgleichs): `cardsInHandState`, `CardStackState`,
-`CurrentGameState`, `CurrentUserState`, `DeliveryStackState`, `heropowerState`, `LobbyState`,
-`EncounterState`, `TutorialState`.
+`CurrentGameState`, `CurrentUserState`, `DeliveryStackState`, `heropowerState`,
+`JokerSelectionState`, `LobbyState`, `EncounterState`, `TutorialState`.
 
 ## Aufteilung (nach `docs/planned/currentGame-state-split-plan.md` bzw. dessen aktuellem Status)
 
@@ -47,6 +47,19 @@ Kartenstapel: Nachziehstapel, Hand, Ablage), `currentUser-state.ts` (eingeloggte
 `heropower-state.ts` (aktuell aktive Heldenfähigkeit), `tutorial-state.ts` (`TutorialState`) —
 Onboarding-Overlay aus Issue #54 (`hasSeenTutorial`/`active`/`currentStepIndex`), Details in
 `src/app/components/tutorial/CLAUDE.md`.
+
+- **`joker-selection-state.ts`** (`JokerSelectionState`, `{ active, chosenToken }`) — rein
+  clientlokaler UI-Zustand für die Jägerin/Waldläufer-Karte "Joker" (2026-09-02, Live-Test-
+  Feedback: Joker soll den Spieler fragen, welches Token er ersetzt, statt es deterministisch
+  zu bestimmen, siehe `services/CLAUDE.md`). Existiert als eigener State, weil
+  `EnemyContainerComponent` (dispatcht `ChooseJokerToken`, liest `isActive`) und
+  `PlayerHandComponent` (dispatcht `Activate`/`DeactivateJokerSelection`, liest `chosenToken`
+  per `effect()`) Geschwister-Komponenten unter `GameComponent` sind, ohne direkte Eltern-Kind-
+  Bindung — analog zu `heropowerState`, das dieselbe Rolle für die Heldenfähigkeiten-Aktivierung
+  übernimmt. `ClearJokerToken` setzt `chosenToken` nach der Auflösung zurück auf `null`, damit
+  der `effect()` beim nächsten Klick erneut anschlägt. Details zum kompletten Feature (Highlight-
+  Styling, Guard gegen Ereigniskarten) in `src/app/components/enemy/CLAUDE.md` und
+  `src/app/components/player-hand/CLAUDE.md`.
 
 **Wichtig für mehrere States, die dieselbe Action behandeln:** Mehrere States können
 `@Action(CurrentGameData)`-Handler für dieselbe dispatchte Action-Klasse haben — jeder patcht
