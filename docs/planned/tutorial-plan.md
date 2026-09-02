@@ -10,15 +10,21 @@ Zurück/Überspringen funktionieren mit einer Platzhalter-Schrittliste (`tutoria
 Manueller Hilfe-Button auf `StartscreenComponent`. `ng build`/`ng test` grün (54/54).
 
 **PR 2 (Inhalt Startscreen/Heldenauswahl) ist umgesetzt** — `tutorial-steps.data.ts` enthält
-fünf echte Schritte für Station 1+2 (Startscreen-Überblick, Singleplayer, Multiplayer erstellen/
+echte Schritte für Station 1+2 (Startscreen-Überblick, Singleplayer, Multiplayer erstellen/
 beitreten, Heldenauswahl inkl. Solo-Empfehlung Dieb/Waldläufer), `startscreen.component.html`
 hat dafür stabile `id`s (`#tutorial-target-singleplayer`, `#tutorial-target-multiplayer`)
-bekommen. Details: `src/app/components/tutorial/CLAUDE.md`.
+bekommen.
 
-**Noch offen:** PR 3–4 (echte Schrittinhalte für Station 3–7: Dungeon-Timer, Encounter,
-Handkarten, Heldenfähigkeit, Sieg/Niederlage) und PR 5 (Auto-Trigger beim ersten
-Singleplayer-Spiel) — siehe PR-Schnitt unten, an den Design-Entscheidungen hat sich nichts
-geändert.
+**PR 3 (Inhalt Dungeon-Timer/Encounter/Handkarten) ist umgesetzt** — drei weitere Schritte für
+Station 3–5, targeten die bereits vorhandenen Klassen `.game-timer`/`.current-Enemy`/
+`.currentHandStack` (kein neues Markup nötig). Diese Elemente existieren nur im laufenden Spiel;
+da `.tutorial-overlay` `pointer-events: none` ist, kann ein Spieler mit offenem Overlay ein
+Singleplayer-Spiel starten und die Schritte dort live mit echtem Spotlight sehen. Details:
+`src/app/components/tutorial/CLAUDE.md`.
+
+**Noch offen:** PR 4 (echte Schrittinhalte für Station 6+7: Heldenfähigkeit, Sieg/Niederlage)
+und PR 5 (Auto-Trigger beim ersten Singleplayer-Spiel) — siehe PR-Schnitt unten, an den
+Design-Entscheidungen hat sich nichts geändert.
 
 ## Referenzen
 
