@@ -16,6 +16,6 @@
   </div>
 
   <div mat-dialog-actions class="tw-w-full tw-justify-end">
-    <button mat-flat-button color="primary" mat-dialog-close cdkFocusInitial (click)="getChoosenHero(selectedValue)">Ok</button>
+    <button mat-flat-button color="primary" mat-dialog-close cdkFocusInitial [disabled]="!selectedValue" (click)="getChoosenHero(selectedValue)">Ok</button>
   </div>
 </div>
