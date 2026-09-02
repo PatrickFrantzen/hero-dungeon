@@ -6,7 +6,7 @@ export interface TutorialStep {
   targetSelector?: string;
 }
 
-// Echte Inhalte fuer alle sieben Stationen aus docs/planned/tutorial-plan.md: Startscreen,
+// Echte Inhalte fuer alle sieben Stationen aus docs/done/tutorial-plan.md: Startscreen,
 // Heldenauswahl (PR 2), Dungeon-Timer, Encounter, Handkarten (PR 3), Heldenfaehigkeit und
 // Sieg/Niederlage/Boss-Bestaetigung (PR 4). Die Heldenauswahl- und Sieg/Niederlage-Schritte
 // haben bewusst keinen targetSelector: `DialogChooseHeroComponent` ist zu diesem Zeitpunkt

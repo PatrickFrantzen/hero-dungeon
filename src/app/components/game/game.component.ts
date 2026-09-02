@@ -20,6 +20,8 @@ import { PlayerRepositoryService } from 'src/app/services/player-repository.serv
 import { ChooseHeroDialogResult } from 'src/app/components/dialog-results';
 import { UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { startHandSize } from 'src/models/start-hand-size.util';
+import { StartTutorial } from 'src/app/actions/tutorial-action';
+import { TutorialSelectors } from 'src/app/selectors/tutorial-selector';
 
 interface ChoosenPlayer {
   playerName: string;
@@ -51,6 +53,7 @@ export class GameComponent implements OnInit, OnDestroy {
   timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
   currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
   currentStats = this.store.selectSignal(CurrentGameSelectors.currentStats);
+  hasSeenTutorial = this.store.selectSignal(TutorialSelectors.hasSeenTutorial);
 
   loadError = signal<string | null>(null);
   now = signal(Date.now());
@@ -88,10 +91,20 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkIfPlayerIsAlreadyPartOfGame();
+    this.autoStartTutorialForFirstSingleplayerGame();
     this.timerInterval = setInterval(() => {
       this.now.set(Date.now());
       this.markGameLostWhenTimerRunsOut();
     }, 1000);
+  }
+
+  /** Auto-Trigger (Issue #54, PR 5): nur beim ersten Singleplayer-Spiel eines Accounts, kein
+   * Auto-Start im Multiplayer (siehe Design-Entscheidung 3, docs/done/tutorial-plan.md) -
+   * dort bleibt der manuelle Hilfe-Button auf StartscreenComponent der einzige Einstiegspunkt. */
+  private autoStartTutorialForFirstSingleplayerGame(): void {
+    if (this.currentNumberOfPlayers() === 1 && !this.hasSeenTutorial()) {
+      this.store.dispatch(new StartTutorial());
+    }
   }
 
   ngOnDestroy(): void {

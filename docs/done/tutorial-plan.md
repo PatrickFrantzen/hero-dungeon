@@ -26,7 +26,16 @@ Singleplayer-Spiel starten und die Schritte dort live mit echtem Spotlight sehen
 gerendert ist), Station 7 (Boss-Bestätigung/Sieg/Niederlage) erklärt den Ablauf rein textuell
 ohne `targetSelector`, weil `.game-prompt`/`.game-success` nur in den seltenen
 `bossDefeated`/`won`/`lost`-Zuständen existieren. Damit hat `tutorialSteps` jetzt echte Inhalte
-für alle sieben Stationen. Details: `src/app/components/tutorial/CLAUDE.md`.
+für alle sieben Stationen.
+
+**PR 5 (Auto-Trigger beim ersten Singleplayer-Spiel) ist umgesetzt** —
+`GameComponent.ngOnInit()` dispatcht `StartTutorial`, wenn `currentNumberOfPlayers() === 1` und
+`!hasSeenTutorial()` (`autoStartTutorialForFirstSingleplayerGame()`). Kein Auto-Start im
+Multiplayer, wie in Design-Entscheidung 3 festgelegt. Details:
+`src/app/components/tutorial/CLAUDE.md`.
+
+**Alle 5 PRs sind damit umgesetzt — Issue #54 ist vollständig abgeschlossen.** Diese Datei
+verschiebt sich entsprechend der `docs/CLAUDE.md`-Konvention nach `docs/done/`.
 
 **Noch offen:** nur noch PR 5 (Auto-Trigger beim ersten Singleplayer-Spiel) — siehe PR-Schnitt
 unten, an den Design-Entscheidungen hat sich nichts geändert.

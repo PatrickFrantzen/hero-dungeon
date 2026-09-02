@@ -1,10 +1,10 @@
 # tutorial/ — Interaktives Onboarding-Overlay
 
 Umsetzung von [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues/54) nach
-`docs/planned/tutorial-plan.md` — **vor jeder Änderung hier zuerst den Status-Abschnitt in
-diesem Plan lesen** (welcher der 5 geplanten PRs ist bereits umgesetzt).
+`docs/done/tutorial-plan.md` — **vor jeder Änderung hier zuerst den Status-Abschnitt in
+diesem Plan lesen** (alle 5 geplanten PRs sind mittlerweile umgesetzt, Details unten).
 
-## Aufbau (PR 1–4: Infrastruktur, alle 7 Stationen inhaltlich fertig)
+## Aufbau (PR 1–5: vollständig umgesetzt)
 
 - **`tutorial-steps.data.ts`** — reines Datenarray (`TutorialStep[]`, Felder `title`/`body`/
   optional `targetSelector`), analog zum `monster-collection.data.ts`-Muster. Enthält zehn echte
@@ -66,10 +66,19 @@ diesem Plan lesen** (welcher der 5 geplanten PRs ist bereits umgesetzt).
 - Eingehängt global in `app.component.html` (`<app-tutorial-overlay-container>` neben
   `<router-outlet>`), nicht pro Route — das Overlay muss unabhängig davon sichtbar sein, ob der
   Hilfe-Button auf dem Startscreen oder später ein Auto-Trigger im laufenden Spiel feuert.
-- Manueller Einstiegspunkt aktuell nur auf `StartscreenComponent` (Button "Wie funktioniert das
-  Spiel? (Tutorial)", dispatcht `StartTutorial`) — noch kein Auto-Trigger (siehe PR 5 im Plan).
+- Manueller Einstiegspunkt weiterhin auf `StartscreenComponent` (Button "Wie funktioniert das
+  Spiel? (Tutorial)", dispatcht `StartTutorial`) — funktioniert unabhängig vom
+  `hasSeenTutorial`-Flag, jederzeit erneut nutzbar.
+- **Auto-Trigger (PR 5)** — `GameComponent.ngOnInit()` ruft `autoStartTutorialForFirstSingleplayerGame()`
+  auf: dispatcht `StartTutorial`, wenn `currentNumberOfPlayers() === 1` (Singleplayer) und
+  `!hasSeenTutorial()`. Kein Auto-Start im Multiplayer (Design-Entscheidung 3 im Plan) — dort
+  bleibt der manuelle Hilfe-Button der einzige Einstiegspunkt. `StartTutorial`s Reducer
+  (`tutorial-state.ts`) patcht nur `active`/`currentStepIndex`, lässt `hasSeenTutorial`
+  unangetastet — der Dispatch ist also unkritisch, falls `GameComponent` mehrfach initialisiert
+  wird (z.B. Boss-Wechsel bleibt auf derselben Komponente, kein erneuter `ngOnInit()`).
 
-## Was noch fehlt (siehe PR-Schnitt im Plan)
+## Status: Issue #54 vollständig umgesetzt
 
-Nur noch der Auto-Trigger beim ersten Singleplayer-Spiel (PR 5, `GameComponent` dispatcht
-`StartTutorial`, wenn `numberOfPlayers === 1` und `!hasSeenTutorial()`).
+Alle 5 geplanten PRs sind umgesetzt — Infrastruktur, Inhalte für alle 7 Stationen und der
+Auto-Trigger beim ersten Singleplayer-Spiel. Folgearbeit (falls gewünscht) wäre eigenständig zu
+planen, kein offener Punkt aus `docs/done/tutorial-plan.md` mehr.
