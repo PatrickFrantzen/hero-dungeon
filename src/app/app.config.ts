@@ -16,6 +16,7 @@ import { DeliveryStackState } from './states/deliveryStack-state';
 import { EncounterState } from './states/encounter-state';
 import { heropowerState } from './states/heropower-state';
 import { LobbyState } from './states/lobby-state';
+import { TutorialState } from './states/tutorial-state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
     provideStore(
-      [cardsInHandState, CardStackState, CurrentGameState, CurrentUserState, DeliveryStackState, heropowerState, LobbyState, EncounterState],
+      [cardsInHandState, CardStackState, CurrentGameState, CurrentUserState, DeliveryStackState, heropowerState, LobbyState, EncounterState, TutorialState],
       { developmentMode: !environment.production },
       withNgxsStoragePlugin({ keys: '*' }),
     ),

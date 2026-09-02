@@ -1,5 +1,45 @@
 # Plan: Interaktives Tutorial
 
+## Status (2026-09-01)
+
+**PR 1 (Tutorial-Infrastruktur) ist umgesetzt** — siehe `src/app/components/tutorial/CLAUDE.md`
+für den Code-Stand. `TutorialState`/`TutorialSelectors`/`tutorial-action.ts` existieren und sind
+in `app.config.ts` registriert, `TutorialOverlayContainerComponent`/`TutorialOverlayComponent`
+sind global in `app.component.html` eingehängt, Spotlight-Highlight + Abdunklung + Weiter/
+Zurück/Überspringen funktionieren mit einer Platzhalter-Schrittliste (`tutorial-steps.data.ts`).
+Manueller Hilfe-Button auf `StartscreenComponent`. `ng build`/`ng test` grün (54/54).
+
+**PR 2 (Inhalt Startscreen/Heldenauswahl) ist umgesetzt** — `tutorial-steps.data.ts` enthält
+echte Schritte für Station 1+2 (Startscreen-Überblick, Singleplayer, Multiplayer erstellen/
+beitreten, Heldenauswahl inkl. Solo-Empfehlung Dieb/Waldläufer), `startscreen.component.html`
+hat dafür stabile `id`s (`#tutorial-target-singleplayer`, `#tutorial-target-multiplayer`)
+bekommen.
+
+**PR 3 (Inhalt Dungeon-Timer/Encounter/Handkarten) ist umgesetzt** — drei weitere Schritte für
+Station 3–5, targeten die bereits vorhandenen Klassen `.game-timer`/`.current-Enemy`/
+`.currentHandStack` (kein neues Markup nötig). Diese Elemente existieren nur im laufenden Spiel;
+da `.tutorial-overlay` `pointer-events: none` ist, kann ein Spieler mit offenem Overlay ein
+Singleplayer-Spiel starten und die Schritte dort live mit echtem Spotlight sehen.
+
+**PR 4 (Inhalt Heldenfähigkeit/Sieg-Niederlage) ist umgesetzt** — Station 6 targetet
+`.heropower-fab` (`heropower.component.html`, immer sichtbar solange `PlayerHandComponent`
+gerendert ist), Station 7 (Boss-Bestätigung/Sieg/Niederlage) erklärt den Ablauf rein textuell
+ohne `targetSelector`, weil `.game-prompt`/`.game-success` nur in den seltenen
+`bossDefeated`/`won`/`lost`-Zuständen existieren. Damit hat `tutorialSteps` jetzt echte Inhalte
+für alle sieben Stationen.
+
+**PR 5 (Auto-Trigger beim ersten Singleplayer-Spiel) ist umgesetzt** —
+`GameComponent.ngOnInit()` dispatcht `StartTutorial`, wenn `currentNumberOfPlayers() === 1` und
+`!hasSeenTutorial()` (`autoStartTutorialForFirstSingleplayerGame()`). Kein Auto-Start im
+Multiplayer, wie in Design-Entscheidung 3 festgelegt. Details:
+`src/app/components/tutorial/CLAUDE.md`.
+
+**Alle 5 PRs sind damit umgesetzt — Issue #54 ist vollständig abgeschlossen.** Diese Datei
+verschiebt sich entsprechend der `docs/CLAUDE.md`-Konvention nach `docs/done/`.
+
+**Noch offen:** nur noch PR 5 (Auto-Trigger beim ersten Singleplayer-Spiel) — siehe PR-Schnitt
+unten, an den Design-Entscheidungen hat sich nichts geändert.
+
 ## Referenzen
 
 [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues/54) — Interaktives Tutorial
