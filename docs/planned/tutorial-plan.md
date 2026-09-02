@@ -9,9 +9,16 @@ sind global in `app.component.html` eingehängt, Spotlight-Highlight + Abdunklun
 Zurück/Überspringen funktionieren mit einer Platzhalter-Schrittliste (`tutorial-steps.data.ts`).
 Manueller Hilfe-Button auf `StartscreenComponent`. `ng build`/`ng test` grün (54/54).
 
-**Noch offen:** PR 2–4 (echte Schrittinhalte für alle sieben Stationen) und PR 5
-(Auto-Trigger beim ersten Singleplayer-Spiel) — siehe PR-Schnitt unten, an den Design-
-Entscheidungen hat sich nichts geändert.
+**PR 2 (Inhalt Startscreen/Heldenauswahl) ist umgesetzt** — `tutorial-steps.data.ts` enthält
+fünf echte Schritte für Station 1+2 (Startscreen-Überblick, Singleplayer, Multiplayer erstellen/
+beitreten, Heldenauswahl inkl. Solo-Empfehlung Dieb/Waldläufer), `startscreen.component.html`
+hat dafür stabile `id`s (`#tutorial-target-singleplayer`, `#tutorial-target-multiplayer`)
+bekommen. Details: `src/app/components/tutorial/CLAUDE.md`.
+
+**Noch offen:** PR 3–4 (echte Schrittinhalte für Station 3–7: Dungeon-Timer, Encounter,
+Handkarten, Heldenfähigkeit, Sieg/Niederlage) und PR 5 (Auto-Trigger beim ersten
+Singleplayer-Spiel) — siehe PR-Schnitt unten, an den Design-Entscheidungen hat sich nichts
+geändert.
 
 ## Referenzen
 

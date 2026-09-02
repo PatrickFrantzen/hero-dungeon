@@ -3,26 +3,29 @@
 
     <div class="tw-flex tw-w-full tw-max-w-xs tw-flex-col tw-gap-3 tw-rounded-lg tw-bg-black/40 tw-p-6 tw-backdrop-blur-sm">
         <button
+            id="tutorial-target-singleplayer"
             (click)="newSingleplayerGame()"
             class="tw-rounded tw-bg-purple-700 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-purple-600"
         >Singleplayer starten</button>
 
-        <button
-            (click)="newGame()"
-            class="tw-rounded tw-bg-purple-700 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-purple-600"
-        >Neues Multiplayer-Spiel</button>
+        <div id="tutorial-target-multiplayer" class="tw-flex tw-flex-col tw-gap-3">
+            <button
+                (click)="newGame()"
+                class="tw-rounded tw-bg-purple-700 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-purple-600"
+            >Neues Multiplayer-Spiel</button>
 
-        <input
-            type="text"
-            [(ngModel)]="joinGameId"
-            placeholder="Name eines existierenden Spiels eingeben"
-            class="tw-rounded tw-border tw-border-white/30 tw-bg-white/90 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-900 placeholder:tw-text-gray-500 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-green-500"
-        >
+            <input
+                type="text"
+                [(ngModel)]="joinGameId"
+                placeholder="Name eines existierenden Spiels eingeben"
+                class="tw-rounded tw-border tw-border-white/30 tw-bg-white/90 tw-px-3 tw-py-2 tw-text-sm tw-text-gray-900 placeholder:tw-text-gray-500 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-green-500"
+            >
 
-        <button
-            (click)="joinGame()"
-            class="tw-rounded tw-bg-green-600 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-green-500"
-        >Join Game</button>
+            <button
+                (click)="joinGame()"
+                class="tw-rounded tw-bg-green-600 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-green-500"
+            >Join Game</button>
+        </div>
 
         <button
             (click)="startTutorial()"

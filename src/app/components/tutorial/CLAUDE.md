@@ -4,12 +4,21 @@ Umsetzung von [Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues
 `docs/planned/tutorial-plan.md` — **vor jeder Änderung hier zuerst den Status-Abschnitt in
 diesem Plan lesen** (welcher der 5 geplanten PRs ist bereits umgesetzt).
 
-## Aufbau (PR 1 — Infrastruktur)
+## Aufbau (PR 1 — Infrastruktur, PR 2 — Inhalt Startscreen/Heldenauswahl)
 
 - **`tutorial-steps.data.ts`** — reines Datenarray (`TutorialStep[]`, Felder `title`/`body`/
-  optional `targetSelector`), analog zum `monster-collection.data.ts`-Muster. Aktuell nur
-  Platzhalter-Inhalte zur Verifikation von Overlay/Navigation — echte Inhalte kommen in
-  PR 2–4 dazu.
+  optional `targetSelector`), analog zum `monster-collection.data.ts`-Muster. Enthält seit PR 2
+  fünf echte Schritte für Station 1+2 (Startscreen-Überblick, Singleplayer, Multiplayer
+  erstellen/beitreten, Heldenauswahl, Abschluss-Hinweis) — Stationen 3–7 (Timer, Encounter,
+  Handkarten, Heldenfähigkeit, Sieg/Niederlage) kommen in PR 3–4 dazu, bis dahin endet das
+  Tutorial nach der Heldenauswahl-Erklärung mit "Fertig".
+- Die drei `targetSelector`e (`#tutorial-target-singleplayer`, `#tutorial-target-multiplayer`)
+  sitzen als stabile `id`s in `startscreen.component.html` (Singleplayer-Button bzw. ein
+  umschließendes `<div>` um Multiplayer-Button + Join-Input + Join-Button). Die
+  Heldenauswahl-Schritte haben **bewusst keinen** `targetSelector`: `DialogChooseHeroComponent`
+  ist zu diesem Zeitpunkt nicht geöffnet (Tutorial startet nur vom Startscreen aus), ein
+  `document.querySelector()` würde ins Leere laufen und das Overlay fällt auf Volldimmung ohne
+  Ausschnitt zurück (siehe `TutorialOverlayComponent.spotlightRect`-Fallback unten).
 - **`tutorial-overlay/tutorial-overlay-container/tutorial-overlay-container.component.ts`** —
   Container (Smart/Dumb-Muster wie `enemy/`/`heropower/`, siehe
   `src/app/components/CLAUDE.md`): liest `TutorialSelectors.isTutorialActive`/`currentStepIndex`
@@ -42,6 +51,5 @@ diesem Plan lesen** (welcher der 5 geplanten PRs ist bereits umgesetzt).
 
 ## Was noch fehlt (siehe PR-Schnitt im Plan)
 
-Noch keine echten Schrittinhalte (PR 2–4), noch kein Auto-Trigger beim ersten Singleplayer-Spiel
-(PR 5). `tutorial-steps.data.ts` enthält bislang drei reine Platzhalter-Schritte ohne
-`targetSelector`.
+Echte Schrittinhalte für Station 3–7 (Dungeon-Timer, Encounter, Handkarten, Heldenfähigkeit,
+Sieg/Niederlage, PR 3–4) und der Auto-Trigger beim ersten Singleplayer-Spiel (PR 5) fehlen noch.
