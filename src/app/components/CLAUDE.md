@@ -44,6 +44,25 @@ Materials eigene Optik laufen.
     92vw)`, damit die Karte nur so breit wird wie ihr Inhalt (Name/Token/Typ) und der
     Hintergrund sichtbar bleibt.
 
+## Typografie: Cinzel für Überschriften (seit 2026-09-02)
+
+Fließtext bleibt projektweit Roboto (Lesbarkeit) — Überschriften/Titel bekommen zusätzlich eine
+Fantasy-Serife: `--font-heading: 'Cinzel', Georgia, serif;` (`:root` in `src/styles.scss`, Font
+selbst per Google-Fonts-Link in `index.html` geladen, analog zu Roboto). Bewusst als
+CSS-Variable statt eines Utility-Klassen-Sets, damit eine spätere Änderung der Schriftart nur an
+einer Stelle passiert. Aktuell verwendet an drei Stellen (Abstimmung mit Patrick, 2026-09-02):
+
+- **Dialogtitel** — global über `.mat-mdc-dialog-title` in `src/styles.scss` (trifft alle drei
+  `<h1 mat-dialog-title>`-Dialoge auf einmal, siehe `dialog-base.component.ts`), nicht einzeln
+  pro Dialog-SCSS dupliziert.
+- **Dungeon-Timer** — `.game-timer__label`/`.game-timer__time` in `game.component.scss`.
+- **Gegnername** — `.enemy-name` in `enemy.component.scss` (Teil des Wappen-Restylings, siehe
+  `enemy/CLAUDE.md`).
+
+Eine neue Überschrift/ein neuer Titel sollte `var(--font-heading)` verwenden statt die
+Schriftart erneut hart zu kodieren oder Roboto zu belassen (letzteres bleibt für Fließtext/UI-
+Beschriftungen wie Buttons/Formularlabels korrekt).
+
 ## Smart/Dumb-Container-Muster
 
 `enemy/` und `heropower/` haben je ein Container/Presenter-Paar: der `*-container/`-

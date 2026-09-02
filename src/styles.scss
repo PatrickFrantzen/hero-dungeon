@@ -10,6 +10,21 @@ body {
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+// Fantasy-Serife für Überschriften/Titel (Dialogtitel, Dungeon-Timer, Gegnername) - Fließtext
+// bleibt bewusst bei Roboto, damit die Lesbarkeit nicht leidet (siehe Abstimmung mit Patrick,
+// 2026-09-02). Als CSS-Variable statt direkt "Cinzel" an jeder Stelle, damit eine spätere
+// Änderung nur hier passieren muss.
+:root {
+    --font-heading: 'Cinzel', Georgia, serif;
+}
+
+// Dialogtitel (dialog-choose-hero/dialog-game-settings/dialog-heropower nutzen alle
+// `<h1 mat-dialog-title>`, siehe dialog-base.component.ts) - global statt dreifach dupliziert.
+.mat-mdc-dialog-title {
+    font-family: var(--font-heading);
+    letter-spacing: 0.02em;
+}
+
 html {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
