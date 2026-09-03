@@ -23,6 +23,20 @@ und die freitextigen Ereigniskarten-Beschreibungen (siehe `Mob.type` in
 Styling wie die Kampf-Token-Icons, kein eigener CSS-Block nötig). Die drei Bilder sind wie die
 Kartenbilder auf 256 Farben quantisiert und auf 160×160px zugeschnitten.
 
+## Kampf-Symbol-Token (Schwert/Zauberspruch/Fernkampf/Verteidigung/Beweglichkeit)
+
+`assets/img/monsterToken/red.png`/`blue.png`/`green.png`/`yellow.png`/`purple.png` — die
+Symbole, die ein Encounter zum Besiegen fordert (`currentEnemy().token`) — sind von dem am
+2026-09-03 eingeführten Kartenkunst-Artwork abgeleitet (`player-hand/CLAUDE.md`, "Münzen"-Stil
+für die 5 Basissymbol-Karten): jeweils ein quadratischer Ausschnitt um das zentrale Symbol aus
+dem entsprechenden `assets/img/cards/{farbe}.png`, kreisrund freigestellt (Alpha-Maske,
+supersampled für glatte Kante) + dünner goldener Ring (`#e2c384`, passend zum
+Wappen-Rahmen-Farbschema aus dem Kategorie-Icon-Restyling oben), auf 160×160px. Bewusst nicht
+identisch mit der Kartenkunst zugeschnitten (blau/violett brauchten einen größeren
+Ausschnittsbereich als rot/grün/gelb, weil Schriftrolle bzw. Dieb-Figur die Kartenfläche stärker
+ausfüllen) — bei neuem Kartenkunst-Update hier den Zuschnitt individuell prüfen, nicht
+automatisch übernehmen.
+
 ## Dynamische Token-Icon-Größe (Live-Test-Feedback, 2026-09-02)
 
 `EnemyComponent.tokenIconCount` (Kampf-Token + ggf. Kategorie-Icon) und `tokenIconSizePx`
