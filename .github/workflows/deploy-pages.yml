@@ -34,3 +34,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist/hero-dungeon
           publish_branch: gh-pages
+          # keep_files: sonst würde dieser Prod-Deploy (Root der gh-pages-Branch) den dev/-
+          # Unterordner aus deploy-pages-dev.yml bei jedem Push auf main mit löschen, weil
+          # peaceiris/actions-gh-pages den Zielbranch standardmäßig komplett ersetzt.
+          keep_files: true
