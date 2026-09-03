@@ -45,6 +45,22 @@ Bereich rutschte. `.hand-card` hat dafür `position: relative` bekommen (Anker f
 Fächer-`transform` (Rotation/Hochversatz/Skalierung, siehe unten) bleibt unverändert auf
 `.hand-card` selbst, das Badge dreht/skaliert also mit der Karte mit.
 
+## Kartenbilder der 5 Basissymbole: "Münzen"-Stil (2026-09-03)
+
+`assets/img/cards/red.png`/`blue.png`/`green.png`/`yellow.png`/`purple.png` (die fünf Basis-
+Symbolkarten: Schwert/Zauberspruch/Fernkampf/Verteidigung/Beweglichkeit) sind auf von Patrick
+geliefertes Artwork im "geprägte Münze auf Holz"-Stil umgestellt (gleiche Bildsprache wie
+`enemy/CLAUDE.md` Kategorie-Icons und `heropower/CLAUDE.md` Aktivierungs-Icon) — per Pillow auf
+450px Breite (Seitenverhältnis des Quellbilds beibehalten, ~450×650px) reduziert und
+256-Farben quantisiert. Dateinamen unverändert, daher keine Code-Änderung nötig (`currentHand()`
+referenziert Karten weiterhin über den String-Namen, `player-hand.component.html:
+src="./assets/img/cards/{{card}}.png"`).
+
+**Bewusste Inkonsistenz:** Die Kombi-Karten (`red_red.png`, `red_blue.png`,
+`yellow_yellow.png`, `purple_purple.png`, `blue_blue.png`, `green_green.png`) sind eigenständige
+Bilddateien, keine programmatisch aus den Einzelsymbolen zusammengesetzten Grafiken — sie
+bleiben vorerst im alten Diagonal-Schnitt-Stil, bis auch dafür neues Artwork vorliegt.
+
 ## Swipe-Geste zum Karte-Spielen (Issue #52)
 
 Zusätzlich zu `(click)` auf dem Handkarten-`<img>` (weiterhin die primäre, verlässliche
