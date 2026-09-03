@@ -70,6 +70,16 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
   `firestore-rules` (`npm run test:rules`, braucht Java für den Emulator).
   `--legacy-peer-deps` ist nötig, weil `@angular/fire`s Peer-Range nicht exakt zur installierten
   Angular-Version passt.
+- **Deployment: GitHub Pages** (`.github/workflows/deploy-pages.yml` + `deploy-pages-dev.yml`),
+  Ziel-Branch für beide `gh-pages`. Push auf `main` deployt Prod nach
+  `https://<owner>.github.io/hero-dungeon/` (Root der `gh-pages`-Branch), Push auf `dev` deployt
+  eine Vorschau nach `https://<owner>.github.io/hero-dungeon/dev/` (Unterordner, `destination_dir:
+  dev`) — beide Jobs setzen `keep_files: true`, sonst würde `peaceiris/actions-gh-pages` bei
+  jedem Deploy den jeweils anderen Inhalt der `gh-pages`-Branch mit löschen. Beide nutzen dieselbe
+  Firebase-Instanz wie Prod (`environment.ts`/`environment.prod.ts` zeigen auf dasselbe
+  Firebase-Projekt `hero-dungeon`, keine separate Dev-Datenbank — bewusste Entscheidung,
+  Abstimmung mit Patrick, 2026-09-03). Firebase Auth braucht dafür keine zusätzliche autorisierte
+  Domain, da beide URLs unter derselben Domain `<owner>.github.io` liegen.
 - **Tests lokal ausführen**: `ng test` startet standardmäßig `ChromeHeadless`, was als `root`
   (Container-/Agentenumgebung ohne eigenen Nutzer) fehlschlägt. `karma.conf.js` definiert dafür
   `ChromeHeadlessCI` (`--no-sandbox --disable-gpu`) — also `ng test --watch=false
