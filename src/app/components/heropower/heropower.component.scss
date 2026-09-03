@@ -14,6 +14,11 @@
     z-index: 1;
 
     img {
+        // heldenfaehigkeit_icon.png ist wie die Enemy-Kategorie-Icons (enemy/CLAUDE.md) auf
+        // 160x160px zugeschnitten - ohne explizite Größe würde es in natürlicher Pixelgröße
+        // deutlich größer als die vorherigen ~90-100px-Icons rendern.
+        width: clamp(72px, 20vw, 110px);
+        height: clamp(72px, 20vw, 110px);
         user-select: none;
         -webkit-user-select: none;
         -webkit-touch-callout: none;
