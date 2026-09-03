@@ -24,7 +24,13 @@ const typeIconByType: Record<string, string> = {
 // also bewusst die Referenz für "am kleinsten", nicht ein willkürlicher Wert.
 const TOKEN_ICON_MAX_COUNT = 12;
 const TOKEN_ICON_MIN_PX = 30;
-const TOKEN_ICON_MAX_PX = 64;
+const TOKEN_ICON_MAX_PX = 76;
+// Normale Encounter (Monster/Person/Hindernis) haben laut monster-collection.data.ts meist
+// 2-5 Kampf-Token + 1 Kategorie-Icon, also bis zu 6 Icons insgesamt - die bleiben bei
+// TOKEN_ICON_MAX_PX (Live-Test-Feedback, 2026-09-03: "Symbole können größer, erst bei Bossen
+// müssen wir kleiner skalieren"). Erst darüber (nur bei Mini-Boss/Boss möglich) wird linear bis
+// TOKEN_ICON_MIN_PX bei TOKEN_ICON_MAX_COUNT herunterskaliert.
+const TOKEN_ICON_NO_SHRINK_COUNT = 6;
 
 @Component({
     selector: 'app-enemy',
@@ -59,7 +65,13 @@ export class EnemyComponent {
    * `clamp()`-Sicherheitsnetz für die Querformat-Kompaktansicht). */
   readonly tokenIconSizePx = computed(() => {
     const count = Math.max(1, this.tokenIconCount());
-    const ratio = Math.min(1, (count - 1) / (TOKEN_ICON_MAX_COUNT - 1));
+    if (count <= TOKEN_ICON_NO_SHRINK_COUNT) {
+      return TOKEN_ICON_MAX_PX;
+    }
+    const ratio = Math.min(
+      1,
+      (count - TOKEN_ICON_NO_SHRINK_COUNT) / (TOKEN_ICON_MAX_COUNT - TOKEN_ICON_NO_SHRINK_COUNT)
+    );
     return Math.round(TOKEN_ICON_MAX_PX - ratio * (TOKEN_ICON_MAX_PX - TOKEN_ICON_MIN_PX));
   });
 

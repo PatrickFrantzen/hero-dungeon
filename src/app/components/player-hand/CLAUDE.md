@@ -34,6 +34,17 @@ Spielregeln zusammenlaufen — bei jeder Änderung hier ist ein manueller Multip
 (Karte spielen, jede Heropower-Variante auslösen, zweiter Spieler tritt bei, Kartenstapel geht
 zur Neige) sinnvoll, auch wenn `ng build`/`ng test` grün sind.
 
+## Rasten-Button als Karten-Badge statt im Fluss (Live-Test-Fix, 2026-09-03)
+
+`.rest-button` (nur Singleplayer, `isSingleplayer()`) sitzt jetzt `position: absolute` oben
+rechts auf dem Kartenbild statt darunter im normalen Dokumentfluss. Vorher trug der Button pro
+Karte zusätzliche Höhe zur `.currentHandStack`-Reihe bei - bei einer auf 7+ Karten gewachsenen
+Hand (Dieb "Stehlen", Kartenstapel-Cycling) wurde die fixe `.card-area`-Leiste am unteren
+Bildschirmrand dadurch so hoch, dass der Button auf kleinen Portrait-Viewports aus dem sichtbaren
+Bereich rutschte. `.hand-card` hat dafür `position: relative` bekommen (Anker fürs Badge) - das
+Fächer-`transform` (Rotation/Hochversatz/Skalierung, siehe unten) bleibt unverändert auf
+`.hand-card` selbst, das Badge dreht/skaliert also mit der Karte mit.
+
 ## Swipe-Geste zum Karte-Spielen (Issue #52)
 
 Zusätzlich zu `(click)` auf dem Handkarten-`<img>` (weiterhin die primäre, verlässliche
