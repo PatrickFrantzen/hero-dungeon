@@ -1,3 +1,12 @@
+// display: contents, weil dieser Host default "inline" wäre (kein UA-Stylesheet für Custom
+// Elements) - ohne das ist .current-Enemy trotz align-self: center (siehe unten) nicht mehr
+// direktes Flex-Item von .mainfield (game.component.scss) und wird stattdessen wie Inline-
+// Content links ausgerichtet (Live-Test-Feedback, 2026-09-03: Enemy-Karte klebte am linken
+// Rand statt zentriert). enemy-container.component.ts hat denselben Fix eine Ebene höher.
+:host {
+    display: contents;
+}
+
 // Wappen/Schild-Rahmen (Live-Test-Feedback, 2026-09-02, Abstimmung mit Patrick): metallischer
 // Rahmen + dunkler Pergament-Hintergrund + dezenter Glow, passend zur Bildsprache der neuen
 // Person/Hindernis/Monster-Icons (geprägte Münze auf Holz). `--mdc-elevated-card-container-color:
@@ -64,8 +73,8 @@
     // Feedback: Icons wirkten bei wenigen Tokens unnötig klein) - clamp() hier ist nur ein
     // Sicherheitsnetz gegen extreme Viewport-Breiten, nicht die eigentliche Größenlogik.
     img {
-        width: clamp(28px, var(--token-size, 40px), 72px);
-        height: clamp(28px, var(--token-size, 40px), 72px);
+        width: clamp(28px, var(--token-size, 40px), 76px);
+        height: clamp(28px, var(--token-size, 40px), 76px);
         padding: 0;
         user-select: none;
         -webkit-user-select: none;

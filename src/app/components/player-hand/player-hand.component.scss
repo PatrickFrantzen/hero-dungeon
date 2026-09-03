@@ -93,6 +93,9 @@
 // Press-Feedback unten nicht mit den Inline-Styles (Inline-style transform würde jede
 // Stylesheet-Regel gleicher Eigenschaft überstimmen, Custom Properties dagegen nicht).
 .hand-card {
+    // position: relative als Anker fürs .rest-button-Badge unten (absolut positioniert statt
+    // wie vorher unter dem Bild im Fluss - siehe dortiger Kommentar für die Begründung).
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -134,8 +137,17 @@
     }
 }
 
+// Live-Test-Feedback (2026-09-03): das Rasten-Feld saß vorher unter jedem Handkartenbild im
+// normalen Dokumentfluss - bei vielen Karten (Singleplayer, Deck cycled auf 7+ Karten) wuchs die
+// Fächer-Reihe dadurch so hoch, dass der Button in der fixen .card-area-Leiste unten aus dem
+// sichtbaren Viewport rutschte. Jetzt als kompaktes Badge auf der Karte selbst (position:
+// relative auf .hand-card oben) - trägt nicht mehr zur Höhe der Reihe bei, unabhängig von der
+// Kartenanzahl.
 .rest-button {
-    margin-top: 8px;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
 }
 
 // Querformat-Kompaktlayout (Issue #47, TODO 8 Option a) - engere Leiste, kleinere Handkarten,

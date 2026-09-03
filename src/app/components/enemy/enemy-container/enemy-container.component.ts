@@ -16,7 +16,12 @@ import { EnemyComponent } from '../enemy.component';
       [questCardStatus]="currentQuestStatus()"
     ></app-enemy>
   `,
-    styles: [``],
+    // display: contents, weil dieses Host-Element selbst kein CSS bekommt (nur Weiterreichen an
+    // <app-enemy>) - ohne das ist der Host default "inline" und die auf .current-Enemy gesetzte
+    // align-self: center (enemy.component.scss) wirkungslos, weil sie nicht mehr direkter
+    // Flex-Item von .mainfield (game.component.scss) ist. Siehe enemy.component.ts fürs
+    // gleiche Problem eine Ebene tiefer.
+    styles: [`:host { display: contents; }`],
     imports: [EnemyComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
