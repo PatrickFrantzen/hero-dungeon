@@ -11,6 +11,8 @@ import {
   ensureFirebaseTestAppInitialized,
   firestoreTestProviders,
 } from 'src/testing/firebase-test-app';
+import { LocalSingleplayerSaveService } from './local-singleplayer-save.service';
+import { Game } from 'src/models/game';
 
 import { CardPlayService } from './card-play.service';
 import { GameRepositoryService } from './game-repository.service';
@@ -281,5 +283,43 @@ describe('CardPlayService', () => {
     await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2', reportWriteFailure);
 
     expect(gameStatusSpy).not.toHaveBeenCalledWith('game-1', 'lost');
+  });
+
+  describe('continueToNextDungeon() für ein lokales Singleplayer-Spiel (Issue #87 Regression)', () => {
+    afterEach(() => localStorage.clear());
+
+    it('mischt die Hand des lokalen Spielers tatsächlich neu, statt sie unverändert zu lassen', async () => {
+      localStorage.clear();
+      const snapshot = store.snapshot();
+      store.reset({
+        ...snapshot,
+        encounter: { ...snapshot['encounter'], allBosses: [{ name: 'Der Flecken-Schrecken', token: [], type: 'Boss' }] },
+        currentGame: { ...snapshot['currentGame'], numberOfPlayers: 1, difficulty: 'easy' },
+      });
+      TestBed.inject(LocalSingleplayerSaveService).createSave({
+        saveId: 'local-1',
+        updatedAt: Date.now(),
+        game: { gameId: 'local-1', numberOfPlayers: 1 } as unknown as Game,
+        player: {
+          userId: 'solo',
+          gameId: 'local-1',
+          choosenHero: { heroname: 'Barbar' },
+          handstack: ['unchanged-1', 'unchanged-2'],
+          cardstack: [],
+          deliveryStack: [],
+        },
+      });
+      const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+      service.continueToNextDungeon('local-1', 'solo', reportWriteFailure);
+      // reshuffleAllPlayersForNewDungeon() liest den lokalen Spieler asynchron per queryAll() -
+      // ein Tick genügt, da LocalGameDocumentStoreService synchron auf LocalStorage arbeitet.
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const handAfter = TestBed.inject(LocalSingleplayerSaveService).getSave('local-1')?.player['handstack'];
+      expect(handAfter).not.toEqual(['unchanged-1', 'unchanged-2']);
+      expect((handAfter as string[]).length).toBe(5);
+    });
   });
 });

@@ -76,5 +76,23 @@ describe('FirestoreRepositoryService', () => {
         numberOfPlayers: 1,
       } as never);
     });
+
+    it('queryAll for the player subcollection reads from local storage instead of Firestore (Issue #87)', async () => {
+      await service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
+      await service.setDoc(['games', 'local-1', 'player', 'solo'], { userId: 'solo', handstack: [] });
+
+      await expectAsync(service.queryAll(['games', 'local-1', 'player'], [])).toBeResolvedTo([
+        { userId: 'solo', handstack: [] },
+      ] as never);
+    });
+
+    it('queryLatest for the player subcollection reads from local storage instead of Firestore (Issue #87)', async () => {
+      await service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
+      await service.setDoc(['games', 'local-1', 'player', 'solo'], { userId: 'solo', handstack: [] });
+
+      await expectAsync(
+        service.queryLatest(['games', 'local-1', 'player'], 'gameId', 'local-1')
+      ).toBeResolvedTo({ userId: 'solo', handstack: [] } as never);
+    });
   });
 });

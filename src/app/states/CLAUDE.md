@@ -26,7 +26,14 @@ einem State. Davon sind bereits herausgelöst:
   mehr die vollständige 5-Boss-Liste. `SetCurrentBoss`/`SetRemainingBosses`-Actions werden von
   `CardPlayService.continueToNextDungeon()` dispatcht, sobald ein Boss besiegt ist; `PlayerHandComponent.updateFromDatabase()`
   synct beide Felder bei jedem Firestore-Snapshot, damit der Boss-Wechsel bei allen Mitspielern
-  ankommt.
+  ankommt. `setGameData()` (`CurrentGameData`-Action, einmalig bei Spielerstellung dispatcht)
+  fällt für `allBosses` seit Issue #83/#87 auf `?? []` zurück, falls das übergebene `Game`-Objekt
+  das Feld nicht gesetzt hat — `CardPlayService.checkForNextEnemy()` ruft bei besiegtem Boss
+  `currentAllBosses().length` auf, ein `undefined`-Wert dort hätte synchron einen TypeError
+  ausgelöst, bevor Timer/`gameStatus` gesetzt werden (passendes Symptom zu Issue #83, "Timer
+  läuft weiter, keine Buttons" — aktuell aber **kein bestätigter Root Cause**, nur eine
+  zusätzliche Absicherung, da `CurrentGameData` bislang immer mit einem vollständigen, per
+  `GameFactoryService.buildNewGame()` erzeugten `Game`-Objekt dispatcht wird).
 - **`currentGame-state.ts`** (`CurrentGameState`) — der Rest: `{ items, numberOfPlayers,
   gameId, difficulty, isLost, questCardActivated, timerStartedAt, timerDurationSeconds,
   timerPausedAt, timerPausedSecondsTotal, stats }`. Die Timer-Felder gehören zum

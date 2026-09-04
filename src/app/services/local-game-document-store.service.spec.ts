@@ -54,4 +54,23 @@ describe('LocalGameDocumentStoreService', () => {
       cardstack: ['red'],
     });
   });
+
+  describe('queryAll (Issue #87)', () => {
+    it('returns an array with the single local player once one exists', () => {
+      service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
+      service.setDoc(['games', 'local-1', 'player', 'solo'], { userId: 'solo', handstack: [] });
+
+      expect(service.queryAll(['games', 'local-1', 'player'])).toEqual([{ userId: 'solo', handstack: [] }]);
+    });
+
+    it('returns an empty array when the local save does not exist yet', () => {
+      expect(service.queryAll(['games', 'local-1', 'player'])).toEqual([]);
+    });
+
+    it('returns an empty array when the save exists but no player document was written yet', () => {
+      service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
+
+      expect(service.queryAll(['games', 'local-1', 'player'])).toEqual([]);
+    });
+  });
 });
