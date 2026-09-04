@@ -121,6 +121,10 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
 - Heldendatenmodell: `docs/done/hero-data-model-plan.md`
 - Dialog-/Auth-Vereinheitlichung: `docs/done/dialog-auth-unification-plan.md`
 - Singleplayer-Modus: `docs/planned/singleplayer-mode-plan.md`
+- Login-Umbau beschlossen (2026-09-04): kein Login-Zwang mehr vor dem Startscreen, Singleplayer
+  läuft künftig komplett lokal (mehrere parallele Spielstände, Account-Angebot erst beim
+  Spielende), Multiplayer wird anonym mit 7-Tage-Ablauf ab letzter Aktivität startbar, plus
+  neues In-Game-Menü (Speichern/Spielstände laden/Verlassen): `docs/planned/login-multiplayer-onboarding-plan.md`
 - Mehrspieler-Regelkern war an mehreren Stellen von der offiziellen "5 Minute Dungeon"-Anleitung
   abgewichen — alle 11 TODOs aus `docs/done/five-minute-dungeon-rules-plan.md` sind umgesetzt.
   Zwei Punkte bleiben bewusst offen (siehe Status-Abschnitt im Plan): der Zwei-Karten-Reveal-

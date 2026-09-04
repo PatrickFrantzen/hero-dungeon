@@ -13,6 +13,14 @@ kompilieren, können in dieser Umgebung aber nicht starten, weil kein Chrome/Chr
 `ChromeHeadlessCI` installiert ist. Firestore-Rules-Tests können in dieser Umgebung nicht starten,
 weil Java fehlt.
 
+**Nachtrag (2026-09-04):** Die weiter unten offene "Produktentscheidung" (Variante A vs. B) ist
+mit `docs/planned/login-multiplayer-onboarding-plan.md` entschieden — **Variante B (echter
+Offline/Local-Singleplayer)** ist die beschlossene Richtung. Der Persistenz-/Login-Umbau dafür
+(lokaler Spielstand, mehrere parallele Saves, Account-Angebot beim Spielende) steht in PR 1-3
+dieses neuen Plans; die hier noch offenen PR 1/1b/2/3-TODOs (Deck-Cycling/Deadlock-Schutz,
+Singleplayer-Helden-Filter, Siegzustand) bleiben unverändert gültig und unabhängig davon zu
+erledigen — beide Pläne ergänzen sich (Spielregeln hier, Persistenz/Auth dort).
+
 ## Aktueller Ist-Ablauf im Code
 
 ### 1. Spiel erstellen
