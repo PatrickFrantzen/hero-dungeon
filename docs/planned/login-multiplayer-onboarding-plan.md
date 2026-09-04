@@ -36,9 +36,32 @@ Pfad „Account erstellen → Spielstand erscheint identisch nach Login" aus der
 Verifikation dieses PRs steht weiterhin aus (wie schon bei anderen Multiplayer-/Firebase-Tests in
 diesem Repo vermerkt) — vor dem Merge oder zumindest vor einem Produktiv-Rollout nachholen.
 
-Damit ist der Singleplayer-Teil dieses Plans (PR 1–3) vollständig umgesetzt. PR 4–6
-(Anonymous Auth für Multiplayer, TTL-Löschung, Account-Verknüpfung + "Meine Spiele") sind als
-Issues #76–#78 weiterhin offen.
+Damit ist der Singleplayer-Teil dieses Plans (PR 1–3) vollständig umgesetzt.
+
+**PR 4 umgesetzt** (Issue #76, TDD): `StartscreenComponent.newGame()`/`joinGame()` rufen vor dem
+eigentlichen Firestore-Zugriff `AuthFormService.ensureAnonymousSession()` auf (`signInAnonymously()`,
+nur falls `auth.currentUser` noch leer ist) — `newSingleplayerGame()` bleibt bewusst ohne diesen
+Aufruf. `src/models/user.class.ts`: `userEmail` ist jetzt optional (`toJSON()` lässt das Feld
+komplett weg statt `undefined` zu schreiben — Firestore lehnt das ab), neues Feld
+`lastActivityAt: Timestamp | FieldValue | null`. `GameRepositoryService`/`PlayerRepositoryService`
+schreiben `lastActivityAt: serverTimestamp()` bei jedem Schreibzugriff auf `games/{gameId}` bzw.
+`games/{gameId}/player/{playerId}` mit — mit einer bewussten Ausnahme vom sonst gültigen "keine
+eigene lokal/Firestore-Fallunterscheidung in dieser Klasse"-Prinzip (`services/CLAUDE.md`): ein
+`isLocalGameId(gameId)`-Guard verhindert, dass ein Firestore-`serverTimestamp()`-Sentinel in
+einen lokalen Singleplayer-Spielstand (LocalStorage) geschrieben wird. `CurrentUserService`/
+`AuthFormService` mussten für "anonyme Nutzer ohne E-Mail" nicht geändert werden — der bestehende
+`?? 'Gast'`-Fallback in `CurrentUserService.getCurrentUser()` griff bereits, da nichts im Code
+`userEmail` liest. `app.routes.ts` unverändert: `redirectUnauthorizedTo` auf `game/:id` greift
+jetzt effektiv nie mehr sichtbar, da `signInAnonymously()` aus `newGame()`/`joinGame()` bereits
+vor der Navigation dorthin abgeschlossen ist. `users/{uid}.lastActivityAt` (für eine
+TTL-Policy auf das Profil-Dokument selbst) ist bewusst **nicht** Teil dieses PRs — laut PR-5-
+Abschnitt unten ist das noch eine offene Design-Frage. Manueller Multiplayer-Smoke-Test („Spiel
+im Privatfenster erstellen/beitreten ohne vorheriges Formular") steht wie bei den übrigen
+Multiplayer-Tests in diesem Repo noch aus (kein Firebase-Emulator/Browser-Setup in dieser
+Session).
+
+PR 5–6 (TTL-Löschung, Account-Verknüpfung + "Meine Spiele") sind als Issues #77–#78 weiterhin
+offen.
 
 Zielbild mit Patrick abgestimmt und fixiert (2026-09-04) — kein Optionsvergleich mehr, sondern
 eine konkrete Entscheidung mit nummerierten PRs. Diese Diagnose ergänzt zwei bestehende Pläne,

@@ -77,7 +77,16 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   `src/app/services/CLAUDE.md`). `stats: GameStats` (`enemiesDefeated`/`cardsPlayed`/
   `cardsCycled`/`heropowersUsed`) ist die Kampagnen-Statistik — Zählstellen/Anzeige in
   `src/app/components/game/CLAUDE.md`.
-- **`user.class.ts`** — Nutzer-Datenstruktur (`CurrentUserService`/`CurrentUserState`).
+- **`user.class.ts`** — Nutzer-Datenstruktur (`CurrentUserService`/`CurrentUserState`). Seit
+  Issue #76 (PR 4 aus `docs/planned/login-multiplayer-onboarding-plan.md`): `userEmail` ist
+  optional (anonyme Multiplayer-Accounts, `signInAnonymously()`, haben keine E-Mail) —
+  `toJSON()` lässt das Feld komplett weg statt `undefined` zu schreiben, da Firestore ein
+  explizites `undefined`-Feld ablehnt. Neues Feld `lastActivityAt: Timestamp | FieldValue |
+  null` (Typ-Import bewusst aus dem Firebase-Core-SDK `firebase/firestore`, nicht
+  `@angular/fire`, damit dieses reine Datenmodell kein Angular-Detail referenziert) — Grundlage
+  der künftigen 7-Tage-TTL-Policy auf anonyme Multiplayer-Accounts (PR 5, noch offen); wer es
+  tatsächlich als `serverTimestamp()` schreibt, ist `GameRepositoryService`/
+  `PlayerRepositoryService` (`services/CLAUDE.md`), nicht diese Klasse selbst.
 - **`shuffle.util.ts`** — reine Shuffle-Funktion, von `Hero.buildCardstack()` genutzt.
 
 ## Neuen Helden/Monster hinzufügen

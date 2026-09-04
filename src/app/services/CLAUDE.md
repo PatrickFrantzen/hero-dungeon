@@ -41,9 +41,21 @@ Repository-Services unten gebündelt.
   Pause/Reset (`src/app/components/game/CLAUDE.md`); `updateCurrentBoss()`/
   `updateRemainingBosses()` sind die Firestore-Writes für die Boss-Kampagne (siehe
   `card-play.service.ts` unten); `updateStats()` schreibt die vier Kampagnen-Statistik-Zähler
-  (`GameStats`, siehe `src/app/components/game/CLAUDE.md`).
+  (`GameStats`, siehe `src/app/components/game/CLAUDE.md`). Seit Issue #76: jede schreibende
+  Methode in beiden Services schreibt zusätzlich `lastActivityAt: serverTimestamp()` mit
+  (privates `withActivity()` in beiden Klassen, TTL-Grundlage für PR 5) — **bewusste Ausnahme**
+  vom sonst gültigen "keine eigene lokal/Firestore-Fallunterscheidung in dieser Klasse"-Prinzip
+  oben: `withActivity()` prüft selbst `isLocalGameId(gameId)` und lässt das Feld für lokale
+  Singleplayer-Spielstände weg, weil sonst ein Firestore-`serverTimestamp()`-Sentinel (ein
+  FieldValue-Objekt, kein echter Zeitstempel) in `LocalSingleplayerSaveService`s LocalStorage-JSON
+  landen würde. `users/{uid}.lastActivityAt` (fürs Profil-Dokument selbst) ist davon nicht
+  erfasst — offene Design-Frage, siehe PR 5 in
+  `docs/planned/login-multiplayer-onboarding-plan.md`.
 - **`current-user.service.ts`** — Auth-State (`@angular/fire/auth`) + zugehöriges
-  Firestore-Nutzerdokument.
+  Firestore-Nutzerdokument. Für anonyme Multiplayer-Nutzer (Issue #76) ohne eigenes
+  `users/{uid}`-Dokument/ohne `userEmail` unverändert sicher: `getCurrentUser()` liest
+  `userNickname` bereits mit `?? 'Gast'`-Fallback und referenziert `userEmail` nirgends —
+  kein Code-Änderung hier nötig.
 - **`local-singleplayer-save.service.ts`** — CRUD (`listSaves()`/`createSave()`/`getSave()`/
   `updateSave()`) für lokale Singleplayer-Spielstände, komplett ohne Firestore/Auth (LocalStorage,
   Schlüssel `hero-dungeon.local-singleplayer-saves`). Persistenz-Unterbau für
@@ -132,7 +144,12 @@ Repository-Services unten gebündelt.
   deutsche Meldungen; von allen Auth-bezogenen Formularen genutzt statt eigenem Error-Mapping
   pro Komponente. `register()` gibt die neue `uid` nicht zurück — Aufrufer, die sie brauchen
   (z.B. `DialogAccountOfferComponent`), lesen sie danach aus `Auth.currentUser?.uid` (Firebase
-  meldet den neu registrierten Nutzer automatisch an).
+  meldet den neu registrierten Nutzer automatisch an). Seit Issue #76:
+  `ensureAnonymousSession()` (`signInAnonymously()`, nur falls `auth.currentUser` noch leer ist)
+  — von `StartscreenComponent.newGame()`/`joinGame()` vor dem eigentlichen Firestore-Zugriff
+  aufgerufen, damit ein Multiplayer-Spiel ohne vorheriges Anmeldeformular erstellt/betreten
+  werden kann; `newSingleplayerGame()` ruft das bewusst nicht auf (Singleplayer bleibt
+  komplett auth-frei).
 - **`local-save-migration.service.ts`** — `migrateAll(newUserId, newUserNickname)` (Issue #75,
   PR 3): schreibt **alle** vorhandenen lokalen Singleplayer-Saves (`LocalSingleplayerSaveService.
   listSaves()`) als neue Firestore-Spiele (`GameRepositoryService.createGame()`/

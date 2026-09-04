@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { DocumentData } from '@angular/fire/firestore';
+import { DocumentData, serverTimestamp } from '@angular/fire/firestore';
 import { FirestoreRepositoryService } from './firestore-repository.service';
+import { isLocalGameId } from './local-game-id.util';
 
 /**
  * Alle Firestore-Zugriffe auf ein `games/{gameId}/player/{playerId}`-Dokument (Hand-/
@@ -13,6 +14,11 @@ import { FirestoreRepositoryService } from './firestore-repository.service';
 export class PlayerRepositoryService {
   constructor(private repo: FirestoreRepositoryService) {}
 
+  /** Siehe GameRepositoryService.withActivity() - gleiche bewusste Ausnahme, gleicher Grund. */
+  private withActivity<T extends object>(gameId: string, fields: T): T {
+    return isLocalGameId(gameId) ? fields : { ...fields, lastActivityAt: serverTimestamp() };
+  }
+
   getPlayer(gameId: string, playerId: string): Promise<DocumentData | undefined> {
     return this.repo.getDoc(['games', gameId, 'player', playerId]);
   }
@@ -23,26 +29,41 @@ export class PlayerRepositoryService {
    * Player-Zustand, falls der zweite Call fehlschlägt.
    */
   createPlayer(gameId: string, playerId: string, playerJson: object, updateData: object): Promise<void> {
-    return this.repo.setDoc(['games', gameId, 'player', playerId], { ...playerJson, ...updateData });
+    return this.repo.setDoc(
+      ['games', gameId, 'player', playerId],
+      this.withActivity(gameId, { ...playerJson, ...updateData })
+    );
   }
 
   updatePlayerChoosenHero(gameId: string, playerId: string, choosenHero: unknown): Promise<void> {
-    return this.repo.updateFields(['games', gameId, 'player', playerId], { choosenHero });
+    return this.repo.updateFields(['games', gameId, 'player', playerId], this.withActivity(gameId, { choosenHero }));
   }
 
   updatePlayerCards(gameId: string, playerId: string, cardstack: string[], handstack: string[]): Promise<void> {
-    return this.repo.updateFields(['games', gameId, 'player', playerId], { cardstack, handstack });
+    return this.repo.updateFields(
+      ['games', gameId, 'player', playerId],
+      this.withActivity(gameId, { cardstack, handstack })
+    );
   }
 
   updateHandstack(gameId: string, playerId: string, update: string[]): Promise<void> {
-    return this.repo.updateFields(['games', gameId, 'player', playerId], { handstack: update });
+    return this.repo.updateFields(
+      ['games', gameId, 'player', playerId],
+      this.withActivity(gameId, { handstack: update })
+    );
   }
 
   updateCardstack(gameId: string, playerId: string, update: string[]): Promise<void> {
-    return this.repo.updateFields(['games', gameId, 'player', playerId], { cardstack: update });
+    return this.repo.updateFields(
+      ['games', gameId, 'player', playerId],
+      this.withActivity(gameId, { cardstack: update })
+    );
   }
 
   updateDeliveryStack(gameId: string, playerId: string, update: string[]): Promise<void> {
-    return this.repo.updateFields(['games', gameId, 'player', playerId], { deliveryStack: update });
+    return this.repo.updateFields(
+      ['games', gameId, 'player', playerId],
+      this.withActivity(gameId, { deliveryStack: update })
+    );
   }
 }

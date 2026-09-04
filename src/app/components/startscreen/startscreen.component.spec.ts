@@ -10,6 +10,8 @@ import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
+import { AuthFormService } from 'src/app/services/auth-form.service';
+import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { Game } from 'src/models/game';
 import {
   ensureAngularFireSchedulersInitialized,
@@ -86,5 +88,47 @@ describe('StartscreenComponent', () => {
 
     expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('local-7');
     expect(router.navigate).toHaveBeenCalledWith(['/local-game/local-7']);
+  });
+
+  it('newSingleplayerGame() does not sign in anonymously (Singleplayer needs no auth)', async () => {
+    const authForm = TestBed.inject(AuthFormService);
+    const ensureAnonymousSession = spyOn(authForm, 'ensureAnonymousSession').and.resolveTo();
+    spyOn(component.dialog, 'open').and.returnValue({
+      afterClosed: () => of({ data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' } }),
+    } as MatDialogRef<unknown>);
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+
+    component.newSingleplayerGame();
+    await fixture.whenStable();
+
+    expect(ensureAnonymousSession).not.toHaveBeenCalled();
+  });
+
+  it('newGame() signs in anonymously before the settings dialog opens', async () => {
+    const authForm = TestBed.inject(AuthFormService);
+    const ensureAnonymousSession = spyOn(authForm, 'ensureAnonymousSession').and.resolveTo();
+    const dialogOpen = spyOn(component.dialog, 'open').and.returnValue({
+      afterClosed: () => of(undefined),
+    } as MatDialogRef<unknown>);
+
+    component.newGame();
+    await fixture.whenStable();
+
+    expect(ensureAnonymousSession).toHaveBeenCalled();
+    expect(dialogOpen).toHaveBeenCalled();
+  });
+
+  it('joinGame() signs in anonymously before reading the game from Firestore', async () => {
+    const authForm = TestBed.inject(AuthFormService);
+    const ensureAnonymousSession = spyOn(authForm, 'ensureAnonymousSession').and.resolveTo();
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const getGame = spyOn(gameRepo, 'getGame').and.resolveTo(undefined);
+    component.joinGameId = 'game-42';
+
+    await component.joinGame();
+
+    expect(ensureAnonymousSession).toHaveBeenCalled();
+    expect(getGame).toHaveBeenCalledWith('game-42');
   });
 });
