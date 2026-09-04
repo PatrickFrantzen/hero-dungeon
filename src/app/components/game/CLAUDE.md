@@ -12,6 +12,17 @@ Möglichkeit hängen, erneut einen Helden zu wählen (beide `CurrentCardsInHand`
 `CurrentDeliveryStack`-Reducer ignorieren `undefined` bereits defensiv, das Symptom wäre also
 kein Absturz, sondern ein stiller Dead-End).
 
+## "Spielstand löschen" für Multiplayer (Issue #85)
+
+`deleteOwnMultiplayerData()` — von `GameMenuComponent`s `(deleteGame)`-Output aufgerufen, erst
+nach Bestätigung durch den Nutzer (siehe `game-menu/CLAUDE.md`). Löscht das eigene
+`games/{gameId}/player/{playerId}`-Dokument (`PlayerRepositoryService.deleteOwnPlayerDoc()`),
+entfernt den eigenen Eintrag aus `this.players`/`choosenHeros` (`gameRepo.addPlayerToGame()` mit
+der gefilterten Liste, siehe `services/CLAUDE.md`) und navigiert danach zu `/startscreen`. Das
+Spiel selbst bleibt für die übrigen Mitspieler bestehen — sie vertragen ein fehlendes
+Spieler-Dokument bereits (Issue #77). Ein leeres, verwaistes `games/{gameId}`-Dokument (letzter
+Spieler löscht seinen Spielstand) wird bewusst **nicht** aufgeräumt, siehe `services/CLAUDE.md`.
+
 `GameComponent` hostet `EnemyContainerComponent`/`PlayerHandComponent`/`GameMenuComponent`
 (Issue #74, `game-menu/CLAUDE.md`), lädt beim Einstieg das Spieldokument
 (`checkIfPlayerIsAlreadyPartOfGame()`) und rendert den Dungeon-Countdown-Timer. Kein eigener

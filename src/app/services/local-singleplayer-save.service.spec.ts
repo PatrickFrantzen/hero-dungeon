@@ -64,4 +64,22 @@ describe('LocalSingleplayerSaveService', () => {
     expect(service.getSave('save-2')).toEqual(updated);
     expect(service.getSave('save-1')).toEqual(buildSave('save-1'));
   });
+
+  it('deleteSave removes the given save without touching the others (Issue #85)', () => {
+    service.createSave(buildSave('save-1'));
+    service.createSave(buildSave('save-2'));
+
+    service.deleteSave('save-1');
+
+    expect(service.getSave('save-1')).toBeUndefined();
+    expect(service.getSave('save-2')).toEqual(buildSave('save-2'));
+  });
+
+  it('deleteSave on an unknown saveId is a no-op', () => {
+    service.createSave(buildSave('save-1'));
+
+    service.deleteSave('unknown-save');
+
+    expect(service.listSaves()).toEqual([buildSave('save-1')]);
+  });
 });

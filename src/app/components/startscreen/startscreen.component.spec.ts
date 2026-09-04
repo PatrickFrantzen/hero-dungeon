@@ -14,6 +14,7 @@ import { AuthFormService } from 'src/app/services/auth-form.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { UserRepositoryService } from 'src/app/services/user-repository.service';
 import { CurrentUserAction } from 'src/app/actions/currentUser-action';
+import { DialogConfirmComponent } from '../dialog-confirm/dialog-confirm.component';
 import { Game } from 'src/models/game';
 import {
   ensureAngularFireSchedulersInitialized,
@@ -209,6 +210,43 @@ describe('StartscreenComponent', () => {
       await fixture.whenStable();
 
       expect(component.myGames()).toEqual(['game-1', 'game-2']);
+    });
+  });
+
+  describe('deleteLocalSave (Issue #85)', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      TestBed.inject(LocalSingleplayerSaveService).createSave({
+        saveId: 'local-7',
+        updatedAt: 1234,
+        game: { gameId: 'local-7', numberOfPlayers: 1 } as unknown as Game,
+        player: {},
+      });
+      component.localSaves.set(TestBed.inject(LocalSingleplayerSaveService).listSaves());
+    });
+
+    afterEach(() => localStorage.clear());
+
+    it('asks for confirmation before deleting anything', () => {
+      const dialogOpen = spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<unknown>);
+
+      component.deleteLocalSave('local-7');
+
+      expect(dialogOpen).toHaveBeenCalledWith(DialogConfirmComponent, jasmine.anything());
+      expect(component.localSaves().map((save) => save.saveId)).toEqual(['local-7']);
+    });
+
+    it('removes the save from the list once confirmed', () => {
+      spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of({ data: { confirmed: true } }),
+      } as MatDialogRef<unknown>);
+
+      component.deleteLocalSave('local-7');
+
+      expect(component.localSaves()).toEqual([]);
+      expect(TestBed.inject(LocalSingleplayerSaveService).listSaves()).toEqual([]);
     });
   });
 });

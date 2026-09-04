@@ -36,6 +36,13 @@
     border: none;
 }
 
+/* Issue #85: "Spielstand löschen" ist destruktiv - optisch von den übrigen (folgenlosen)
+   Aktionen abgesetzt, damit ein Klick nicht versehentlich passiert. */
+.game-menu__action--danger {
+    background: rgba(220, 53, 69, 0.25);
+    border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
 .game-menu__hint {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.8rem;

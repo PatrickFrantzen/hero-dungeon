@@ -19,6 +19,8 @@
                         }
                     </div>
                 }
+
+                <button class="game-menu__action game-menu__action--danger" (click)="confirmDeleteSingleplayerSave()">Spielstand löschen</button>
             } @else {
                 <span class="game-menu__hint">Automatisch gespeichert</span>
 
@@ -34,6 +36,8 @@
                 @if (canLinkAccount()) {
                     <button class="game-menu__action" (click)="openLinkAccountDialog()">Account verknüpfen</button>
                 }
+
+                <button class="game-menu__action game-menu__action--danger" (click)="confirmDeleteMultiplayerGame()">Spielstand löschen</button>
             }
 
             <button class="game-menu__action" (click)="onLeave()">Verlassen</button>

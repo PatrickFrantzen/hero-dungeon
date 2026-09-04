@@ -66,4 +66,13 @@ export class PlayerRepositoryService {
       this.withActivity(gameId, { deliveryStack: update })
     );
   }
+
+  /** Issue #85: "Spielstand löschen" für Multiplayer - löscht nur das eigene Spieler-
+   * Unterdokument, das Spiel selbst bleibt für die übrigen Mitspieler bestehen (die bereits
+   * durch Issue #77/PR 5 robust gegen ein fehlendes Mitspieler-Dokument sind). Der Aufrufer
+   * muss zusätzlich den eigenen Eintrag aus `games/{gameId}.choosenHeros` entfernen
+   * (`GameRepositoryService.addPlayerToGame()` mit der gefilterten Liste). */
+  deleteOwnPlayerDoc(gameId: string, playerId: string): Promise<void> {
+    return this.repo.deleteDoc(['games', gameId, 'player', playerId]);
+  }
 }

@@ -269,4 +269,25 @@ export class GameComponent implements OnInit, OnDestroy {
   backToStartscreen(): void {
     this.router.navigate(['/startscreen']);
   }
+
+  /** "Spielstand löschen" für Multiplayer (Issue #85, ausgelöst über GameMenuComponent nach
+   * Bestätigung). Das Spiel selbst bleibt für die übrigen Mitspieler bestehen - gelöscht wird
+   * nur das eigene games/{gameId}/player/{playerId}-Dokument sowie der eigene Eintrag im
+   * geteilten choosenHeros-Array (Read-Modify-Write über die bereits bestehende
+   * gameRepo.addPlayerToGame(), analog zu updatePlayerOfGame() beim Hinzufügen - siehe
+   * services/CLAUDE.md zur bekannten, akzeptierten Race-Condition bei echtem gleichzeitigem
+   * Schreiben zweier Clients). Die übrigen Mitspieler vertragen ein fehlendes Spieler-Dokument
+   * bereits (Issue #77, PR 5) - kein zusätzlicher Fix dafür nötig. Ein leeres, verwaistes
+   * games/{gameId}-Dokument (letzter Spieler verlässt) wird bewusst NICHT aufgeräumt, analog zu
+   * den TTL-"Account-Leichen" aus Issue #77 - siehe services/CLAUDE.md. */
+  async deleteOwnMultiplayerData(): Promise<void> {
+    try {
+      await this.playerRepo.deleteOwnPlayerDoc(this.currentGameId(), this.currentUserId());
+      const remainingPlayers = this.players.filter((player) => player.playerId !== this.currentUserId());
+      await this.gameRepo.addPlayerToGame(this.currentGameId(), remainingPlayers);
+      this.router.navigate(['/startscreen']);
+    } catch {
+      this.loadError.set('Der Spielstand konnte nicht gelöscht werden. Bitte erneut versuchen.');
+    }
+  }
 }

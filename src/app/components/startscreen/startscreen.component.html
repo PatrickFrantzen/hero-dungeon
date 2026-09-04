@@ -12,13 +12,20 @@
             <div class="tw-flex tw-flex-col tw-gap-2 tw-rounded tw-border tw-border-white/20 tw-p-3">
                 <span class="tw-text-sm tw-font-medium tw-text-white/80">Meine Spielstände</span>
                 @for (save of localSaves(); track save.saveId) {
-                    <button
-                        (click)="resumeLocalSave(save.saveId)"
-                        class="tw-flex tw-items-center tw-justify-between tw-rounded tw-bg-white/10 tw-px-3 tw-py-2 tw-text-left tw-text-sm tw-text-white tw-transition-colors hover:tw-bg-white/20"
-                    >
-                        <span>{{ heroNameOf(save) }}</span>
-                        <span class="tw-text-white/60">{{ save.game.gameStatus }}</span>
-                    </button>
+                    <div class="tw-flex tw-items-center tw-gap-1">
+                        <button
+                            (click)="resumeLocalSave(save.saveId)"
+                            class="tw-flex tw-flex-1 tw-items-center tw-justify-between tw-rounded tw-bg-white/10 tw-px-3 tw-py-2 tw-text-left tw-text-sm tw-text-white tw-transition-colors hover:tw-bg-white/20"
+                        >
+                            <span>{{ heroNameOf(save) }}</span>
+                            <span class="tw-text-white/60">{{ save.game.gameStatus }}</span>
+                        </button>
+                        <button
+                            (click)="deleteLocalSave(save.saveId)"
+                            aria-label="Spielstand löschen"
+                            class="tw-rounded tw-bg-red-900/40 tw-px-2 tw-py-2 tw-text-sm tw-text-white tw-transition-colors hover:tw-bg-red-800/60"
+                        >✕</button>
+                    </div>
                 }
             </div>
         }

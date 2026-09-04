@@ -45,7 +45,14 @@ Repository-Services unten gebündelt.
   Pause/Reset (`src/app/components/game/CLAUDE.md`); `updateCurrentBoss()`/
   `updateRemainingBosses()` sind die Firestore-Writes für die Boss-Kampagne (siehe
   `card-play.service.ts` unten); `updateStats()` schreibt die vier Kampagnen-Statistik-Zähler
-  (`GameStats`, siehe `src/app/components/game/CLAUDE.md`). Seit Issue #76: jede schreibende
+  (`GameStats`, siehe `src/app/components/game/CLAUDE.md`). `addPlayerToGame()` wird seit
+  Issue #85 ("Spielstand löschen") auch fürs **Entfernen** genutzt — keine eigene
+  "removePlayerFromGame()"-Methode: `GameComponent.deleteOwnMultiplayerData()` filtert die
+  eigene `this.players`-Liste und ruft dieselbe Methode mit dem gekürzten Array auf,
+  symmetrisch zur bestehenden Race-Condition beim Hinzufügen (Read-Modify-Write auf das
+  geteilte Top-Level-Dokument — bei echtem gleichzeitigem Schreiben zweier Clients ist ein
+  Lost-Update theoretisch möglich, bewusst akzeptiert wie an anderen Stellen in diesem Modul).
+  Seit Issue #76: jede schreibende
   Methode in beiden Services schreibt zusätzlich `lastActivityAt: serverTimestamp()` mit
   (privates `withActivity()` in beiden Klassen, TTL-Grundlage für PR 5) — **bewusste Ausnahme**
   vom sonst gültigen "keine eigene lokal/Firestore-Fallunterscheidung in dieser Klasse"-Prinzip
@@ -89,6 +96,33 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   Ziel inzwischen verschwunden ist (der Schreibversuch auf das fehlende Dokument schlägt dann
   zwar über `reportWriteFailure()` sichtbar fehl, aber kontrolliert/asynchron, nicht als
   Absturz).
+
+### "Spielstand löschen" (Issue #85)
+
+- **Singleplayer**: `LocalSingleplayerSaveService.deleteSave(saveId)` — vollständige lokale
+  Löschung, analog zu `createSave()`/`updateSave()`.
+- **Multiplayer**: `PlayerRepositoryService.deleteOwnPlayerDoc(gameId, playerId)` löscht nur das
+  eigene `games/{gameId}/player/{playerId}`-Dokument über eine neue
+  `FirestoreRepositoryService.deleteDoc(path)`-Methode. `deleteDoc()` ist **bewusst ohne**
+  lokalen Zweig (im Unterschied zu `getDoc()`/`setDoc()`/`setDocMerge()`/`updateFields()` oben) —
+  der einzige Aufrufer wird nie mit einer lokalen gameId aufgerufen, ein lokaler Spielstand wird
+  komplett über `LocalSingleplayerSaveService.deleteSave()` gelöscht, nicht dokumentweise. Das
+  geteilte `games/{gameId}`-Dokument selbst wird **nicht** gelöscht, nur der eigene Eintrag aus
+  `choosenHeros` entfernt (`addPlayerToGame()`, siehe oben) — die übrigen Mitspieler vertragen
+  ein fehlendes Spieler-Dokument bereits (Issue #77, PR 5, siehe TTL-Abschnitt oben), kein
+  zusätzlicher Fix nötig.
+- **Bewusst kein Automatismus für ein leeres, verwaistes `games/{gameId}`-Dokument** (letzter
+  Spieler verlässt/löscht): Issue #85 verlangt explizit eine bewusste Entscheidung statt eines
+  automatischen Aufräumens. Entscheidung: **verwaisen lassen**, analog zu den TTL-
+  "Account-Leichen" aus Issue #77 oben — konsistent mit der bereits etablierten "keine
+  automatische Löschinfrastruktur"-Haltung in diesem Projekt. Kann bei Bedarf revidiert werden,
+  ist aber kein aktueller Blocker.
+- **Firestore Rules**: keine Änderung nötig — `write` auf das eigene Player-Dokument
+  (`request.auth.uid == playerId`) deckt bereits ein implizites `delete()` ab, siehe
+  `firestore.rules.test.js` ("allows a player to delete their own save state").
+- **UI**: `GameMenuComponent` (`game-menu/CLAUDE.md`) und `StartscreenComponent`s "Meine
+  Spielstände" nutzen beide den neuen generischen `DialogConfirmComponent`
+  (`components/CLAUDE.md`, Abschnitt Dialoge) für die Bestätigung vor dem Löschen.
 - **`current-user.service.ts`** — Auth-State (`@angular/fire/auth`) + zugehöriges
   Firestore-Nutzerdokument. Für anonyme Multiplayer-Nutzer (Issue #76) ohne eigenes
   `users/{uid}`-Dokument/ohne `userEmail` unverändert sicher: `getCurrentUser()` liest
@@ -109,7 +143,8 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   `lastActivityAt` wäre unnötig. Aufrufer: `StartscreenComponent.newGame()`s `createGame()`
   (nur, wenn `!isLocalGameId(gameId)` — Singleplayer hat kein Account-Konzept) und `joinGame()`.
 - **`local-singleplayer-save.service.ts`** — CRUD (`listSaves()`/`createSave()`/`getSave()`/
-  `updateSave()`) für lokale Singleplayer-Spielstände, komplett ohne Firestore/Auth (LocalStorage,
+  `updateSave()`/`deleteSave()`, letzteres Issue #85) für lokale Singleplayer-Spielstände,
+  komplett ohne Firestore/Auth (LocalStorage,
   Schlüssel `hero-dungeon.local-singleplayer-saves`). Persistenz-Unterbau für
   `docs/done/login-multiplayer-onboarding-plan.md` PR 1 (Issue #73) — ein `LocalSingleplayerSave`
   bündelt `game: Game` + `player` (loses Feld-Bag, `Record<string, unknown>` — Spieler-Dokumente

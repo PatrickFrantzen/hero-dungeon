@@ -66,6 +66,26 @@ describe('games/{gameId}/player/{playerId}', () => {
     const anonDb = testEnv.unauthenticatedContext().firestore();
     await assertFails(anonDb.doc('games/game1/player/alice').set({ handstack: [] }));
   });
+
+  // Issue #85 ("Spielstand löschen"): löscht das eigene Player-Unterdokument per deleteDoc() -
+  // "write" in den Rules oben deckt implizit auch delete ab, hier explizit gelockt.
+  test('allows a player to delete their own save state', async () => {
+    const aliceDb = testEnv.authenticatedContext('alice').firestore();
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc('games/game1/player/alice').set({ handstack: [] });
+    });
+
+    await assertSucceeds(aliceDb.doc('games/game1/player/alice').delete());
+  });
+
+  test("denies deleting another player's save state", async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc('games/game1/player/bob').set({ handstack: [] });
+    });
+    const aliceDb = testEnv.authenticatedContext('alice').firestore();
+
+    await assertFails(aliceDb.doc('games/game1/player/bob').delete());
+  });
 });
 
 describe('games/{gameId}', () => {
