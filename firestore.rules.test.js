@@ -97,3 +97,43 @@ describe('games/{gameId}', () => {
     await assertFails(anonDb.doc('games/game1').set({ choosenHeros: [] }));
   });
 });
+
+// Issue #77 (PR 5): 7-Tage-TTL auf lastActivityAt löscht games/{gameId}/player/{playerId}-
+// Dokumente inaktiver anonymer Mitspieler, während games/{gameId} selbst (geteiltes Dokument)
+// bewusst NICHT von der TTL-Policy erfasst ist (siehe services/CLAUDE.md) - eine laufende
+// Gruppe darf durch das TTL-verschwundene Dokument eines Mitspielers nicht blockiert werden.
+describe('games/{gameId} mit einem TTL-gelöschten Mitspieler-Dokument', () => {
+  test('andere Spieler können weiterhin auf das geteilte games/{gameId}-Dokument zugreifen, obwohl bobs Spieler-Unterdokument fehlt', async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      // bobs games/{gameId}/player/bob-Dokument existiert absichtlich NICHT (TTL-gelöscht) -
+      // nur der geteilte Spieldokument-Eintrag in choosenHeros bleibt bestehen.
+      await ctx.firestore().doc('games/game1').set({
+        choosenHeros: [
+          { playerId: 'alice', playerName: 'Alice', playerHero: 'Barbar' },
+          { playerId: 'bob', playerName: 'Bob', playerHero: 'Dieb' },
+        ],
+      });
+      await ctx.firestore().doc('games/game1/player/alice').set({ handstack: ['red'] });
+    });
+
+    const aliceDb = testEnv.authenticatedContext('alice').firestore();
+    await assertSucceeds(aliceDb.doc('games/game1').get());
+    await assertSucceeds(aliceDb.doc('games/game1/player/alice').get());
+    await assertSucceeds(aliceDb.doc('games/game1/player/alice').update({ handstack: ['blue'] }));
+  });
+
+  test('bobs verschwundenes Spieler-Dokument bleibt für andere Spieler weiterhin unzugreifbar (kein Ersatzzugriff durch die Lücke)', async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc('games/game1').set({
+        choosenHeros: [
+          { playerId: 'alice', playerName: 'Alice', playerHero: 'Barbar' },
+          { playerId: 'bob', playerName: 'Bob', playerHero: 'Dieb' },
+        ],
+      });
+    });
+
+    const aliceDb = testEnv.authenticatedContext('alice').firestore();
+    await assertFails(aliceDb.doc('games/game1/player/bob').get());
+    await assertFails(aliceDb.doc('games/game1/player/bob').set({ handstack: [] }));
+  });
+});
