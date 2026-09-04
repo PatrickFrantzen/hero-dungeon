@@ -90,6 +90,10 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
   `strictTemplates`), Target/Module `ES2022`, `typescript: ~5.9.3`.
 - **Lint/Format**: keine ESLint/Prettier-Konfiguration im Projekt — vor deren Einführung kurz
   abstimmen (Scope, Regelset).
+- **Agent-Skills**: `.claude/skills/` enthält seit 2026-09-04 zusätzlich zu den eingebauten
+  Claude-Code-Skills eine editierbare Kopie der `engineering`-/`productivity`-/`in-progress`-
+  Skills aus [mattpocock/skills](https://github.com/mattpocock/skills) (MIT) — Details/Update-
+  Hinweis: `.claude/skills/README.md`.
 
 ## Struktur (Übersicht — Details siehe Index oben)
 
