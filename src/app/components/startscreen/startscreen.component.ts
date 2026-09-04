@@ -17,6 +17,7 @@ import { GameRepositoryService } from 'src/app/services/game-repository.service'
 import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
 import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
+import { AuthFormService } from 'src/app/services/auth-form.service';
 
 @Component({
     selector: 'app-startscreen',
@@ -48,7 +49,8 @@ export class StartscreenComponent implements OnInit {
     private JSON: ToJSONService,
     private gameFactory: GameFactoryService,
     private gameRepo: GameRepositoryService,
-    private localSaveService: LocalSingleplayerSaveService
+    private localSaveService: LocalSingleplayerSaveService,
+    private authForm: AuthFormService
   ) {}
 
 
@@ -75,7 +77,12 @@ export class StartscreenComponent implements OnInit {
     return choosenHero?.heroname ?? 'Fortsetzen';
   }
 
-  newGame() {
+  /** Multiplayer-Einstieg (Issue #76): meldet vor dem eigentlichen Firestore-Zugriff per
+   * `AuthFormService.ensureAnonymousSession()` an, falls noch kein Nutzer eingeloggt ist - kein
+   * sichtbarer Signin-Screen mehr nötig. `newSingleplayerGame()` bleibt bewusst ohne diesen
+   * Aufruf, Singleplayer läuft weiterhin komplett ohne Auth. */
+  async newGame() {
+      await this.authForm.ensureAnonymousSession();
       this.openDialog(false);
   }
 
@@ -128,11 +135,12 @@ export class StartscreenComponent implements OnInit {
     })
   }
 
-  joinGame() {
+  async joinGame() {
     const inputValue = this.joinGameId.trim();
     if (!inputValue) {
       return;
     }
+    await this.authForm.ensureAnonymousSession();
     this.gameRepo.getGame(inputValue)
     .then((results)=> {
       if (!results) {

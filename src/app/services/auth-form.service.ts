@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, signInAnonymously, signInWithEmailAndPassword } from '@angular/fire/auth';
 import { User } from 'src/models/user.class';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 
-type AuthFormKind = 'login' | 'register';
+type AuthFormKind = 'login' | 'register' | 'anonymous';
 
 // Firebase-Error-Codes, die eine verständlichere Meldung verdienen als die generische
 // Kind-Fallback-Meldung unten. Nicht jeder mögliche Auth-Error-Code ist hier aufgeführt -
@@ -20,6 +20,7 @@ const AUTH_ERROR_MESSAGES: Partial<Record<string, string>> = {
 const DEFAULT_MESSAGES: Record<AuthFormKind, string> = {
   login: 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
   register: 'Registrierung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.',
+  anonymous: 'Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
 };
 
 function mapAuthError(error: unknown, kind: AuthFormKind): string {
@@ -57,6 +58,23 @@ export class AuthFormService {
       await this.repo.setDoc(['users', credential.user.uid], user.toJSON());
     } catch (error) {
       throw new Error(mapAuthError(error, 'register'));
+    }
+  }
+
+  /**
+   * Multiplayer-Einstieg ohne Formular (Issue #76): `StartscreenComponent.newGame()`/
+   * `joinGame()` rufen das vor dem eigentlichen Firestore-Zugriff auf. Kein Aufruf, wenn schon
+   * ein Nutzer eingeloggt ist (anonym oder registriert) - Singleplayer/Tutorial brauchen diesen
+   * Aufruf laut Plan nie.
+   */
+  async ensureAnonymousSession(): Promise<void> {
+    if (this.auth.currentUser) {
+      return;
+    }
+    try {
+      await signInAnonymously(this.auth);
+    } catch (error) {
+      throw new Error(mapAuthError(error, 'anonymous'));
     }
   }
 }
