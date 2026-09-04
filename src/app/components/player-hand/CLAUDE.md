@@ -56,10 +56,17 @@ geliefertes Artwork im "geprägte Münze auf Holz"-Stil umgestellt (gleiche Bild
 referenziert Karten weiterhin über den String-Namen, `player-hand.component.html:
 src="./assets/img/cards/{{card}}.png"`).
 
-**Bewusste Inkonsistenz:** Die Kombi-Karten (`red_red.png`, `red_blue.png`,
-`yellow_yellow.png`, `purple_purple.png`, `blue_blue.png`, `green_green.png`) sind eigenständige
-Bilddateien, keine programmatisch aus den Einzelsymbolen zusammengesetzten Grafiken — sie
-bleiben vorerst im alten Diagonal-Schnitt-Stil, bis auch dafür neues Artwork vorliegt.
+**Kombi-Karten (2026-09-04):** Die fünf Rot-Mischkarten (`red_red.png`, `red_blue.png`,
+`red_green.png`, `red_purple.png`, `red_yellow.png`) sind ebenfalls auf das neue "Münzen"-
+Artwork umgestellt (gleiches Verfahren: 450px Breite, 256-Farben quantisiert). Bei `red_yellow`
+sind die Eck-Badges des Schild-Symbols blau statt gelb eingefärbt (stilistische Entscheidung im
+Artwork, keine falsche Zuordnung — mit Patrick abgeglichen) — die Karte zeigt Schwert (rot) +
+Schild (gelb/Verteidigung).
+
+**Bewusste Inkonsistenz (weiterhin offen):** Die vier reinen Doppel-Karten (`yellow_yellow.png`,
+`purple_purple.png`, `blue_blue.png`, `green_green.png`) sind eigenständige Bilddateien, keine
+programmatisch aus den Einzelsymbolen zusammengesetzten Grafiken — sie bleiben im alten
+Diagonal-Schnitt-Stil, bis auch dafür neues Artwork vorliegt.
 
 ## Swipe-Geste zum Karte-Spielen (Issue #52)
 
