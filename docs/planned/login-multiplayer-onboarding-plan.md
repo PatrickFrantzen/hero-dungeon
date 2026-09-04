@@ -60,8 +60,22 @@ im Privatfenster erstellen/beitreten ohne vorheriges Formular") steht wie bei de
 Multiplayer-Tests in diesem Repo noch aus (kein Firebase-Emulator/Browser-Setup in dieser
 Session).
 
-PR 5–6 (TTL-Löschung, Account-Verknüpfung + "Meine Spiele") sind als Issues #77–#78 weiterhin
-offen.
+**PR 5 umgesetzt** (Issue #77, TDD) — mit einer externen Restarbeit, die dieses Repo nicht
+selbst erledigen kann: die Design-Frage ist entschieden (TTL-Policy nur auf `users/{uid}` und
+`games/{gameId}/player/{playerId}`, nicht auf das geteilte `games/{gameId}`-Dokument, siehe
+`services/CLAUDE.md`), aber die eigentliche Firestore-TTL-Policy-Konfiguration (Firebase
+Console/`gcloud`) ist **kein Code-Artefakt** und wurde in dieser Session mangels Firebase-
+Console-Zugriff **nicht** vorgenommen — das muss Patrick einmalig nachholen (Details/Befehl in
+`services/CLAUDE.md`). Code-seitig: `GameComponent.loadHandstack()` (`game/CLAUDE.md`) behandelt
+ein fehlendes eigenes Spieler-Unterdokument (Rejoin nach TTL-Löschung) wie einen frischen
+Beitritt. Diagnose ergab, dass `CardPlayService`s "alle Spieler"-Operationen bereits über
+`FirestoreRepositoryService.queryAll()` live abfragen (ein TTL-gelöschtes Dokument taucht dort
+einfach nicht mehr auf) und die Zielspieler-Methoden bereits durchgängig mit `data?.[...] ??
+[]`-Fallbacks arbeiten — hier war keine Code-Änderung nötig. `firestore.rules.test.js`: neuer
+Describe-Block simuliert ein TTL-gelöschtes Mitspieler-Dokument und bestätigt, dass die übrigen
+Rules-Zugriffe (geteiltes Spieldokument, eigenes Spieler-Dokument) weiterhin funktionieren.
+
+PR 6 (Account-Verknüpfung + "Meine Spiele") ist als Issue #78 weiterhin offen.
 
 Zielbild mit Patrick abgestimmt und fixiert (2026-09-04) — kein Optionsvergleich mehr, sondern
 eine konkrete Entscheidung mit nummerierten PRs. Diese Diagnose ergänzt zwei bestehende Pläne,

@@ -51,6 +51,40 @@ Repository-Services unten gebündelt.
   landen würde. `users/{uid}.lastActivityAt` (fürs Profil-Dokument selbst) ist davon nicht
   erfasst — offene Design-Frage, siehe PR 5 in
   `docs/planned/login-multiplayer-onboarding-plan.md`.
+
+### TTL-Policy auf `lastActivityAt` (Issue #77, PR 5) — externe Konfiguration, kein Code hier
+
+Die Design-Frage aus dem Plan ist entschieden: TTL-Policy nur auf `users/{uid}` und
+`games/{gameId}/player/{playerId}`, **nicht** auf das geteilte `games/{gameId}`-Dokument selbst
+(sonst würde eine noch aktive Multiplayer-Runde gelöscht, nur weil ein einzelner Mitspieler
+inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`, Describe-Block
+"games/{gameId} mit einem TTL-gelöschten Mitspieler-Dokument").
+
+- **Konfiguration passiert außerhalb dieses Repos** (Firebase Console → Firestore → TTL-Policies,
+  oder `gcloud firestore fields ttls update lastActivityAt --collection-group=users
+  --enable-ttl` bzw. `--collection-group=player` für die Player-Subcollection) — kein
+  Code-Artefakt hier, da Firestore TTL-Policies nicht Teil der Security Rules sind. **Noch nicht
+  konfiguriert** (Stand Issue #77) — Patrick muss das einmalig in der Firebase Console für das
+  Projekt `hero-dungeon` einrichten, bevor die TTL-Löschung tatsächlich greift.
+- Der zugehörige **Firebase-Auth-User wird bewusst nicht gelöscht**, wenn seine Firestore-Daten
+  per TTL verschwinden (kein Cloud-Function-Scheduler in diesem Projekt) — bekannte
+  "Account-Leiche" ohne Datenzugriff, siehe Zielbild in
+  `docs/planned/login-multiplayer-onboarding-plan.md`.
+- **Anwendungsseitige Ausfalltoleranz:** `GameComponent.loadHandstack()` (`game/CLAUDE.md`)
+  behandelt ein fehlendes eigenes `games/{gameId}/player/{playerId}`-Dokument (Rejoin nach
+  TTL-Löschung während der Nutzer inaktiv war) wie einen frischen Beitritt, statt `undefined` in
+  Hand-/Ablagestapel zu dispatchen. Für die **übrigen** Mitspieler war keine Code-Änderung nötig:
+  `CardPlayService`s "alle Spieler"-Operationen (`applyEventToOtherPlayers()`,
+  `drawCardsForOtherPlayers()`, `reshuffleAllPlayersForNewDungeon()`) lesen die Spielerliste
+  bereits live per `FirestoreRepositoryService.queryAll()` statt über die (potenziell veraltete)
+  `choosenHeros`-Liste — ein per TTL gelöschtes Spieler-Dokument taucht in der Query schlicht
+  nicht mehr auf. Die Zielspieler-Methoden (`resolveSpende()`/`resolveStehlen()`/
+  `resolveHeilkraeuter()`/`resolveHeilung()`/`drawCardsForTarget()`/
+  `reclaimCardsFromDeliveryStackForTarget()`) lesen ein gewähltes Ziel-Dokument bereits
+  durchgängig mit `data?.[...] ?? []`-Fallbacks, werfen also ebenfalls keine Exception, wenn das
+  Ziel inzwischen verschwunden ist (der Schreibversuch auf das fehlende Dokument schlägt dann
+  zwar über `reportWriteFailure()` sichtbar fehl, aber kontrolliert/asynchron, nicht als
+  Absturz).
 - **`current-user.service.ts`** — Auth-State (`@angular/fire/auth`) + zugehöriges
   Firestore-Nutzerdokument. Für anonyme Multiplayer-Nutzer (Issue #76) ohne eigenes
   `users/{uid}`-Dokument/ohne `userEmail` unverändert sicher: `getCurrentUser()` liest

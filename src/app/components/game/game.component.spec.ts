@@ -17,6 +17,10 @@ import {
   ensureFirebaseTestAppInitialized,
   firestoreTestProviders,
 } from 'src/testing/firebase-test-app';
+import { GameRepositoryService } from 'src/app/services/game-repository.service';
+import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
+import { CurrentUserAction } from 'src/app/actions/currentUser-action';
+import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 
 import { GameComponent } from './game.component';
 
@@ -115,6 +119,46 @@ describe('GameComponent', () => {
 
       expect(dialog.open).not.toHaveBeenCalled();
       localFixture.destroy();
+    });
+  });
+
+  describe('rejoining after the own player document was deleted (Issue #77, TTL)', () => {
+    beforeEach(() => {
+      store.dispatch(new CurrentUserAction('current-user-id', 'Alice'));
+    });
+
+    it('loads the handstack normally when the own player document still exists', async () => {
+      const gameRepo = TestBed.inject(GameRepositoryService);
+      spyOn(gameRepo, 'getGame').and.resolveTo({
+        choosenHeros: [{ playerId: 'current-user-id', playerName: 'Alice', playerHero: 'Barbar' }],
+      });
+      const playerRepo = TestBed.inject(PlayerRepositoryService);
+      spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], deliveryStack: ['blue'] });
+      const createPlayer = spyOn(playerRepo, 'createPlayer').and.resolveTo();
+
+      await component.checkIfPlayerIsAlreadyPartOfGame();
+
+      expect(createPlayer).not.toHaveBeenCalled();
+      expect(store.selectSnapshot(CurrentHandSelector.currentHand)).toEqual(['red']);
+    });
+
+    it('falls back to creating a new player when the own document is gone despite being listed in choosenHeros', async () => {
+      const gameRepo = TestBed.inject(GameRepositoryService);
+      spyOn(gameRepo, 'getGame').and.resolveTo({
+        choosenHeros: [{ playerId: 'current-user-id', playerName: 'Alice', playerHero: 'Barbar' }],
+      });
+      const playerRepo = TestBed.inject(PlayerRepositoryService);
+      // TTL hat das Spieler-Unterdokument gelöscht (games/{gameId}/player/{playerId}), obwohl
+      // der Spieler weiterhin im geteilten games/{gameId}-Dokument (choosenHeros) gelistet ist.
+      spyOn(playerRepo, 'getPlayer').and.resolveTo(undefined);
+      const createPlayer = spyOn(playerRepo, 'createPlayer').and.resolveTo();
+      const dialog = TestBed.inject(MatDialog);
+      const dialogOpen = spyOn(dialog, 'open').and.returnValue({ afterClosed: () => ({ subscribe: () => {} }) } as never);
+
+      await component.checkIfPlayerIsAlreadyPartOfGame();
+
+      expect(createPlayer).toHaveBeenCalled();
+      expect(dialogOpen).toHaveBeenCalled();
     });
   });
 });

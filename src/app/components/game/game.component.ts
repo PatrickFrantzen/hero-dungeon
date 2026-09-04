@@ -197,8 +197,18 @@ export class GameComponent implements OnInit, OnDestroy {
 
   async loadHandstack(currentPlayerId: string) {
     const data = await this.playerRepo.getPlayer(this.currentGameId(), currentPlayerId);
-    this.store.dispatch(new CurrentCardsInHand(data?.['handstack']));
-    this.store.dispatch(new CurrentDeliveryStack(data?.['deliveryStack']));
+    if (!data) {
+      // Eigenes Spieler-Unterdokument fehlt, obwohl der Spieler weiterhin im geteilten
+      // games/{gameId}-Dokument gelistet ist (Issue #77, z.B. 7-Tage-TTL auf lastActivityAt
+      // während der Nutzer inaktiv war) - wie einen frischen Beitritt behandeln, statt
+      // undefined in Hand-/Ablagestapel zu dispatchen (der Spieler bliebe sonst stumm mit
+      // leerer Hand hängen, ohne erneut einen Helden wählen zu können).
+      await this.createNewPlayer();
+      this.openDialog();
+      return;
+    }
+    this.store.dispatch(new CurrentCardsInHand(data['handstack']));
+    this.store.dispatch(new CurrentDeliveryStack(data['deliveryStack']));
   }
 
   openDialog() {

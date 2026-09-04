@@ -8,6 +8,16 @@ rules_version = '2';
 // Everything here is written by an authenticated player acting on their own game/player
 // documents. There is no admin/server role in this app (no Cloud Functions, no Admin SDK) -
 // every write goes through the client SDK, so these rules are the only access control.
+//
+// TTL policy (Issue #77, PR 5 of docs/planned/login-multiplayer-onboarding-plan.md): both
+// `users/{userId}` and `games/{gameId}/player/{playerId}` carry a `lastActivityAt` Firestore
+// Timestamp field (written via serverTimestamp() by GameRepositoryService/PlayerRepositoryService,
+// see src/app/services/CLAUDE.md), on which a 7-day TTL policy is configured externally
+// (Firebase Console/`gcloud firestore fields ttls update` - not a code artifact in this repo,
+// see services/CLAUDE.md for the exact commands/current status). Deliberately NOT configured on
+// the shared `games/{gameId}` document itself - it must survive as long as at least one player
+// subdocument still exists, see firestore.rules.test.js
+// ("games/{gameId} mit einem TTL-gelöschten Mitspieler-Dokument").
 service cloud.firestore {
   match /databases/{database}/documents {
 

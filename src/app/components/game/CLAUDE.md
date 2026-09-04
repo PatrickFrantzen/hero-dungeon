@@ -1,5 +1,17 @@
 # game/ — GameComponent (Host + Dungeon-Timer)
 
+## Rejoin nach TTL-gelöschtem eigenen Spieler-Dokument (Issue #77)
+
+`checkIfPlayerIsAlreadyPartOfGame()`/`loadHandstack()`: ist der Nutzer laut dem geteilten
+`games/{gameId}`-Dokument (`choosenHeros`) weiterhin Teil des Spiels, aber sein eigenes
+`games/{gameId}/player/{playerId}`-Unterdokument inzwischen weg (z.B. 7-Tage-TTL auf
+`lastActivityAt`, `services/CLAUDE.md`), fällt `loadHandstack()` auf denselben Pfad wie ein
+frischer Beitritt zurück (`createNewPlayer()` + `openDialog()` zur erneuten Heldenwahl) statt
+`undefined` in Hand-/Ablagestapel zu dispatchen — sonst bliebe der Nutzer mit leerer Hand ohne
+Möglichkeit hängen, erneut einen Helden zu wählen (beide `CurrentCardsInHand`/
+`CurrentDeliveryStack`-Reducer ignorieren `undefined` bereits defensiv, das Symptom wäre also
+kein Absturz, sondern ein stiller Dead-End).
+
 `GameComponent` hostet `EnemyContainerComponent`/`PlayerHandComponent`/`GameMenuComponent`
 (Issue #74, `game-menu/CLAUDE.md`), lädt beim Einstieg das Spieldokument
 (`checkIfPlayerIsAlreadyPartOfGame()`) und rendert den Dungeon-Countdown-Timer. Kein eigener
