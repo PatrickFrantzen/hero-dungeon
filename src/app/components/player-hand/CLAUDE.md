@@ -23,6 +23,18 @@ Event-Überarbeitung hießen sie `isSoloEventActive()`/`resolveSoloEvent()` und 
 Singleplayer beschränkt; `CardPlayService.resolveEvent()` wendet den Effekt jetzt auf alle
 Spieler an, nicht nur auf den klickenden.
 
+**Joker-Token-Auswahl (2026-09-02)** — `chooseCard(card)` fängt jetzt auch `'joker'` ab
+(`toggleJokerSelection()`, analog zu `singleTargetActionCards`/`'wut'`): erster Klick dispatcht
+`ActivateJokerSelection` (lässt alle Enemy-Tokens leuchten, siehe `enemy/CLAUDE.md`), ein
+erneuter Klick auf die Joker-Karte bricht per `DeactivateJokerSelection` wieder ab, ohne die
+Karte zu verbrauchen — dieselbe glühende `.joker-card--active`-Klasse auf der Handkarte selbst
+zeigt den aktiven Zustand. Wirkt nicht gegen Ereigniskarten: `toggleJokerSelection()` prüft
+vorher `isEventActive()` und tut bei aktivem Event nichts. Ein `effect()` im Konstruktor
+beobachtet `JokerSelectionSelectors.chosenToken` (von `EnemyContainerComponent` gesetzt, sobald
+der Spieler ein Token anklickt — Geschwister-Komponente unter `GameComponent`, kein direkter
+Input/Output-Pfad hierher) und ruft dann `CardPlayService.resolveJoker(...)` mit dem gewählten
+Token auf, bevor `ClearJokerToken`/`DeactivateJokerSelection` den Auswahlzustand zurücksetzen.
+
 **Vor jeder größeren Änderung hier zuerst `docs/planned/player-hand-decomposition-plan.md`
 lesen** — dort steht der aktuelle Umsetzungsstand (welche TODOs offen sind, u.a. optionale
 Sub-Komponenten fürs Template und ein Heropower-Strategy-Pattern) und die Begründung für

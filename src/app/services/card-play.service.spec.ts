@@ -172,7 +172,7 @@ describe('CardPlayService', () => {
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
   });
 
-  it('chooseCard resolves a Joker card as any single symbol of the current threat', () => {
+  it('resolveJoker removes exactly the player-chosen token of the current threat', () => {
     seedGameState({
       hand: ['joker'],
       cardStack: ['blue'],
@@ -187,13 +187,29 @@ describe('CardPlayService', () => {
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
     const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'joker', reportWriteFailure);
+    service.resolveJoker('game-1', 'player-1', 'joker', 'green', reportWriteFailure);
 
-    expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['green']);
-    expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ token: ['green'] }));
+    expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['red']);
+    expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ token: ['red'] }));
   });
 
-  it('chooseCard does nothing for a Joker card against an event threat', () => {
+  it('resolveJoker does nothing if the chosen token was already defeated by someone else', () => {
+    seedGameState({
+      hand: ['joker'],
+      enemy: { name: 'Goblin', type: 'Monster', token: ['red'] },
+    });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    service.resolveJoker('game-1', 'player-1', 'joker', 'green', reportWriteFailure);
+
+    expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
+    expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack)).toEqual(['joker']);
+  });
+
+  it('resolveJoker does nothing against an event threat', () => {
     seedGameState({
       hand: ['joker'],
       enemy: { name: 'Chaos', type: 'Jeder gibt seine Handkarten einem Mitspieler.', token: ['event'] },
@@ -203,7 +219,7 @@ describe('CardPlayService', () => {
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
     const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'joker', reportWriteFailure);
+    service.resolveJoker('game-1', 'player-1', 'joker', 'event', reportWriteFailure);
 
     expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
     expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack)).toEqual(['joker']);

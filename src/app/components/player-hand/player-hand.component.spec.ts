@@ -12,6 +12,7 @@ import { EncounterState } from 'src/app/states/encounter-state';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
 import { heropowerState } from 'src/app/states/heropower-state';
+import { JokerSelectionState } from 'src/app/states/joker-selection-state';
 import { LobbyState } from 'src/app/states/lobby-state';
 import { Game } from 'src/models/game';
 import { LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
@@ -31,7 +32,7 @@ describe('PlayerHandComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState]), PlayerHandComponent],
+    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, JokerSelectionState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState]), PlayerHandComponent],
     providers: firestoreTestProviders(),
     schemas: [NO_ERRORS_SCHEMA],
 })

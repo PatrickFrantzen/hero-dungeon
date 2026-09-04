@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   effect,
+  inject,
   input,
   output,
   signal
@@ -43,8 +45,30 @@ export class TutorialOverlayComponent {
         this.spotlightRect.set(null);
         return;
       }
-      const target = document.querySelector(selector);
-      this.spotlightRect.set(target?.getBoundingClientRect() ?? null);
+      this.updateSpotlightRect(selector);
     });
+
+    /* Stationen 3-6 zeigen auf Elemente aus dem laufenden Spiel (Timer, Gegner, Handkarten,
+     * Heropower-FAB), die sich waehrend dieser Schritte durch Spielzuege verschieben oder
+     * verkleinern koennen, sowie bei Orientierungswechsel auf Mobile - der Effekt oben laeuft
+     * nur beim Schrittwechsel, deshalb hier zusaetzlich bei Resize/Orientierungswechsel neu
+     * berechnen, solange das Overlay aktiv ist. */
+    const recompute = () => {
+      const selector = this.step()?.targetSelector;
+      if (this.active() && selector) {
+        this.updateSpotlightRect(selector);
+      }
+    };
+    window.addEventListener('resize', recompute);
+    window.addEventListener('orientationchange', recompute);
+    inject(DestroyRef).onDestroy(() => {
+      window.removeEventListener('resize', recompute);
+      window.removeEventListener('orientationchange', recompute);
+    });
+  }
+
+  private updateSpotlightRect(selector: string): void {
+    const target = document.querySelector(selector);
+    this.spotlightRect.set(target?.getBoundingClientRect() ?? null);
   }
 }

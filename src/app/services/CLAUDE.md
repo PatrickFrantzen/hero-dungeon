@@ -84,7 +84,10 @@ Repository-Services unten gebündelt.
   Aktionskarten mit Zielspieler-Auswahl (Spende, Stehlen, Heilkräuter, Wut, Heilung) haben
   eigene öffentliche `resolve*()`-Methoden, die **nicht** über `chooseCard()` laufen, sondern
   direkt von `PlayerHandComponent` aufgerufen werden, nachdem dort ein Zielspieler-Dialog
-  geschlossen wurde (`chooseCard()` selbst würde diese Kartennamen nicht erkennen).
+  geschlossen wurde (`chooseCard()` selbst würde diese Kartennamen nicht erkennen). `resolveJoker()`
+  ist seit der Token-Auswahl (siehe unten) genauso ein Sonderfall: **nicht** mehr Teil von
+  `chooseCard()`, sondern eine öffentliche Methode mit `chosenToken`-Parameter, aufgerufen aus
+  `PlayerHandComponent`, nachdem der Spieler ein leuchtendes Enemy-Token angeklickt hat.
   `checkForNextEnemy()` setzt bei besiegtem Boss **nicht automatisch** den nächsten Dungeon auf,
   sondern `gameStatus: 'bossDefeated'` (sofern `EncounterSelectors.currentAllBosses()` — die
   Warteschlange der noch ausstehenden Bosse #2-#5 — nicht leer ist, sonst direkt `'won'`) — die
@@ -100,11 +103,13 @@ Repository-Services unten gebündelt.
   auf Boss #1 (`GameFactoryService.buildNewGame()`), analog zu Anleitung S. 7 ("versucht euer
   Glück von neuem mit dem Baby-Barbar"). `resolveJoker()`/`resolveMagischeBombe()` behandeln die
   Jägerin/Waldläufer- bzw. Magier/Zauberin-Karten `joker`/`magischeBombe` als weiteren Sonderfall
-  (matchen kein festes Dungeon-Symbol): Joker verbraucht ein beliebiges (erstes) Token der
-  aktuellen Bedrohung, Magische Bombe je ein Vorkommen jeder der 5 Symbolfarben — beide wirken
-  nicht gegen Ereigniskarten. Da es keine Auswahl-UI für "welches Symbol nutzen" gibt, ist die
-  Tokenwahl deterministisch statt spielerseitig frei wählbar (Vereinfachung, analog zur
-  automatischen Doppelsymbol-Karten-Auflösung).
+  (matchen kein festes Dungeon-Symbol): Magische Bombe entfernt je ein Vorkommen jeder der 5
+  Symbolfarben, ohne Nutzerauswahl (Anleitung S. 8: "muss aber nicht alle nutzen" — es wird
+  trotzdem immer alles entfernt, was vorhanden ist, eine bewusste Vereinfachung). Joker
+  entfernt seit der Token-Auswahl (2026-09-02, Live-Test-Feedback: Spieler sollen selbst
+  entscheiden dürfen, welches Token sie damit ersetzen) genau das vom Spieler gewählte Token
+  statt deterministisch das erste — siehe `chosenToken`-Parameter und Kommentar direkt an der
+  Methode. Beide wirken nicht gegen Ereigniskarten.
   `checkHandDeadlockLoss(gameId, hand, cardStack, deliveryStack, ...)` (TODO 11, erster von zwei
   diagnostizierten Verlustwegen) setzt `gameStatus: 'lost'`, sobald ein Spieler gleichzeitig
   leere Hand-, Nachzieh- und Ablagestapel hat (kann seine Hand nicht mehr auffüllen) und der

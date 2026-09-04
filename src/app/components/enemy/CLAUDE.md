@@ -87,3 +87,29 @@ durchscheinen. `.enemy-name` nutzt `var(--font-heading)` (Cinzel, siehe
 `src/app/components/CLAUDE.md`) statt Roboto. Bei einer künftigen Anpassung dieses Looks bitte
 `--mdc-elevated-card-container-color` nicht vergessen, falls die neue Variante wieder einen
 undurchsichtigen Hintergrund braucht.
+
+## Joker-Token-Auswahl (Live-Test-Feedback, 2026-09-02)
+
+Jägerin/Waldläufer "Joker" fragt jetzt aktiv, welches Token der aktuellen Bedrohung besiegt
+werden soll, statt es deterministisch zu bestimmen (`CardPlayService.resolveJoker()`, siehe
+`services/CLAUDE.md`) — wichtig für den Multiplayer, wo sich die Tokens durch die Karten anderer
+Spieler jederzeit ändern können, eine Dialog-Auswahl mit fest eingefrorenem Tokenstand wäre dort
+leicht veraltet oder würde bereits besiegte Tokens anzeigen.
+
+- `EnemyComponent.tokenSelectable` (`input()`) lässt bei `true` alle Kampf-Token (nicht das
+  Kategorie-Icon) über `.enemy-token--selectable` gelb pulsierend leuchten (dieselbe Akzentfarbe
+  wie `.heropower-fab--active`) und klickbar werden; ein Klick emittiert `tokenChosen` mit dem
+  Tokennamen und stoppt die Event-Propagation, damit nicht zusätzlich `toggleDescription()`
+  auf der umschließenden `mat-card` feuert.
+- `EnemyContainerComponent` liest `JokerSelectionSelectors.isActive`, kombiniert es aber
+  zusätzlich mit `!currentEnemy().token.includes('event')` (Joker wirkt nicht gegen
+  Ereigniskarten, Anleitung S. 8) — ohne diesen Zusatz-Guard könnte ein Encounter-Wechsel
+  während einer noch laufenden Auswahl (bewusst nicht automatisch abgebrochen, siehe
+  `joker-selection-state.ts`) das einzelne `event`-Token selbst leuchten lassen.
+  `onTokenChosen()` dispatcht `ChooseJokerToken(token)` — die eigentliche Auflösung (inkl.
+  `CardPlayService.resolveJoker()`-Aufruf) passiert in `PlayerHandComponent`, das die Hand-/
+  Kartenstapel-Signale hält (`joker-selection-state.ts` ist bewusst das Kommunikationsmedium
+  zwischen diesen beiden Geschwister-Komponenten unter `GameComponent`, kein Angular-Input/
+  Output über `GameComponent` als Vermittler).
+- Aktivierung/Abbruch (Toggle auf der Handkarte selbst) steht in
+  `src/app/components/player-hand/CLAUDE.md`.
