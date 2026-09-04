@@ -18,8 +18,27 @@ permanent sichtbar in `game.component.html`. Singleplayer: "Speichern" (reine Be
 Extra-Write — jede Aktion persistiert bereits synchron), "Spielstände laden" (identische Liste
 wie Startscreen), "Verlassen". Multiplayer: nur "Verlassen" + Hinweistext "Automatisch
 gespeichert". Per Playwright verifiziert: Menü öffnet während laufendem Spiel, Speichern-Klick
-zeigt Bestätigung, Reload behält denselben Stand. PR 3 (Account-Angebot beim Spielende) ist noch
-offen.
+zeigt Bestätigung, Reload behält denselben Stand.
+
+**PR 3 umgesetzt** (Issue #75, TDD): `DialogAccountOfferComponent` (`components/CLAUDE.md`,
+Abschnitt Dialoge) öffnet sich automatisch, sobald ein lokales Singleplayer-Spiel ohne Account
+nach `'won'`/`'lost'` wechselt (`GameComponent.offerAccountCreationOnGameEnd()`,
+`game/CLAUDE.md`). Führt Registrierung (`AuthFormService.register()`) und Migration
+(`LocalSaveMigrationService.migrateAll()` — alle vorhandenen lokalen Saves, je eigene neue
+Firestore-gameId) selbst aus; lokale Saves bleiben nach erfolgreicher Migration zusätzlich
+bestehen (keine Löschung). Ablehnen ("Nicht jetzt") schließt ohne Nebenwirkung, die Frage
+erscheint bei der nächsten Transition nach `'won'`/`'lost'` erneut. Per Playwright verifiziert
+(nur der Firebase-freie Teil — der eigentliche Registrierungs-Klick wurde bewusst **nicht**
+automatisiert getestet, da diese Sandbox dieselbe Firebase-Instanz wie Prod nutzt und ein echter
+Registrierungsversuch reale Nutzerdaten anlegen würde): Dialog öffnet automatisch bei
+`gameStatus: 'won'`, "Nicht jetzt" schließt ihn und lässt den lokalen Save unverändert. Der volle
+Pfad „Account erstellen → Spielstand erscheint identisch nach Login" aus der ursprünglichen
+Verifikation dieses PRs steht weiterhin aus (wie schon bei anderen Multiplayer-/Firebase-Tests in
+diesem Repo vermerkt) — vor dem Merge oder zumindest vor einem Produktiv-Rollout nachholen.
+
+Damit ist der Singleplayer-Teil dieses Plans (PR 1–3) vollständig umgesetzt. PR 4–6
+(Anonymous Auth für Multiplayer, TTL-Löschung, Account-Verknüpfung + "Meine Spiele") sind als
+Issues #76–#78 weiterhin offen.
 
 Zielbild mit Patrick abgestimmt und fixiert (2026-09-04) — kein Optionsvergleich mehr, sondern
 eine konkrete Entscheidung mit nummerierten PRs. Diese Diagnose ergänzt zwei bestehende Pläne,

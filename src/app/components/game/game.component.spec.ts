@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { NgxsModule, Store } from '@ngxs/store';
+import { DialogAccountOfferComponent } from '../dialog-account-offer/dialog-account-offer.component';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CardStackState } from 'src/app/states/cardStack-state';
 import { cardsInHandState } from 'src/app/states/cardsInHand-state';
@@ -10,6 +11,7 @@ import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { EncounterState } from 'src/app/states/encounter-state';
 import { heropowerState } from 'src/app/states/heropower-state';
 import { LobbyState } from 'src/app/states/lobby-state';
+import { TutorialState } from 'src/app/states/tutorial-state';
 import {
   ensureAngularFireSchedulersInitialized,
   ensureFirebaseTestAppInitialized,
@@ -27,7 +29,7 @@ describe('GameComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState]), GameComponent],
+    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState, TutorialState]), GameComponent],
     providers: firestoreTestProviders(),
     schemas: [NO_ERRORS_SCHEMA],
 })
@@ -75,5 +77,44 @@ describe('GameComponent', () => {
 
   afterEach(() => {
     fixture.destroy();
+  });
+
+  describe('account offer at singleplayer game end (Issue #75)', () => {
+    function createLocalGameFixture(numberOfPlayers: number): ComponentFixture<GameComponent> {
+      const snapshot = store.snapshot();
+      store.reset({
+        ...snapshot,
+        currentGame: { ...snapshot['currentGame'], items: 'local-1', numberOfPlayers, gameStatus: 'playing' },
+      });
+      const localFixture = TestBed.createComponent(GameComponent);
+      localFixture.detectChanges();
+      return localFixture;
+    }
+
+    it('opens the account-offer dialog when a singleplayer local game ends in "won"', () => {
+      const localFixture = createLocalGameFixture(1);
+      const dialog = TestBed.inject(MatDialog);
+      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => ({ subscribe: () => {} }) } as never);
+
+      const snapshot = store.snapshot();
+      store.reset({ ...snapshot, currentGame: { ...snapshot['currentGame'], gameStatus: 'won' } });
+      localFixture.detectChanges();
+
+      expect(dialog.open).toHaveBeenCalledWith(DialogAccountOfferComponent, jasmine.anything());
+      localFixture.destroy();
+    });
+
+    it('does not open the account-offer dialog for a multiplayer game', () => {
+      const localFixture = createLocalGameFixture(2);
+      const dialog = TestBed.inject(MatDialog);
+      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => ({ subscribe: () => {} }) } as never);
+
+      const snapshot = store.snapshot();
+      store.reset({ ...snapshot, currentGame: { ...snapshot['currentGame'], gameStatus: 'won' } });
+      localFixture.detectChanges();
+
+      expect(dialog.open).not.toHaveBeenCalled();
+      localFixture.destroy();
+    });
   });
 });

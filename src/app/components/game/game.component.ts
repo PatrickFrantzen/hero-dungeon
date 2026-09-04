@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, OnDestroy, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
@@ -23,6 +23,8 @@ import { UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { startHandSize } from 'src/models/start-hand-size.util';
 import { StartTutorial } from 'src/app/actions/tutorial-action';
 import { TutorialSelectors } from 'src/app/selectors/tutorial-selector';
+import { isLocalGameId } from 'src/app/services/local-game-id.util';
+import { DialogAccountOfferComponent } from 'src/app/components/dialog-account-offer/dialog-account-offer.component';
 
 interface ChoosenPlayer {
   playerName: string;
@@ -80,6 +82,9 @@ export class GameComponent implements OnInit, OnDestroy {
   players: ChoosenPlayer[] = [];
   private timerInterval?: ReturnType<typeof setInterval>;
   private timeoutReported = false;
+  /** Für die Transitions-Erkennung in offerAccountCreationOnGameEnd() unten - bewusst kein
+   * Signal, da wir hier keine reaktive Anzeige brauchen, nur den letzten Wert zum Vergleichen. */
+  private lastGameStatus: string | null = null;
 
   constructor(
     public dialog: MatDialog,
@@ -88,7 +93,29 @@ export class GameComponent implements OnInit, OnDestroy {
     private gameRepo: GameRepositoryService,
     private playerRepo: PlayerRepositoryService,
     private cardPlayService: CardPlayService,
-  ) { }
+  ) {
+    effect(() => this.offerAccountCreationOnGameEnd());
+  }
+
+  /** Issue #75 (PR 3): bietet bei Singleplayer-Spielende (Übergang nach 'won'/'lost', nicht bei
+   * jedem Re-Render während dieses Status) die Account-Erstellung an - nur wenn lokal, Solo und
+   * noch kein Account existiert (currentUserId() leer, siehe local-game-id.util.ts/CLAUDE.md-
+   * Hinweis zu CurrentUserService). "Frage erscheint beim nächsten Spielende erneut" (Zielbild):
+   * lastGameStatus wird bei retryCampaign()/continueToNextDungeon() wieder auf 'playing'
+   * zurückgesetzt, ein erneutes 'lost'/'won' danach ist eine neue Transition. */
+  private offerAccountCreationOnGameEnd(): void {
+    const status = this.currentGameStatus();
+    const previousStatus = this.lastGameStatus;
+    this.lastGameStatus = status;
+
+    const isEndState = status === 'won' || status === 'lost';
+    const isSingleplayerLocalWithoutAccount =
+      this.currentNumberOfPlayers() === 1 && isLocalGameId(this.currentGameId()) && !this.currentUserId();
+
+    if (previousStatus !== status && isEndState && isSingleplayerLocalWithoutAccount) {
+      this.dialog.open(DialogAccountOfferComponent, { disableClose: false });
+    }
+  }
 
   ngOnInit(): void {
     this.checkIfPlayerIsAlreadyPartOfGame();

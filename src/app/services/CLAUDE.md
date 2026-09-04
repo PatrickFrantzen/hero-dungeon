@@ -130,7 +130,18 @@ Repository-Services unten gebündelt.
 - **`game-factory.service.ts`** — baut ein neues `Game`-Objekt (Startscreen: Spiel erstellen).
 - **`auth-form.service.ts`** — Login/Register-Aufrufe + Mapping der Firebase-Error-Codes auf
   deutsche Meldungen; von allen Auth-bezogenen Formularen genutzt statt eigenem Error-Mapping
-  pro Komponente.
+  pro Komponente. `register()` gibt die neue `uid` nicht zurück — Aufrufer, die sie brauchen
+  (z.B. `DialogAccountOfferComponent`), lesen sie danach aus `Auth.currentUser?.uid` (Firebase
+  meldet den neu registrierten Nutzer automatisch an).
+- **`local-save-migration.service.ts`** — `migrateAll(newUserId, newUserNickname)` (Issue #75,
+  PR 3): schreibt **alle** vorhandenen lokalen Singleplayer-Saves (`LocalSingleplayerSaveService.
+  listSaves()`) als neue Firestore-Spiele (`GameRepositoryService.createGame()`/
+  `PlayerRepositoryService.createPlayer()`), je Save eine frische, nicht-lokale gameId
+  (`crypto.randomUUID()`). Löscht die lokalen Saves **nicht** — sie bleiben zusätzlich zur
+  Firestore-Kopie bestehen (Abstimmung mit Patrick, 2026-09-04). Bekannte Einschränkung: kein
+  "bereits migriert"-Flag auf dem lokalen Save — ein erneuter Aufruf (z.B. nach einem
+  Teilfehlschlag) würde bereits migrierte Saves ein zweites Mal als neue Firestore-Spiele
+  anlegen (Duplikate), nicht Teil dieses Grundgerüsts.
 - **`to-json.service.ts`** — Serialisierung von Domänen-Objekten (Hero/Card/...) für Firestore-
   Writes.
 
