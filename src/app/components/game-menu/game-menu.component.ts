@@ -1,8 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { Auth } from '@angular/fire/auth';
+import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
 import { CurrentGameAction } from 'src/app/actions/currentGame-action';
+import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
+import { UserRepositoryService } from 'src/app/services/user-repository.service';
+import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
 
 /**
  * In-Game-Menü (Issue #74, PR 2 aus docs/planned/login-multiplayer-onboarding-plan.md) -
@@ -29,11 +34,31 @@ export class GameMenuComponent {
    * services/CLAUDE.md). Der Button bestätigt dem Nutzer nur, dass der Save existiert. */
   saveConfirmed = signal(false);
 
+  /** "Meine Spiele" (Issue #78) - Multiplayer-Historie aus `users/{uid}.games`, analog zu
+   * StartscreenComponent. Nur relevant, solange das Menü im Multiplayer-Modus ist - lädt
+   * trotzdem unabhängig von isOpen(), damit die Liste beim ersten Öffnen bereits da ist. */
+  myGames = signal<string[]>([]);
+  private currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
+
   constructor(
     private localSaves: LocalSingleplayerSaveService,
     private store: Store,
-    private router: Router
-  ) {}
+    private router: Router,
+    private userRepo: UserRepositoryService,
+    private auth: Auth,
+    private dialog: MatDialog
+  ) {
+    effect(() => {
+      if (this.isSingleplayer()) {
+        return;
+      }
+      const userId = this.currentUserId();
+      if (!userId) {
+        return;
+      }
+      this.userRepo.getUser(userId).then((data) => this.myGames.set((data?.['games'] as string[]) ?? []));
+    });
+  }
 
   toggle(): void {
     this.isOpen.set(!this.isOpen());
@@ -56,6 +81,25 @@ export class GameMenuComponent {
   resumeSave(saveId: string): void {
     this.store.dispatch(new CurrentGameAction(saveId));
     this.router.navigate(['/local-game/' + saveId]);
+  }
+
+  /** "Meine Spiele" (Issue #78) - analog zu resumeSave() oben, aber für Multiplayer-gameIds
+   * (Route game/:id statt local-game/:id). */
+  resumeMultiplayerGame(gameId: string): void {
+    this.store.dispatch(new CurrentGameAction(gameId));
+    this.router.navigate(['/game/' + gameId]);
+  }
+
+  /** "Account verknüpfen" (Issue #78) - nur sinnvoll für einen anonym eingeloggten Multiplayer-
+   * Nutzer (signInAnonymously() aus StartscreenComponent.newGame()/joinGame()); ein bereits
+   * verknüpfter/registrierter Account hat `isAnonymous: false` und braucht den Button nicht
+   * mehr. Singleplayer hat kein Auth-Konzept, siehe game-menu/CLAUDE.md. */
+  canLinkAccount(): boolean {
+    return !this.isSingleplayer() && !!this.auth.currentUser?.isAnonymous;
+  }
+
+  openLinkAccountDialog(): void {
+    this.dialog.open(DialogLinkAccountComponent, { disableClose: false });
   }
 
   /** Analog zu StartscreenComponent.heroNameOf() - `player` ist ein loses Feld-Bag, vor der

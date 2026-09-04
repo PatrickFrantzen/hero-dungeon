@@ -21,6 +21,19 @@
                 }
             } @else {
                 <span class="game-menu__hint">Automatisch gespeichert</span>
+
+                @if (myGames().length > 0) {
+                    <div class="game-menu__saves">
+                        <span class="game-menu__saves-title">Meine Spiele</span>
+                        @for (gameId of myGames(); track gameId) {
+                            <button class="game-menu__action" (click)="resumeMultiplayerGame(gameId)">{{ gameId }}</button>
+                        }
+                    </div>
+                }
+
+                @if (canLinkAccount()) {
+                    <button class="game-menu__action" (click)="openLinkAccountDialog()">Account verknüpfen</button>
+                }
             }
 
             <button class="game-menu__action" (click)="onLeave()">Verlassen</button>

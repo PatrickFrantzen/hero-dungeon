@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { NgxsModule, Store } from '@ngxs/store';
 import { DialogAccountOfferComponent } from '../dialog-account-offer/dialog-account-offer.component';
@@ -34,7 +35,7 @@ describe('GameComponent', () => {
 
     await TestBed.configureTestingModule({
     imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState, TutorialState]), GameComponent],
-    providers: firestoreTestProviders(),
+    providers: [...firestoreTestProviders(), { provide: Auth, useValue: { currentUser: null } }],
     schemas: [NO_ERRORS_SCHEMA],
 })
     .compileComponents();

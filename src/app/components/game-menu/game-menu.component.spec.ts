@@ -1,11 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
+import { Auth } from '@angular/fire/auth';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { NgxsModule, Store } from '@ngxs/store';
+import { of } from 'rxjs';
 import { Game } from 'src/models/game';
 import { LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
+import { UserRepositoryService } from 'src/app/services/user-repository.service';
+import { CurrentUserAction } from 'src/app/actions/currentUser-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
+import { CurrentUserState } from 'src/app/states/currentUser-state';
+import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
+import {
+  ensureAngularFireSchedulersInitialized,
+  ensureFirebaseTestAppInitialized,
+  firestoreTestProviders,
+} from 'src/testing/firebase-test-app';
 
 import { GameMenuComponent } from './game-menu.component';
 
@@ -14,10 +26,19 @@ describe('GameMenuComponent', () => {
   let fixture: ComponentFixture<GameMenuComponent>;
 
   beforeEach(async () => {
+    ensureFirebaseTestAppInitialized();
+
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, NgxsModule.forRoot([CurrentGameState]), GameMenuComponent],
+      imports: [
+        RouterTestingModule,
+        MatDialogModule,
+        NgxsModule.forRoot([CurrentGameState, CurrentUserState]),
+        GameMenuComponent,
+      ],
+      providers: [...firestoreTestProviders(), { provide: Auth, useValue: { currentUser: null } }],
     }).compileComponents();
 
+    ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(GameMenuComponent);
     fixture.componentRef.setInput('isSingleplayer', true);
     fixture.componentRef.setInput('gameId', 'local-1');
@@ -87,5 +108,71 @@ describe('GameMenuComponent', () => {
 
     expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('local-7');
     expect(router.navigate).toHaveBeenCalledWith(['/local-game/local-7']);
+  });
+
+  describe('"Meine Spiele" für Multiplayer (Issue #78)', () => {
+    function createMultiplayerFixture(): ComponentFixture<GameMenuComponent> {
+      const mpFixture = TestBed.createComponent(GameMenuComponent);
+      mpFixture.componentRef.setInput('isSingleplayer', false);
+      mpFixture.componentRef.setInput('gameId', 'game-1');
+      mpFixture.detectChanges();
+      return mpFixture;
+    }
+
+    it('loads the joined-games list for the current account once its id is available', async () => {
+      const userRepo = TestBed.inject(UserRepositoryService);
+      spyOn(userRepo, 'getUser').and.resolveTo({ games: ['game-1', 'game-2'] });
+      const store = TestBed.inject(Store);
+      const mpFixture = createMultiplayerFixture();
+
+      store.dispatch(new CurrentUserAction('user-1', 'Alice'));
+      mpFixture.detectChanges();
+      await mpFixture.whenStable();
+
+      expect(mpFixture.componentInstance.myGames()).toEqual(['game-1', 'game-2']);
+      mpFixture.destroy();
+    });
+
+    it('resumeMultiplayerGame sets the current game and navigates to it', () => {
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+      const mpFixture = createMultiplayerFixture();
+
+      mpFixture.componentInstance.resumeMultiplayerGame('game-7');
+
+      expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('game-7');
+      expect(router.navigate).toHaveBeenCalledWith(['/game/game-7']);
+      mpFixture.destroy();
+    });
+
+    it('openLinkAccountDialog opens the DialogLinkAccountComponent', () => {
+      const auth = TestBed.inject(Auth) as unknown as { currentUser: { isAnonymous: boolean } | null };
+      auth.currentUser = { isAnonymous: true };
+      const mpFixture = createMultiplayerFixture();
+      const dialog = TestBed.inject(MatDialog);
+      const dialogOpen = spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+
+      mpFixture.componentInstance.openLinkAccountDialog();
+
+      expect(dialogOpen).toHaveBeenCalledWith(DialogLinkAccountComponent, jasmine.anything());
+      mpFixture.destroy();
+    });
+
+    it('canLinkAccount is true only for an anonymous account in a multiplayer game', () => {
+      const auth = TestBed.inject(Auth) as unknown as { currentUser: { isAnonymous: boolean } | null };
+
+      auth.currentUser = { isAnonymous: true };
+      const anonymousMpFixture = createMultiplayerFixture();
+      expect(anonymousMpFixture.componentInstance.canLinkAccount()).toBeTrue();
+      anonymousMpFixture.destroy();
+
+      auth.currentUser = { isAnonymous: false };
+      const linkedMpFixture = createMultiplayerFixture();
+      expect(linkedMpFixture.componentInstance.canLinkAccount()).toBeFalse();
+      linkedMpFixture.destroy();
+
+      auth.currentUser = { isAnonymous: true };
+      expect(component.canLinkAccount()).toBeFalse();
+    });
   });
 });

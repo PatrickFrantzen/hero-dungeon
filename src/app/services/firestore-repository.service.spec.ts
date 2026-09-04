@@ -45,6 +45,16 @@ describe('FirestoreRepositoryService', () => {
     );
   });
 
+  it('wraps a failing setDocMerge in a FirestoreOperationError with the offending path', async () => {
+    await expectAsync(service.setDocMerge([], {})).toBeRejectedWith(
+      jasmine.objectContaining({
+        name: 'FirestoreOperationError',
+        operation: 'setDocMerge',
+        path: [],
+      } as Partial<FirestoreOperationError>)
+    );
+  });
+
   describe('local- games (local Singleplayer, no Firestore access)', () => {
     afterEach(() => localStorage.clear());
 

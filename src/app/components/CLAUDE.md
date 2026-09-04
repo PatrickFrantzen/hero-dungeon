@@ -131,4 +131,9 @@ statt wie die drei obigen Dialoge nur Formulardaten zurückzugeben und den Aufru
 arbeiten zu lassen — analog zu `SignupComponent.register()`, weil der Dialog ohnehin schon
 Formular-/Fehlerzustand hält. `disableClose` ist hier bewusst `false` (Standard): Ablehnen ist
 ein legitimer, folgenloser Pfad, kein "Klick geht ins Leere" wie bei den Pflichtauswahl-Dialogen
-oben.
+oben. `dialog-link-account/` (Issue #78, `GameMenuComponent`, "Account verknüpfen") folgt exakt
+demselben Muster (Struktur/Test-Stil 1:1 von `dialog-account-offer/` übernommen), nur mit
+`AuthFormService.linkAnonymousAccount()` statt `register()` + `migrateAll()` — kein
+Migrationsschritt nötig, da `linkWithCredential()` dieselbe `uid` behält. Ein Fehlschlag (z.B.
+E-Mail bereits vergeben) zeigt `errorMessage` im Dialog und lässt den bestehenden anonymen
+Account unverändert nutzbar, `disableClose` ebenfalls `false`.

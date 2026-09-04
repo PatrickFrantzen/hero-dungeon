@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogGameSettingsComponent } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
@@ -18,6 +18,7 @@ import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
 import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 import { AuthFormService } from 'src/app/services/auth-form.service';
+import { UserRepositoryService } from 'src/app/services/user-repository.service';
 
 @Component({
     selector: 'app-startscreen',
@@ -40,6 +41,13 @@ export class StartscreenComponent implements OnInit {
    * die Liste aktualisiert sich beim nächsten Besuch des Startscreens von selbst. */
   localSaves = signal<LocalSingleplayerSave[]>([]);
 
+  /** "Meine Spiele" (Issue #78) - Multiplayer-Historie aus `users/{uid}.games`, im Unterschied
+   * zu `localSaves` oben nicht synchron verfügbar (hängt vom asynchron auflösenden
+   * `currentUserId()` ab, siehe CurrentUserService.getCurrentUser()) - deshalb per effect() statt
+   * einmalig in ngOnInit() geladen; lädt neu, sobald sich die Account-Id ändert (z.B. nach
+   * signInAnonymously() aus newGame()/joinGame()). */
+  myGames = signal<string[]>([]);
+
   constructor(
     public dialog:MatDialog,
     public auth: Auth,
@@ -50,8 +58,17 @@ export class StartscreenComponent implements OnInit {
     private gameFactory: GameFactoryService,
     private gameRepo: GameRepositoryService,
     private localSaveService: LocalSingleplayerSaveService,
-    private authForm: AuthFormService
-  ) {}
+    private authForm: AuthFormService,
+    private userRepo: UserRepositoryService
+  ) {
+    effect(() => {
+      const userId = this.currentUserId();
+      if (!userId) {
+        return;
+      }
+      this.userRepo.getUser(userId).then((data) => this.myGames.set((data?.['games'] as string[]) ?? []));
+    });
+  }
 
 
   ngOnInit(): void {
@@ -118,6 +135,11 @@ export class StartscreenComponent implements OnInit {
 
     try {
       await this.gameRepo.createGame(gameId, this.JSON.gameToJSON(game));
+      // "Meine Spiele" (Issue #78): nur für Multiplayer - Singleplayer hat kein Account-Konzept,
+      // localSaves oben deckt dessen Spielübersicht bereits ab.
+      if (!isLocalGameId(gameId)) {
+        await this.userRepo.addJoinedGame(this.currentUserId(), gameId);
+      }
       this.route.navigate([(isLocalGameId(gameId) ? '/local-game/' : '/game/') + gameId]);
     } catch {
       this.startscreenError = 'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
@@ -135,14 +157,16 @@ export class StartscreenComponent implements OnInit {
     })
   }
 
-  async joinGame() {
-    const inputValue = this.joinGameId.trim();
+  /** `gameId`: explizit übergeben beim Fortsetzen aus "Meine Spiele" (Issue #78) - ohne Argument
+   * wird wie bisher das manuelle Eingabefeld gelesen. */
+  async joinGame(gameId?: string) {
+    const inputValue = (gameId ?? this.joinGameId).trim();
     if (!inputValue) {
       return;
     }
     await this.authForm.ensureAnonymousSession();
     this.gameRepo.getGame(inputValue)
-    .then((results)=> {
+    .then(async (results)=> {
       if (!results) {
         this.startscreenError = 'Kein Spiel mit dieser ID gefunden.';
         return;
@@ -150,6 +174,7 @@ export class StartscreenComponent implements OnInit {
       this.startscreenError = null;
       this.store.dispatch(new SetNewEnemy(results['currentEnemy']));
       this.store.dispatch(new UpdateMobAction(results['Mob']));
+      await this.userRepo.addJoinedGame(this.currentUserId(), inputValue);
       this.route.navigate(['/game/'+ inputValue]);
       this.store.dispatch(new CurrentGameAction(inputValue));
     })

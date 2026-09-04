@@ -74,6 +74,25 @@ export class FirestoreRepositoryService {
     }
   }
 
+  /**
+   * Wie setDoc(), aber mit `{ merge: true }` - legt das Dokument an, falls es noch nicht
+   * existiert (z.B. `users/{uid}` für einen anonymen Nutzer, der noch nie ein Profil-Dokument
+   * hatte), statt bestehende Felder zu überschreiben. Für lokale Pfade (siehe isLocalPath())
+   * bislang ungenutzt (`users/{uid}` ist nie ein lokaler Pfad) - fällt hier auf dasselbe
+   * Ersetzungsverhalten wie setDoc() zurück, da LocalGameDocumentStoreService kein Merge kennt.
+   */
+  async setDocMerge<T extends object>(path: string[], data: Partial<T>): Promise<void> {
+    if (this.isLocalPath(path)) {
+      this.localStore.setDoc(path, data);
+      return;
+    }
+    try {
+      await setDoc(doc(this.firestore, path.join('/')), data, { merge: true });
+    } catch (cause) {
+      throw new FirestoreOperationError('setDocMerge', path, cause);
+    }
+  }
+
   async updateFields<T extends object>(path: string[], update: Partial<T>): Promise<void> {
     if (this.isLocalPath(path)) {
       this.localStore.updateFields(path, update);

@@ -1,0 +1,41 @@
+<h1 mat-dialog-title>Account verknüpfen?</h1>
+<div mat-dialog-content>
+    <p>Verknüpfe deinen Gast-Zugang mit einer E-Mail-Adresse, damit du dich künftig einloggen und deine Spiele dauerhaft wiederfinden kannst.</p>
+
+    <form [formGroup]="form">
+        <mat-form-field appearance="fill">
+            <mat-label>E-Mail</mat-label>
+            <input matInput type="email" formControlName="email">
+            @if (form.controls['email'].hasError('required')) {
+                <mat-error>E-Mail wird benötigt</mat-error>
+            }
+            @if (form.controls['email'].hasError('email')) {
+                <mat-error>Keine gültige E-Mail-Adresse</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Passwort</mat-label>
+            <input matInput type="password" formControlName="password">
+            @if (form.controls['password'].hasError('required')) {
+                <mat-error>Passwort wird benötigt</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Nickname</mat-label>
+            <input matInput type="text" formControlName="nickname">
+            @if (form.controls['nickname'].hasError('required')) {
+                <mat-error>Nickname wird benötigt</mat-error>
+            }
+        </mat-form-field>
+    </form>
+
+    @if (errorMessage) {
+        <p class="dialog-link-account__error">{{ errorMessage }}</p>
+    }
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="onDecline()" [disabled]="isSubmitting">Nicht jetzt</button>
+    <button mat-flat-button color="primary" (click)="onAccept()" [disabled]="form.invalid || isSubmitting">Verknüpfen</button>
+</div>

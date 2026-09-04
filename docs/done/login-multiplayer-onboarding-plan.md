@@ -75,7 +75,25 @@ einfach nicht mehr auf) und die Zielspieler-Methoden bereits durchgängig mit `d
 Describe-Block simuliert ein TTL-gelöschtes Mitspieler-Dokument und bestätigt, dass die übrigen
 Rules-Zugriffe (geteiltes Spieldokument, eigenes Spieler-Dokument) weiterhin funktionieren.
 
-PR 6 (Account-Verknüpfung + "Meine Spiele") ist als Issue #78 weiterhin offen.
+**PR 6 umgesetzt** (Issue #78, TDD): `AuthFormService.linkAnonymousAccount(email, password,
+nickname)` verknüpft den anonym eingeloggten Nutzer per `linkWithCredential()`/
+`EmailAuthProvider.credential(...)` — gleiche `uid`, kein Migrationsschritt. Neuer
+`UserRepositoryService` (`getUser()`/`addJoinedGame()`, letzteres über eine neue
+`FirestoreRepositoryService.setDocMerge()`-Methode mit `arrayUnion()`, da anonyme Nutzer noch
+kein `users/{uid}`-Dokument haben) pflegt `users/{uid}.games` — aufgerufen aus
+`StartscreenComponent.newGame()`s `createGame()` (nur Multiplayer) und `joinGame()`. "Meine
+Spiele" ist sowohl auf dem Startscreen als auch in `GameMenuComponent` sichtbar (beide per
+`effect()` geladen, sobald `currentUserId()` verfügbar ist), plus ein neuer
+`DialogLinkAccountComponent` ("Account verknüpfen", nur sichtbar für einen anonym eingeloggten
+Multiplayer-Nutzer) analog zu `dialog-account-offer/`. Ein Fehlschlag der Verknüpfung
+invalidiert den bestehenden anonymen Account nicht (kein `signOut()` im Fehlerfall, Firebase
+meldet ihn dabei selbst nicht ab). "Logout ins In-Game-Menü verschieben" aus dem Zielbild oben
+wurde **nicht** umgesetzt — Issue #78s Aufgabenliste nennt das nicht explizit, siehe
+`game-menu/CLAUDE.md`. Beide manuellen Tests aus dem Issue (Verknüpfung + zweites Gerät, Fehler
+bei bereits vergebener E-Mail) stehen wie bei den vorherigen PRs dieses Plans mangels
+Firebase-Emulator/Browser-Setup in dieser Session noch aus.
+
+Damit sind alle sechs PRs dieses Plans (Issues #73–#78) umgesetzt.
 
 Zielbild mit Patrick abgestimmt und fixiert (2026-09-04) — kein Optionsvergleich mehr, sondern
 eine konkrete Entscheidung mit nummerierten PRs. Diese Diagnose ergänzt zwei bestehende Pläne,
