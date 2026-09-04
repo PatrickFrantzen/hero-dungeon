@@ -121,11 +121,23 @@ export class FirestoreRepositoryService {
     }
   }
 
+  /**
+   * Issue #87: queryAll()/queryLatest() fehlte bislang der isLocalPath()-Umschaltpunkt, den
+   * getDoc()/setDoc()/setDocMerge()/updateFields() oben bereits haben - für eine lokale gameId
+   * fragten beide Methoden bislang tatsächlich Firestore ab (fand dort naturgemäß nichts), statt
+   * an LocalGameDocumentStoreService zu delegieren. Sichtbarster Effekt: CardPlayService.
+   * reshuffleAllPlayersForNewDungeon() (aufgerufen nach einem Bosssieg) fand für Singleplayer
+   * keine Spieler und mischte daher niemandes Hand neu.
+   */
   async queryLatest<T extends DocumentData>(
     collectionPath: string[],
     field: string,
     value: unknown
   ): Promise<T | undefined> {
+    if (this.isLocalPath(collectionPath)) {
+      const results = this.localStore.queryAll<T>(collectionPath);
+      return results[results.length - 1];
+    }
     try {
       const q = query(collection(this.firestore, collectionPath.join('/')), where(field, '==', value));
       const snap = await getDocs(q);
@@ -136,6 +148,9 @@ export class FirestoreRepositoryService {
   }
 
   async queryAll<T extends DocumentData>(collectionPath: string[], constraints: QueryConstraint[]): Promise<T[]> {
+    if (this.isLocalPath(collectionPath)) {
+      return this.localStore.queryAll<T>(collectionPath);
+    }
     try {
       const q = query(collection(this.firestore, collectionPath.join('/')), ...constraints);
       const snap = await getDocs(q);

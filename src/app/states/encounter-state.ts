@@ -83,7 +83,11 @@ export class EncounterState {
       currentEnemy: game.currentEnemy,
       currentBoss: game.currentBoss,
       Mob: game.Mob,
-      allBosses: game.allBosses,
+      // Issue #83/#87: CardPlayService.checkForNextEnemy() ruft bei besiegtem Boss
+      // this.currentAllBosses().length auf - ein undefined-Wert würde dort synchron mit einem
+      // TypeError abbrechen, bevor Timer/gameStatus gesetzt werden. `?? []` analog zum
+      // bestehenden Muster bei den Timer-Feldern in currentGame-state.ts.
+      allBosses: game.allBosses ?? [],
     });
   }
 }

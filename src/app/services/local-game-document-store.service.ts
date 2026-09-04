@@ -38,4 +38,15 @@ export class LocalGameDocumentStoreService {
     const current = this.getDoc(path) ?? {};
     this.setDoc(path, { ...current, ...patch });
   }
+
+  /** Issue #87: bildet FirestoreRepositoryService.queryAll() für die player-Subcollection nach
+   * (`['games', gameId, 'player']`) - ein lokaler Spielstand hat nie mehr als einen Spieler
+   * (`LocalSingleplayerSave.player` ist ein einzelnes Objekt, keine Map), daher genügt
+   * `getDoc()` auf den zweisegmentigen Pfad, in ein Array gepackt. Leeres Array, solange kein
+   * Save existiert oder dessen Player-Dokument noch nie geschrieben wurde (siehe
+   * LocalSingleplayerSaveService.createSave() - `player` startet als `{}`). */
+  queryAll<T extends DocumentData>(path: string[]): T[] {
+    const player = this.saves.getSave(path[1])?.player;
+    return player && Object.keys(player).length > 0 ? [player as unknown as T] : [];
+  }
 }

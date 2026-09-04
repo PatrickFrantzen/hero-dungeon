@@ -10,14 +10,25 @@ Repository-Services unten gebündelt.
 - **`firestore-repository.service.ts`** — Basis: `FirestoreOperationError` (typisierter Fehler
   mit Operation + Pfad) und DI-injiziertes `Firestore`. Andere Repository-Services bauen darauf
   auf statt jeweils eigene Fehlerbehandlung zu erfinden. **Einziger Umschaltpunkt lokal/
-  Firestore (Issue #73):** `getDoc()`/`setDoc()`/`updateFields()` prüfen zuerst, ob `path[1]`
-  (die gameId) laut `local-game-id.util.ts` (`isLocalGameId()`, Präfix `local-`) ein lokaler
-  Singleplayer-Spielstand ist — falls ja, wird komplett ohne Firestore-Zugriff an
-  `LocalGameDocumentStoreService` delegiert. Da `GameRepositoryService`/`PlayerRepositoryService`
-  ausnahmslos über diese drei Basismethoden gehen, brauchen **keine** ihrer ~21 spezifischen
-  Methoden (`updateCurrentEnemyToken()`, `updatePlayerCards()`, usw.) eine eigene lokal/Firestore-
-  Fallunterscheidung — genauso wenig `CardPlayService`/`HeropowerService`/`GameComponent`, die
-  nur über diese Repository-Services schreiben. `setDocMerge()` (Issue #78) — wie `setDoc()`,
+  Firestore (Issue #73):** `getDoc()`/`setDoc()`/`updateFields()`/`queryAll()`/`queryLatest()`
+  prüfen zuerst, ob `path[1]` (die gameId) laut `local-game-id.util.ts` (`isLocalGameId()`,
+  Präfix `local-`) ein lokaler Singleplayer-Spielstand ist — falls ja, wird komplett ohne
+  Firestore-Zugriff an `LocalGameDocumentStoreService` delegiert. Da `GameRepositoryService`/
+  `PlayerRepositoryService` ausnahmslos über diese Basismethoden gehen, brauchen **keine** ihrer
+  ~21 spezifischen Methoden (`updateCurrentEnemyToken()`, `updatePlayerCards()`, usw.) eine
+  eigene lokal/Firestore-Fallunterscheidung. **`CardPlayService`/`HeropowerService` sind die
+  Ausnahme** — sie rufen `queryAll()` an ein paar Stellen direkt auf `FirestoreRepositoryService`
+  auf (statt über `GameRepositoryService`/`PlayerRepositoryService`, die keine Query-Methoden
+  anbieten), für "alle Spieler des Spiels" (`reshuffleAllPlayersForNewDungeon()`) bzw. "alle
+  anderen Spieler" (`applyEventToOtherPlayers()`, `drawCardsForOtherPlayers()`,
+  `reclaimCardsFromDeliveryStackForOtherPlayers()` in `card-play.service.ts`,
+  zwei Stellen in `heropower.service.ts`). **Bis Issue #87 fehlte `queryAll()`/`queryLatest()`
+  hier der Umschaltpunkt** (nur `getDoc()`/`setDoc()`/`updateFields()` hatten ihn) — für eine
+  lokale gameId fragten beide Methoden tatsächlich (und erfolglos) Firestore ab, statt an
+  `LocalGameDocumentStoreService` zu delegieren. Sichtbarster Effekt: nach einem Bosssieg im
+  Singleplayer fand `reshuffleAllPlayersForNewDungeon()` keine Spieler und mischte niemandes
+  Hand neu (Heldendeck blieb identisch). Jetzt behoben, `queryAll()`/`queryLatest()` sind hier
+  gleichrangig mit den übrigen vier Methoden. `setDocMerge()` (Issue #78) — wie `setDoc()`,
   aber mit `{ merge: true }`: legt ein Dokument bei Bedarf an, statt bestehende Felder zu
   überschreiben. Bisher nur von `UserRepositoryService.addJoinedGame()` für `users/{uid}`
   genutzt (nie ein lokaler Pfad); für lokale Pfade fällt die Methode mangels Merge-Unterstützung
@@ -32,7 +43,12 @@ Repository-Services unten gebündelt.
   `GameRepositoryService`/`PlayerRepositoryService` verwenden (`['games', gameId]` bzw.
   `['games', gameId, 'player', playerId]`) — ein `setDoc` auf den Game-Pfad legt bei Bedarf einen
   neuen `LocalSingleplayerSave` an (Bootstrap, `player` startet als leeres Feld-Bag, bis der
-  Player-Pfad geschrieben wird).
+  Player-Pfad geschrieben wird). `queryAll()` (Issue #87) bildet
+  `FirestoreRepositoryService.queryAll()` für die `player`-Subcollection nach
+  (`['games', gameId, 'player']`) — ein lokaler Spielstand hat nie mehr als einen Spieler
+  (`LocalSingleplayerSave.player` ist ein einzelnes Objekt, keine Map), daher genügt ein
+  `getDoc()` auf den Game-Pfad plus der eine `player`, in ein Array gepackt (leer, solange kein
+  Save existiert oder dessen Player-Dokument noch nie geschrieben wurde).
 - **`firestore-sync.service.ts`** — die beiden Live-Subscriptions, die `PlayerHandComponent`
   braucht (`watchGamesCollection()`, `watchPlayerDoc()`), inkl. `onSnapshot`-Fehler-Callback,
   der als `FirestoreOperationError` auf den Observable-Error-Kanal gemeldet wird statt
