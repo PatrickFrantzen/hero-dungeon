@@ -1,0 +1,29 @@
+<div class="game-menu">
+    <button class="game-menu__toggle" (click)="toggle()">Menü</button>
+
+    @if (isOpen()) {
+        <div class="game-menu__panel">
+            <button class="game-menu__action" (click)="toggle()">Fortsetzen</button>
+
+            @if (isSingleplayer()) {
+                <button class="game-menu__action" (click)="onSave()">Speichern</button>
+                @if (saveConfirmed()) {
+                    <span class="game-menu__hint">Gespeichert!</span>
+                }
+
+                @if (listSaves().length > 0) {
+                    <div class="game-menu__saves">
+                        <span class="game-menu__saves-title">Spielstände laden</span>
+                        @for (save of listSaves(); track save.saveId) {
+                            <button class="game-menu__action" (click)="resumeSave(save.saveId)">{{ saveLabel(save) }}</button>
+                        }
+                    </div>
+                }
+            } @else {
+                <span class="game-menu__hint">Automatisch gespeichert</span>
+            }
+
+            <button class="game-menu__action" (click)="onLeave()">Verlassen</button>
+        </div>
+    }
+</div>

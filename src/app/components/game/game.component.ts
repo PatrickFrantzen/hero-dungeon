@@ -14,6 +14,7 @@ import { CurrentUserHeroAction } from 'src/app/actions/currentUser-action';
 import { updateChoosenHeros } from 'src/app/actions/lobby-action';
 import { EnemyContainerComponent } from '../enemy/enemy-container/enemy-container.component';
 import { PlayerHandComponent } from '../player-hand/player-hand.component';
+import { GameMenuComponent } from '../game-menu/game-menu.component';
 import { CardPlayService } from 'src/app/services/card-play.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
@@ -36,7 +37,7 @@ interface ChoosenPlayer {
     selector: 'app-game',
     templateUrl: './game.component.html',
     styleUrls: ['./game.component.scss'],
-    imports: [EnemyContainerComponent, PlayerHandComponent],
+    imports: [EnemyContainerComponent, PlayerHandComponent, GameMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GameComponent implements OnInit, OnDestroy {
