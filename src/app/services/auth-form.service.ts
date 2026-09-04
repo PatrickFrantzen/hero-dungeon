@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInAnonymously, signInWithEmailAndPassword } from '@angular/fire/auth';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  EmailAuthProvider,
+  linkWithCredential,
+  signInAnonymously,
+  signInWithEmailAndPassword,
+} from '@angular/fire/auth';
 import { User } from 'src/models/user.class';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 
-type AuthFormKind = 'login' | 'register' | 'anonymous';
+type AuthFormKind = 'login' | 'register' | 'anonymous' | 'link';
 
 // Firebase-Error-Codes, die eine verständlichere Meldung verdienen als die generische
 // Kind-Fallback-Meldung unten. Nicht jeder mögliche Auth-Error-Code ist hier aufgeführt -
@@ -21,6 +28,7 @@ const DEFAULT_MESSAGES: Record<AuthFormKind, string> = {
   login: 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
   register: 'Registrierung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.',
   anonymous: 'Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
+  link: 'Verknüpfung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.',
 };
 
 function mapAuthError(error: unknown, kind: AuthFormKind): string {
@@ -75,6 +83,24 @@ export class AuthFormService {
       await signInAnonymously(this.auth);
     } catch (error) {
       throw new Error(mapAuthError(error, 'anonymous'));
+    }
+  }
+
+  /**
+   * Verknüpft den bereits anonym eingeloggten Nutzer (aus ensureAnonymousSession()) mit
+   * E-Mail/Passwort (Issue #78) - gleiche `uid` wie zuvor, im Unterschied zu register() (Issue
+   * #75, PR 3) entsteht hier KEINE neue uid und damit auch kein Migrationsschritt. Ein
+   * Fehlschlag (z.B. E-Mail bereits vergeben) invalidiert den bestehenden anonymen Account
+   * NICHT - linkWithCredential() meldet den Nutzer bei einem Fehler nicht ab, und dieser Code
+   * ruft im catch-Zweig bewusst kein signOut() o.ä. auf.
+   */
+  async linkAnonymousAccount(email: string, password: string, nickname: string): Promise<void> {
+    try {
+      const credential = EmailAuthProvider.credential(email, password);
+      const linked = await linkWithCredential(this.auth.currentUser!, credential);
+      await this.repo.setDocMerge(['users', linked.user.uid], { userEmail: email, userNickname: nickname });
+    } catch (error) {
+      throw new Error(mapAuthError(error, 'link'));
     }
   }
 }

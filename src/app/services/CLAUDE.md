@@ -17,7 +17,11 @@ Repository-Services unten gebündelt.
   ausnahmslos über diese drei Basismethoden gehen, brauchen **keine** ihrer ~21 spezifischen
   Methoden (`updateCurrentEnemyToken()`, `updatePlayerCards()`, usw.) eine eigene lokal/Firestore-
   Fallunterscheidung — genauso wenig `CardPlayService`/`HeropowerService`/`GameComponent`, die
-  nur über diese Repository-Services schreiben.
+  nur über diese Repository-Services schreiben. `setDocMerge()` (Issue #78) — wie `setDoc()`,
+  aber mit `{ merge: true }`: legt ein Dokument bei Bedarf an, statt bestehende Felder zu
+  überschreiben. Bisher nur von `UserRepositoryService.addJoinedGame()` für `users/{uid}`
+  genutzt (nie ein lokaler Pfad); für lokale Pfade fällt die Methode mangels Merge-Unterstützung
+  in `LocalGameDocumentStoreService` auf dasselbe Ersetzungsverhalten wie `setDoc()` zurück.
 - **`local-game-id.util.ts`** — `isLocalGameId(gameId)`/`LOCAL_GAME_ID_PREFIX` (`'local-'`).
   `DialogGameSettingsComponent.getGameSettings()` vergibt diesen Präfix beim Anlegen eines
   Singleplayer-Spiels; `StartscreenComponent.createGame()` navigiert bei einer lokalen gameId auf
@@ -50,7 +54,7 @@ Repository-Services unten gebündelt.
   FieldValue-Objekt, kein echter Zeitstempel) in `LocalSingleplayerSaveService`s LocalStorage-JSON
   landen würde. `users/{uid}.lastActivityAt` (fürs Profil-Dokument selbst) ist davon nicht
   erfasst — offene Design-Frage, siehe PR 5 in
-  `docs/planned/login-multiplayer-onboarding-plan.md`.
+  `docs/done/login-multiplayer-onboarding-plan.md`.
 
 ### TTL-Policy auf `lastActivityAt` (Issue #77, PR 5) — externe Konfiguration, kein Code hier
 
@@ -69,7 +73,7 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
 - Der zugehörige **Firebase-Auth-User wird bewusst nicht gelöscht**, wenn seine Firestore-Daten
   per TTL verschwinden (kein Cloud-Function-Scheduler in diesem Projekt) — bekannte
   "Account-Leiche" ohne Datenzugriff, siehe Zielbild in
-  `docs/planned/login-multiplayer-onboarding-plan.md`.
+  `docs/done/login-multiplayer-onboarding-plan.md`.
 - **Anwendungsseitige Ausfalltoleranz:** `GameComponent.loadHandstack()` (`game/CLAUDE.md`)
   behandelt ein fehlendes eigenes `games/{gameId}/player/{playerId}`-Dokument (Rejoin nach
   TTL-Löschung während der Nutzer inaktiv war) wie einen frischen Beitritt, statt `undefined` in
@@ -90,10 +94,24 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   `users/{uid}`-Dokument/ohne `userEmail` unverändert sicher: `getCurrentUser()` liest
   `userNickname` bereits mit `?? 'Gast'`-Fallback und referenziert `userEmail` nirgends —
   kein Code-Änderung hier nötig.
+- **`user-repository.service.ts`** (Issue #78) — Firestore-Zugriffe auf das `users/{uid}`-Profil-
+  Dokument, getrennt von `GameRepositoryService`/`PlayerRepositoryService` (die decken
+  `games/{gameId}`-Pfade ab, nicht den Account selbst). `getUser(uid)` liest das Dokument.
+  `addJoinedGame(uid, gameId)` trägt eine gameId in die "Meine Spiele"-Liste
+  (`games: string[]`) ein — über `FirestoreRepositoryService.setDocMerge()` (neu, `{ merge: true
+  }`), da ein anonymer Nutzer zu diesem Zeitpunkt noch **kein** `users/{uid}`-Dokument hat (das
+  entstand bisher nur bei `AuthFormService.register()`) und ein normales `updateDoc()` auf ein
+  fehlendes Dokument fehlschlagen würde; `arrayUnion(gameId)` verhindert Duplikate bei
+  mehrfachem Beitritt zum selben Spiel. Schreibt dabei außerdem `lastActivityAt:
+  serverTimestamp()` — löst damit die in PR 4 offen gelassene Frage ("`users/{uid}.lastActivityAt`
+  ist davon nicht erfasst") auf: Der erste reguläre Schreibzugriff auf `users/{uid}` für einen
+  anonymen Nutzer ist genau dieser, ein zusätzlicher separater Schreibpfad nur für
+  `lastActivityAt` wäre unnötig. Aufrufer: `StartscreenComponent.newGame()`s `createGame()`
+  (nur, wenn `!isLocalGameId(gameId)` — Singleplayer hat kein Account-Konzept) und `joinGame()`.
 - **`local-singleplayer-save.service.ts`** — CRUD (`listSaves()`/`createSave()`/`getSave()`/
   `updateSave()`) für lokale Singleplayer-Spielstände, komplett ohne Firestore/Auth (LocalStorage,
   Schlüssel `hero-dungeon.local-singleplayer-saves`). Persistenz-Unterbau für
-  `docs/planned/login-multiplayer-onboarding-plan.md` PR 1 (Issue #73) — ein `LocalSingleplayerSave`
+  `docs/done/login-multiplayer-onboarding-plan.md` PR 1 (Issue #73) — ein `LocalSingleplayerSave`
   bündelt `game: Game` + `player` (loses Feld-Bag, `Record<string, unknown>` — Spieler-Dokumente
   werden von `GameRepositoryService`/`PlayerRepositoryService` per generischem `updateFields()`
   mit beliebigen Teilmengen beschrieben, ein festes Interface würde das nicht abbilden), analog
@@ -183,7 +201,15 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   — von `StartscreenComponent.newGame()`/`joinGame()` vor dem eigentlichen Firestore-Zugriff
   aufgerufen, damit ein Multiplayer-Spiel ohne vorheriges Anmeldeformular erstellt/betreten
   werden kann; `newSingleplayerGame()` ruft das bewusst nicht auf (Singleplayer bleibt
-  komplett auth-frei).
+  komplett auth-frei). `linkAnonymousAccount(email, password, nickname)` (Issue #78) —
+  verknüpft den bereits anonym eingeloggten Nutzer per `linkWithCredential()`/
+  `EmailAuthProvider.credential(...)` mit E-Mail/Passwort: **gleiche** `uid` wie zuvor, im
+  Unterschied zu `register()` (Issue #75, PR 3) entsteht hier **keine** neue `uid` und damit auch
+  kein Migrationsschritt. Ein Fehlschlag (z.B. `auth/email-already-in-use`) meldet den
+  bestehenden anonymen Nutzer **nicht** ab — `linkWithCredential()` selbst tut das nicht, und
+  dieser Code ruft im `catch`-Zweig kein `signOut()` auf; die Gast-Session bleibt nutzbar.
+  Aufrufer: `DialogLinkAccountComponent` (`components/CLAUDE.md`, Abschnitt Dialoge), erreichbar
+  über `GameMenuComponent` (`game-menu/CLAUDE.md`).
 - **`local-save-migration.service.ts`** — `migrateAll(newUserId, newUserNickname)` (Issue #75,
   PR 3): schreibt **alle** vorhandenen lokalen Singleplayer-Saves (`LocalSingleplayerSaveService.
   listSaves()`) als neue Firestore-Spiele (`GameRepositoryService.createGame()`/

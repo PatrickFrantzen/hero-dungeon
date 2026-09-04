@@ -21,7 +21,7 @@ in Issue #86 und `src/models/CLAUDE.md`). Die ursprüngliche 5+1-Regel war zuvor
 gewählten Schwierigkeitsgrad hart codiert — ein Bug, kein bewusstes Feature.
 
 **Nachtrag (2026-09-04):** Die weiter unten offene "Produktentscheidung" (Variante A vs. B) ist
-mit `docs/planned/login-multiplayer-onboarding-plan.md` entschieden — **Variante B (echter
+mit `docs/done/login-multiplayer-onboarding-plan.md` entschieden — **Variante B (echter
 Offline/Local-Singleplayer)** ist die beschlossene Richtung. Der Persistenz-/Login-Umbau dafür
 (lokaler Spielstand, mehrere parallele Saves, Account-Angebot beim Spielende) steht in PR 1-3
 dieses neuen Plans; die hier noch offenen PR 1/1b/2/3-TODOs (Deck-Cycling/Deadlock-Schutz,

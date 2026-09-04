@@ -79,7 +79,7 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   `cardsCycled`/`heropowersUsed`) ist die Kampagnen-Statistik — Zählstellen/Anzeige in
   `src/app/components/game/CLAUDE.md`.
 - **`user.class.ts`** — Nutzer-Datenstruktur (`CurrentUserService`/`CurrentUserState`). Seit
-  Issue #76 (PR 4 aus `docs/planned/login-multiplayer-onboarding-plan.md`): `userEmail` ist
+  Issue #76 (PR 4 aus `docs/done/login-multiplayer-onboarding-plan.md`): `userEmail` ist
   optional (anonyme Multiplayer-Accounts, `signInAnonymously()`, haben keine E-Mail) —
   `toJSON()` lässt das Feld komplett weg statt `undefined` zu schreiben, da Firestore ein
   explizites `undefined`-Feld ablehnt. Neues Feld `lastActivityAt: Timestamp | FieldValue |

@@ -21,15 +21,30 @@ durchgezogen).
 - **"Verlassen" (`onLeave()`)** — `leave`-Output, `GameComponent` verdrahtet ihn auf das
   bestehende `backToStartscreen()`.
 
-## Nicht Teil dieses Grundgerüsts (folgt in PR 4/6, Issues #76/#78)
+## "Meine Spiele" + Account verknüpfen für Multiplayer (Issue #78)
 
-Spiel-ID/Einladungslink anzeigen und "Meine Spiele" für Multiplayer — beide brauchen die
-Anonymous-Auth-Infrastruktur, die es laut Plan noch nicht gibt. Multiplayer zeigt aktuell nur
-"Verlassen" + Hinweistext.
+- **"Meine Spiele"** (`myGames`, analog zu `StartscreenComponent`) — lädt per `effect()` die
+  Multiplayer-Historie aus `users/{uid}.games` (`UserRepositoryService.getUser()`), sobald
+  `currentUserId()` (Store-Signal) verfügbar ist **und** `isSingleplayer()` false ist. Klick auf
+  einen Eintrag ruft `resumeMultiplayerGame(gameId)` auf (analog zu `resumeSave()`, aber Route
+  `game/:id` statt `local-game/:id`).
+- **"Account verknüpfen"** (`canLinkAccount()`/`openLinkAccountDialog()`) — nur sichtbar, wenn
+  `!isSingleplayer()` **und** `auth.currentUser?.isAnonymous` true ist (ein bereits verknüpfter/
+  registrierter Account braucht den Button nicht mehr). Öffnet `DialogLinkAccountComponent`
+  (`components/CLAUDE.md`, Abschnitt Dialoge), die die Verknüpfung selbst ausführt
+  (`AuthFormService.linkAnonymousAccount()`).
+
+## Nicht Teil dieses Grundgerüsts
+
+Spiel-ID/Einladungslink anzeigen (Multiplayer) — laut
+`docs/done/login-multiplayer-onboarding-plan.md`, Abschnitt "Nicht im Scope", bewusst nicht
+Teil des Plans.
 
 ## Logout
 
-`StartscreenComponent.logout()` ist bewusst **nicht** hierher verschoben — der Plan sieht das
-zwar vor (`docs/planned/login-multiplayer-onboarding-plan.md`, Zielbild "In-Game-Menü"), aber
-nur "wenn ein Account existiert"; ohne die Anonymous-Auth-Arbeit aus PR 4 gibt es im
-Singleplayer-Pfad noch keinen Account-Zustand, der das rechtfertigen würde.
+`StartscreenComponent.logout()` ist weiterhin **nicht** hierher verschoben, obwohl die
+Anonymous-Auth-Arbeit aus PR 4 inzwischen umgesetzt ist (der ursprüngliche Blocker für diese
+Aussage) — der Plan sieht die Verschiebung zwar vor
+(`docs/done/login-multiplayer-onboarding-plan.md`, Zielbild "In-Game-Menü", "nur wenn ein
+Account existiert"), Issue #78s Aufgabenliste nennt sie aber nicht explizit; nicht ohne
+gesonderten Auftrag verschieben.

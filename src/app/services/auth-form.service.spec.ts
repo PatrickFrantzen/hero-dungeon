@@ -48,4 +48,24 @@ describe('AuthFormService', () => {
       await expectAsync(service.ensureAnonymousSession()).toBeRejected();
     });
   });
+
+  describe('linkAnonymousAccount()', () => {
+    it('maps a failed link attempt to a German message, without invalidating the existing anonymous session', async () => {
+      const auth = TestBed.inject(Auth) as unknown as { currentUser: unknown };
+      const anonymousUser = { uid: 'anon-uid' };
+      auth.currentUser = anonymousUser;
+
+      // Der Test-Auth-Provider (Auth = {}) hat keine echte Firebase-Verbindung - linkWithCredential()
+      // schlägt daher fehl (analog zu den ensureAnonymousSession()/login()-Tests oben), beweist
+      // aber, dass tatsächlich ein Verknüpfungsversuch unternommen wird.
+      await expectAsync(service.linkAnonymousAccount('alice@example.com', 'secret123', 'Alice')).toBeRejectedWithError(
+        /Verkn/
+      );
+
+      // Firebase meldet bei einem fehlgeschlagenen linkWithCredential() den bestehenden
+      // anonymen Nutzer nicht ab - dieser Test würde brechen, sollte künftiger Code das doch
+      // tun (z.B. ein versehentliches signOut() im catch-Zweig).
+      expect(auth.currentUser).toBe(anonymousUser);
+    });
+  });
 });

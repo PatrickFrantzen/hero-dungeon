@@ -12,6 +12,8 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 import { AuthFormService } from 'src/app/services/auth-form.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
+import { UserRepositoryService } from 'src/app/services/user-repository.service';
+import { CurrentUserAction } from 'src/app/actions/currentUser-action';
 import { Game } from 'src/models/game';
 import {
   ensureAngularFireSchedulersInitialized,
@@ -130,5 +132,83 @@ describe('StartscreenComponent', () => {
 
     expect(ensureAnonymousSession).toHaveBeenCalled();
     expect(getGame).toHaveBeenCalledWith('game-42');
+  });
+
+  describe('"Meine Spiele" (Issue #78)', () => {
+    it('createGame() (multiplayer) records the joined game for the current account', async () => {
+      const store = TestBed.inject(Store);
+      store.dispatch(new CurrentUserAction('user-1', 'Alice'));
+      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
+      spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of({ data: { numberOfPlayer: 2, difficulty: 'easy', gameId: 'game-99' } }),
+      } as MatDialogRef<unknown>);
+      spyOn(TestBed.inject(GameRepositoryService), 'createGame').and.resolveTo();
+      const addJoinedGame = spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      component.newGame();
+      await fixture.whenStable();
+
+      expect(addJoinedGame).toHaveBeenCalledWith('user-1', 'game-99');
+    });
+
+    it('createGame() (local singleplayer) does NOT record a joined game - Singleplayer has no account concept', async () => {
+      spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of({ data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' } }),
+      } as MatDialogRef<unknown>);
+      const addJoinedGame = spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      component.newSingleplayerGame();
+      await fixture.whenStable();
+
+      expect(addJoinedGame).not.toHaveBeenCalled();
+    });
+
+    it('joinGame() records the joined game for the current account after a successful join', async () => {
+      const store = TestBed.inject(Store);
+      store.dispatch(new CurrentUserAction('user-1', 'Alice'));
+      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
+      spyOn(TestBed.inject(GameRepositoryService), 'getGame').and.resolveTo({ currentEnemy: {}, Mob: [] });
+      const addJoinedGame = spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+      component.joinGameId = 'game-42';
+
+      await component.joinGame();
+      await fixture.whenStable();
+
+      expect(addJoinedGame).toHaveBeenCalledWith('user-1', 'game-42');
+    });
+
+    it('a "Meine Spiele" entry can be joined directly by gameId, without the manual input field', async () => {
+      const store = TestBed.inject(Store);
+      store.dispatch(new CurrentUserAction('user-1', 'Alice'));
+      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
+      const getGame = spyOn(TestBed.inject(GameRepositoryService), 'getGame').and.resolveTo({ currentEnemy: {}, Mob: [] });
+      spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      await component.joinGame('game-from-my-games');
+      await fixture.whenStable();
+
+      expect(getGame).toHaveBeenCalledWith('game-from-my-games');
+      expect(router.navigate).toHaveBeenCalledWith(['/game/game-from-my-games']);
+    });
+
+    it('loads the list of joined games once the account id becomes available', async () => {
+      const userRepo = TestBed.inject(UserRepositoryService);
+      spyOn(userRepo, 'getUser').and.resolveTo({ games: ['game-1', 'game-2'] });
+      const store = TestBed.inject(Store);
+
+      store.dispatch(new CurrentUserAction('user-1', 'Alice'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.myGames()).toEqual(['game-1', 'game-2']);
+    });
   });
 });
