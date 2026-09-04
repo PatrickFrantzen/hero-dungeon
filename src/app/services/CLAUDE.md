@@ -5,6 +5,12 @@ Kein separater Repository-Layer im architektonischen Sinn, aber seit
 `updateDoc()` mehr direkt in Komponenten verstreut — die Firestore-Zugriffe sind in den
 Repository-Services unten gebündelt.
 
+**Dependency Injection: `inject()`** (Issue #94) — alle Services in diesem Ordner injizieren
+ihre Abhängigkeiten per Klassenfeld (`private repo = inject(FirestoreRepositoryService);`) statt
+über den Constructor, siehe Root-`CLAUDE.md`. `AuthFormService`/`PlayerRepositoryService`/
+`GameRepositoryService`/`LocalGameDocumentStoreService`/`DiebService` wurden dafür umgestellt;
+`FirestoreRepositoryService`/`FirestoreSyncService` nutzten bereits vorher `inject()`.
+
 ## Repository-Services (Firestore-Zugriff)
 
 - **`firestore-repository.service.ts`** — Basis: `FirestoreOperationError` (typisierter Fehler

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { CurrentHandSelector } from '../selectors/currentHand-selector';
 import { CurrentCardStackSelector } from '../selectors/currentCardStack-selector';
@@ -12,8 +12,8 @@ import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/herop
   providedIn: 'root'
 })
 export class DiebService {
-
-  constructor(private store: Store, private playerRepo: PlayerRepositoryService) { }
+  private store = inject(Store);
+  private playerRepo = inject(PlayerRepositoryService);
 
   heropower(heropowerArray: string[]) {
     let currentHand = this.store.selectSnapshot(

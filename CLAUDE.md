@@ -49,6 +49,14 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
   Seiteneffekte über `effect()`; Kind→Eltern-Kommunikation über `output()`. Nicht alles ist
   migriert — beim Anfassen eines Files immer den tatsächlichen Code ansehen, nicht pauschal "ist
   schon migriert" annehmen (Details je Bereich in den verzeichnis-lokalen `CLAUDE.md`-Dateien).
+- **Dependency Injection: `inject()` statt Constructor-DI** (verbindlicher Standard seit Issue
+  #94) — `private readonly foo = inject(FooService);` als Klassenfeld statt
+  `constructor(private foo: FooService) {}`. Passt zum bereits durchgezogenen Signal-Pattern und
+  ist Angulars aktuell empfohlener Stil. Ein Constructor bleibt nur, wo er tatsächlich Logik
+  braucht (z.B. ein `effect()`, das erst nach allen `inject()`-Feldern laufen darf) — dann ohne
+  DI-Parameter, alle Abhängigkeiten weiterhin als Felder oben in der Klasse. Neue Services/
+  Komponenten sollten nicht auf Constructor-DI zurückfallen; beim Anfassen einer noch nicht
+  umgestellten Stelle bei Gelegenheit mitziehen, kein eigener Umbau-Auftrag nötig.
 - **State Management: NGXS** (`@ngxs/store`, `@ngxs/storage-plugin`) — schließt Signals nicht
   aus (`selectSignal()` ist NGXS' eigene Signal-Schnittstelle). Details: `src/app/states/CLAUDE.md`.
 - **UI**: Angular Material 21 (`@angular/material`, `@angular/cdk`), Theme `purple-green.css`

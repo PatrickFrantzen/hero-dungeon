@@ -4,6 +4,17 @@ Meist standalone + signal-basiert (`input()`/`input.required()`, `output()`, `co
 `effect()`) mit `ChangeDetectionStrategy.OnPush`. Details zum Migrationsstand siehe unten und
 Root-`CLAUDE.md`.
 
+**Dependency Injection: `inject()`** (Issue #94) — Abhängigkeiten als Klassenfeld
+(`private store = inject(Store);`) statt Constructor-Parameter, siehe Root-`CLAUDE.md`.
+`heropower-container/`, `tutorial-overlay-container/`, `enemy-container/` und
+`dialog-base.component.ts` (+ die sechs Dialog-Subklassen, die zuvor `MatDialogRef` per
+`super(dialogRef)` durchreichten) wurden dafür umgestellt — `BaseDialogComponent` injiziert
+`MatDialogRef` jetzt selbst, Subklassen rufen `super()` ohne Argumente. Ein Constructor bleibt
+nur, wo tatsächlich Logik nötig ist (z.B. `HeropowerContainerComponent`s `effect()`) oder wo eine
+Subklasse eigene, hier nicht umgestellte Constructor-DI hat (`DialogLinkAccountComponent`/
+`DialogAccountOfferComponent` — `FormBuilder`/`AuthFormService`/`Auth`/
+`LocalSaveMigrationService`, nicht Teil von Issue #94).
+
 ## Styling: Angular Material + Tailwind CSS
 
 Neben Angular Material (Komponenten: `mat-card`, `mat-form-field`, `mat-*-button`, …) steht seit

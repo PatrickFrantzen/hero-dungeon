@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DocumentData, serverTimestamp } from '@angular/fire/firestore';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 import { isLocalGameId } from './local-game-id.util';
@@ -12,7 +12,7 @@ import { isLocalGameId } from './local-game-id.util';
   providedIn: 'root',
 })
 export class PlayerRepositoryService {
-  constructor(private repo: FirestoreRepositoryService) {}
+  private repo = inject(FirestoreRepositoryService);
 
   /** Siehe GameRepositoryService.withActivity() - gleiche bewusste Ausnahme, gleicher Grund. */
   private withActivity<T extends object>(gameId: string, fields: T): T {

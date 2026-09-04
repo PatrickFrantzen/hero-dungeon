@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -26,6 +26,9 @@ import { EnemyComponent } from '../enemy.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EnemyContainerComponent implements OnInit {
+  private store = inject(Store);
+  private gameRepo = inject(GameRepositoryService);
+
   gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
   encounterEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   currentQuestStatus = this.store.selectSignal(CurrentGameSelectors.currentQuestCardStatus);
@@ -38,7 +41,7 @@ export class EnemyContainerComponent implements OnInit {
 
   currentEnemy = computed(() => this.encounterEnemy() ?? this.emptyMob);
 
-  constructor(private store: Store, private gameRepo: GameRepositoryService) {
+  constructor() {
     // Dispatches whether the "quest card" is active whenever the current enemy changes,
     // mirroring the previous @Select-based pipe(map(...dispatch...)) exactly.
     effect(() => {

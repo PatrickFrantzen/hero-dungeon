@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
@@ -34,10 +34,6 @@ export class DialogGameSettingsComponent extends BaseDialogComponent<GameSetting
     {value: 'medium', viewValue: 'Held'},
     {value: 'hard', viewValue: 'Dungeon-Master'}
   ];
-
-  constructor(dialogRef: MatDialogRef<DialogGameSettingsComponent, { data: GameSettingsDialogResult }>) {
-    super(dialogRef);
-  }
 
   getGameSettings(numberOfPlayer:number, difficulty: string, gameId: string) {
     if (this.singleplayerMode) {

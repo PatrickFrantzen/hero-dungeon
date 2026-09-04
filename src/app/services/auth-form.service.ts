@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   Auth,
   createUserWithEmailAndPassword,
@@ -46,7 +46,8 @@ function mapAuthError(error: unknown, kind: AuthFormKind): string {
   providedIn: 'root',
 })
 export class AuthFormService {
-  constructor(private auth: Auth, private repo: FirestoreRepositoryService) {}
+  private auth = inject(Auth);
+  private repo = inject(FirestoreRepositoryService);
 
   async login(email: string, password: string): Promise<void> {
     try {

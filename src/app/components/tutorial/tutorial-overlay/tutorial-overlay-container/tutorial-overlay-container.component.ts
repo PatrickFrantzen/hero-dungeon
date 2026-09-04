@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import {
   CompleteTutorial,
@@ -30,6 +30,8 @@ import { TutorialOverlayComponent } from '../tutorial-overlay.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TutorialOverlayContainerComponent {
+  private store = inject(Store);
+
   readonly steps = tutorialSteps;
   readonly totalSteps = this.steps.length;
 
@@ -40,8 +42,6 @@ export class TutorialOverlayContainerComponent {
   readonly stepNumber = computed(() => this.stepIndex() + 1);
   readonly isFirstStep = computed(() => this.stepIndex() === 0);
   readonly isLastStep = computed(() => this.stepIndex() === this.steps.length - 1);
-
-  constructor(private store: Store) {}
 
   onNext(): void {
     if (this.isLastStep()) {

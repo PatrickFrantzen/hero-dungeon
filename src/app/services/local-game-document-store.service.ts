@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { Game } from 'src/models/game';
 import { LocalSingleplayerSavePlayer, LocalSingleplayerSaveService } from './local-singleplayer-save.service';
@@ -14,7 +14,7 @@ import { LocalSingleplayerSavePlayer, LocalSingleplayerSaveService } from './loc
   providedIn: 'root',
 })
 export class LocalGameDocumentStoreService {
-  constructor(private saves: LocalSingleplayerSaveService) {}
+  private saves = inject(LocalSingleplayerSaveService);
 
   getDoc<T extends DocumentData>(path: string[]): T | undefined {
     const save = this.saves.getSave(path[1]);

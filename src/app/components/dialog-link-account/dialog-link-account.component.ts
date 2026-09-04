@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import { MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
@@ -46,11 +46,10 @@ export class DialogLinkAccountComponent extends BaseDialogComponent<LinkAccountD
   isSubmitting = false;
 
   constructor(
-    dialogRef: MatDialogRef<DialogLinkAccountComponent, { data: LinkAccountDialogResult }>,
     private fb: FormBuilder,
     private authForm: AuthFormService
   ) {
-    super(dialogRef);
+    super();
   }
 
   ngOnInit(): void {

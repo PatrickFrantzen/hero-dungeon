@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatSelect, MatOption } from '@angular/material/select';
@@ -16,14 +16,8 @@ import { HeropowerDialogPlayer } from '../dialog-results';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DialogHeropowerComponent extends BaseDialogComponent<HeropowerDialogPlayer> {
+  data = inject<HeropowerDialogPlayer[]>(MAT_DIALOG_DATA);
   selectedValue: HeropowerDialogPlayer = { playerName: '', playerId: '', playerHero: '' }
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: HeropowerDialogPlayer[],
-    dialogRef: MatDialogRef<DialogHeropowerComponent, { data: HeropowerDialogPlayer }>
-  ) {
-    super(dialogRef);
-  }
 
   getChoosenHero(selectedValue: HeropowerDialogPlayer) {
     this.closeWith({
