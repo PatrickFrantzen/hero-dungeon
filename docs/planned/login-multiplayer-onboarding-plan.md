@@ -45,6 +45,18 @@ statt sie zu ersetzen:
   jetzt beschlossene lokale Singleplayer-Pfad braucht einen eigenständigen
   Persistenz-Service parallel dazu, kein Umbau der bestehenden Firestore-Services (die bleiben
   für Multiplayer unverändert zuständig).
+- **Bewusst keine gemeinsame Persistenz-Abstraktion (z.B. `GameSessionPort`).** Die Spielregeln
+  (`CardPlayService` & Co.) bleiben identisch für beide Modi — es ändert sich ausschließlich,
+  wohin geschrieben wird: Singleplayer schreibt lokal (`LocalSingleplayerSaveService`),
+  Multiplayer schreibt wie bisher nach Firestore (`GameRepositoryService`/
+  `PlayerRepositoryService`). Ziel ist minimaler Wartungsaufwand — ein einziger Umschaltpunkt
+  pro Schreibzugriff (z.B. per Modus-Flag/Injection Token), keine zwei parallel gepflegten
+  Regel-Implementierungen.
+- **Route-Frage ungeklärt:** `startscreen.component.ts:88/119` navigiert für Singleplayer und
+  Multiplayer auf dieselbe Route `game/:id`, die laut `app.routes.ts:13` durchgängig
+  `redirectUnauthorizedTo` trägt. Ohne Klärung dieser Route-Frage bleibt ein nicht eingeloggter
+  Nutzer beim Singleplayer-Start weiterhin am Guard hängen — PR 1 muss das explizit lösen (siehe
+  dort), nicht erst PR 4.
 - Ein In-Game-Menü ist eine neue, klar abgegrenzte Komponente (analog zum bestehenden
   Container/Presenter-Muster aus `src/app/components/CLAUDE.md`).
 
@@ -110,7 +122,11 @@ Multiplayer, Tutorial, Beenden.
   bekommt dabei seine Firebase-`uid` als Identität, mit der er anderen beitreten/von anderen
   gefunden werden kann.
 - `users/{uid}` bekommt ein `lastActivityAt`-Feld, das bei jeder relevanten Spielaktion
-  aktualisiert wird (Analog zu den bestehenden Repository-Writes).
+  aktualisiert wird (Analog zu den bestehenden Repository-Writes). **Muss als Firestore
+  `Timestamp` (`serverTimestamp()`) geschrieben werden, nicht als `number`/Epoch** — Firestore-
+  TTL-Policies greifen ausschließlich auf Felder vom Typ `Timestamp`; ein numerischer Wert wird
+  von der TTL-Engine stillschweigend ignoriert, ohne dass das im Emulator auffällt (der prüft TTL
+  nicht).
 - **7 Tage nach der letzten Aktivität** (nicht ab Erstellung) werden die Firestore-Daten eines
   anonymen Accounts über eine Firestore-TTL-Policy auf `lastActivityAt` automatisch gelöscht. Der
   zugehörige Firebase-Auth-User selbst wird **nicht** aktiv gelöscht — bewusst in Kauf genommene
@@ -163,12 +179,21 @@ Neue Komponente `GameMenuComponent`, permanent erreichbar (unabhängig von `curr
 - Singleplayer-Pfad in `GameComponent`/`CardPlayService`/`PlayerHandComponent` auf diesen Service
   umstellen statt auf `GameRepositoryService`/`PlayerRepositoryService` (baut auf den fachlichen
   TODOs aus `docs/planned/singleplayer-mode-plan.md` auf, liefert hier den Persistenz-Unterbau).
+  Kein Duplizieren der Spielregeln: `CardPlayService` bekommt einen einzigen Umschaltpunkt
+  (Modus-Flag o.ä.), der pro Schreibzugriff entscheidet, ob lokal oder nach Firestore geschrieben
+  wird — die Regellogik selbst bleibt für beide Modi ein Codepfad.
 - Neue Startscreen-Komponente/-Sektion "Meine Spielstände" (Liste lokaler Saves, Fortsetzen/Neu).
-- `game/:id`-Route: `redirectUnauthorizedTo` bleibt vorerst für den Multiplayer-Pfad bestehen
-  (wird erst in PR 4 durch die Anonymous-Auth-Logik ersetzt).
+- **Route-Korrektur (behebt Widerspruch zur eigenen Verifikation weiter unten):** Singleplayer
+  navigiert aktuell auf dieselbe Route `game/:id` wie Multiplayer (`startscreen.component.ts:88/
+  119`), die durchgängig `redirectUnauthorizedTo` trägt (`app.routes.ts:13`) — ohne Änderung
+  bliebe ein nicht eingeloggter Nutzer beim Singleplayer-Start am Guard hängen, obwohl PR 1
+  genau das beheben soll. Lösung in diesem PR: eigene Route `local-game/:id` ohne Guard für den
+  Singleplayer-Pfad (Multiplayer bleibt vorerst unverändert auf `game/:id` mit
+  `redirectUnauthorizedTo`, wird erst in PR 4 durch die Anonymous-Auth-Logik ersetzt).
 - Verifikation: `ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI`, manueller Test
-  „App im Privatfenster öffnen → Singleplayer direkt spielbar ohne jede Anmeldung", „zwei lokale
-  Spielstände parallel anlegen, beide unabhängig fortsetzbar".
+  „App im Privatfenster öffnen → Singleplayer direkt spielbar ohne jede Anmeldung, inkl. Wechsel
+  auf die Spielansicht selbst (nicht nur Startscreen)", „zwei lokale Spielstände parallel
+  anlegen, beide unabhängig fortsetzbar".
 
 ### PR 2 — In-Game-Menü (Grundgerüst)
 
@@ -200,7 +225,8 @@ Neue Komponente `GameMenuComponent`, permanent erreichbar (unabhängig von `curr
 
 - `newGame()`/`joinGame()` in `StartscreenComponent`: vor dem eigentlichen Firestore-Zugriff
   `signInAnonymously()`, falls noch kein Nutzer eingeloggt ist.
-- `src/models/user.class.ts`: `userEmail` optional; `lastActivityAt: number` neu ergänzen.
+- `src/models/user.class.ts`: `userEmail` optional; `lastActivityAt: Timestamp` (Firestore
+  `Timestamp`, nicht `number`/Epoch — siehe Diagnose Abschnitt 2) neu ergänzen.
 - `CurrentUserService`/`AuthFormService`: anonyme Nutzer ohne E-Mail vertragen (Anzeige-Fallback
   für den Nicknamen, kein Crash bei fehlendem `userEmail`).
 - `game/:id`-Route: `redirectUnauthorizedTo` bleibt, verweist aber jetzt implizit auf den
@@ -213,7 +239,19 @@ Neue Komponente `GameMenuComponent`, permanent erreichbar (unabhängig von `curr
 
 ### PR 5 — 7-Tage-TTL für anonyme Multiplayer-Daten + Ausfalltoleranz
 
-- Firestore-TTL-Policy auf `lastActivityAt` konfigurieren (Firebase Console/`gcloud`, kein
+- **Offene Design-Frage vor der Umsetzung klären:** `lastActivityAt` muss laut PR 4 sowohl auf
+  `users/{uid}` als auch bei Schreibzugriffen über `GameRepositoryService`/
+  `PlayerRepositoryService` gepflegt werden — das sind **drei verschiedene Collection-Groups**
+  (`users`, `games`, `games/*/player`), von denen jede ihre eigene TTL-Policy braucht
+  (TTL-Policies werden pro Collection-Group konfiguriert, nicht global). Zusätzlich ist
+  `games/{gameId}` ein von mehreren Spielern **geteiltes** Dokument: welcher Spieler-Aktivität
+  sein `lastActivityAt` folgt, ist zu klären, bevor die Policy konfiguriert wird — sonst droht,
+  dass das komplette Game-Dokument gelöscht wird, während ein anderer Mitspieler noch aktiv
+  spielt (nicht nur der Einzelfall "ein Mitspieler-Dokument fehlt", den der nächste Punkt
+  adressiert). Empfehlung: TTL-Policy nur auf `users/{uid}` und `games/{gameId}/player/{playerId}`
+  (je eigenes `lastActivityAt`), **nicht** auf das geteilte `games/{gameId}`-Dokument selbst —
+  das bleibt bestehen, solange mindestens ein Spieler-Unterdokument existiert.
+- Firestore-TTL-Policy(s) auf `lastActivityAt` konfigurieren (Firebase Console/`gcloud`, kein
   Code-Artefakt im Repo außer einer Dokumentation der Policy in `firestore.rules`-Kommentar oder
   `services/CLAUDE.md`, da TTL-Policies nicht Teil der Security Rules selbst sind).
 - `GameComponent.checkIfPlayerIsAlreadyPartOfGame()`/`CardPlayService`: robust gegen ein
