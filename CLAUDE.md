@@ -121,6 +121,8 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
 - Heldendatenmodell: `docs/done/hero-data-model-plan.md`
 - Dialog-/Auth-Vereinheitlichung: `docs/done/dialog-auth-unification-plan.md`
 - Singleplayer-Modus: `docs/planned/singleplayer-mode-plan.md`
+- Login-Pflicht (auch vor Singleplayer), fehlendes In-Game-Menü zum Speichern/Aufhören,
+  Multiplayer-Beitritt nur per manuell abgetippter Spiel-ID: `docs/planned/login-multiplayer-onboarding-plan.md`
 - Mehrspieler-Regelkern war an mehreren Stellen von der offiziellen "5 Minute Dungeon"-Anleitung
   abgewichen — alle 11 TODOs aus `docs/done/five-minute-dungeon-rules-plan.md` sind umgesetzt.
   Zwei Punkte bleiben bewusst offen (siehe Status-Abschnitt im Plan): der Zwei-Karten-Reveal-
