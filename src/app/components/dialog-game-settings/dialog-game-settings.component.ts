@@ -8,6 +8,7 @@ import { MatSelect, MatOption } from '@angular/material/select';
 import { MatButton } from '@angular/material/button';
 import { BaseDialogComponent } from '../dialog-base.component';
 import { GameSettingsDialogResult } from '../dialog-results';
+import { LOCAL_GAME_ID_PREFIX } from 'src/app/services/local-game-id.util';
 
 interface Difficulty {
   value: string;
@@ -40,7 +41,7 @@ export class DialogGameSettingsComponent extends BaseDialogComponent<GameSetting
 
   getGameSettings(numberOfPlayer:number, difficulty: string, gameId: string) {
     if (this.singleplayerMode) {
-      this.closeWith({ numberOfPlayer: 1, difficulty, gameId: `solo-${Date.now()}` });
+      this.closeWith({ numberOfPlayer: 1, difficulty, gameId: `${LOCAL_GAME_ID_PREFIX}${Date.now()}` });
       return;
     }
 

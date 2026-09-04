@@ -2,6 +2,18 @@
 
 ## Status (2026-09-04)
 
+**PR 1 umgesetzt** (Issue #73, TDD, 4 Commits): `startscreen`-Route ohne `redirectUnauthorizedTo`;
+neue Route `local-game/:id` ohne Guard; `LocalSingleplayerSaveService` (CRUD über LocalStorage);
+`LocalGameDocumentStoreService` + `FirestoreRepositoryService`-Umschaltpunkt (`local-`-Präfix in
+der gameId, siehe `local-game-id.util.ts`) — `GameRepositoryService`/`PlayerRepositoryService`
+und damit `CardPlayService`/`GameComponent` brauchen dafür **keine** eigene Fallunterscheidung;
+`PlayerHandComponent` überspringt für lokale Spiele das Firestore-Live-Sync, lädt einen
+fortgesetzten Save aber einmalig nach (`loadLocalGameOnce()`); Startscreen-Sektion "Meine
+Spielstände" (Fortsetzen per Klick). Per Playwright-Smoke-Test verifiziert: Startscreen → Held
+wählen → Handkarten sichtbar → Reload auf `/local-game/:id` bleibt ohne Redirect und lädt
+Handkarten erneut → Save erscheint in "Meine Spielstände" — alles ohne jede Anmeldung. PR 2
+(In-Game-Menü) und PR 3 (Account-Angebot beim Spielende) sind noch offen.
+
 Zielbild mit Patrick abgestimmt und fixiert (2026-09-04) — kein Optionsvergleich mehr, sondern
 eine konkrete Entscheidung mit nummerierten PRs. Diese Diagnose ergänzt zwei bestehende Pläne,
 statt sie zu ersetzen:

@@ -44,4 +44,17 @@ describe('FirestoreRepositoryService', () => {
       } as Partial<FirestoreOperationError>)
     );
   });
+
+  describe('local- games (local Singleplayer, no Firestore access)', () => {
+    afterEach(() => localStorage.clear());
+
+    it('setDoc/getDoc round-trip through local storage instead of Firestore', async () => {
+      await service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
+
+      await expectAsync(service.getDoc(['games', 'local-1'])).toBeResolvedTo({
+        gameId: 'local-1',
+        numberOfPlayers: 1,
+      } as never);
+    });
+  });
 });

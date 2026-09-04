@@ -34,6 +34,21 @@ Spielregeln zusammenlaufen — bei jeder Änderung hier ist ein manueller Multip
 (Karte spielen, jede Heropower-Variante auslösen, zweiter Spieler tritt bei, Kartenstapel geht
 zur Neige) sinnvoll, auch wenn `ng build`/`ng test` grün sind.
 
+## Lokaler Singleplayer (Issue #73): kein Firestore-Live-Sync, aber ein Einmal-Load
+
+Für eine `local-`-gameId (`local-game-id.util.ts`) überspringt `ngOnInit()` die beiden
+Firestore-Live-Subscriptions (`gameSubscr`/`playerSubsc`, jetzt beide optional statt
+`gameSubscr!`) komplett — es gibt keinen Mitspieler, dessen Züge ankommen könnten, und jede
+eigene Aktion aktualisiert den Store bereits synchron über `CardPlayService`/`HeropowerService`
+(siehe `reportWriteFailure()`-Kommentar). Stattdessen läuft `loadLocalGameOnce()`: lädt
+Game-/Player-Dokument je einmal über `gameRepo`/`playerRepo` (die für eine lokale gameId
+automatisch an `LocalGameDocumentStoreService` umleiten, siehe `services/CLAUDE.md`) und
+dispatcht dieselben Actions wie `updateFromDatabase()`/`updatePlayerFromDatabase()`. Ohne das
+bliebe der Store beim **Fortsetzen** eines bestehenden lokalen Saves (z.B. nach einem Reload)
+leer — ein brandneues Spiel braucht `loadLocalGameOnce()` dagegen nicht, weil
+`GameComponent.openDialog()` die initialen Werte (Encounter/Mob/Heldendeck) bereits selbst
+dispatcht, bevor überhaupt ein Player-Dokument existiert.
+
 ## Rasten-Button als Karten-Badge statt im Fluss (Live-Test-Fix, 2026-09-03)
 
 `.rest-button` (nur Singleplayer, `isSingleplayer()`) sitzt jetzt `position: absolute` oben

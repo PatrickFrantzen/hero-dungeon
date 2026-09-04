@@ -9,6 +9,9 @@ export const routes: Routes = [
   { path: '', redirectTo: 'startscreen', pathMatch: 'full' },
   { path: 'signIn', component: SigninComponent, ...canActivate(() => redirectLoggedInTo(['startscreen'])) },
   { path: 'signUp', component: SignupComponent, ...canActivate(() => redirectLoggedInTo(['startscreen'])) },
-  { path: 'startscreen', component: StartscreenComponent, ...canActivate(() => redirectUnauthorizedTo(['signIn'])) },
+  { path: 'startscreen', component: StartscreenComponent },
   { path: 'game/:id', component: GameComponent, ...canActivate(() => redirectUnauthorizedTo(['game/:id'])) },
+  // Singleplayer läuft komplett lokal (LocalSingleplayerSaveService) ohne Firestore/Auth - eigene
+  // Route ohne Guard, damit der Login-Zwang von game/:id (Multiplayer) hier nicht mitgilt.
+  { path: 'local-game/:id', component: GameComponent },
 ];

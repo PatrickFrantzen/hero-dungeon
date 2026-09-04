@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogGameSettingsComponent } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
@@ -15,6 +15,8 @@ import { StartTutorial } from 'src/app/actions/tutorial-action';
 import { GameFactoryService } from 'src/app/services/game-factory.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
+import { isLocalGameId } from 'src/app/services/local-game-id.util';
+import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 
 @Component({
     selector: 'app-startscreen',
@@ -31,6 +33,12 @@ export class StartscreenComponent implements OnInit {
   currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
   currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
 
+  /** "Meine Spielstände" (Issue #73) - lokale Singleplayer-Saves, die ohne Anmeldung fortgesetzt
+   * werden können. Einmal beim Betreten des Startscreens geladen; ein neu erstelltes Spiel legt
+   * hier keinen Eintrag mehr an, da nach dem Erstellen sofort zu /local-game/:id navigiert wird -
+   * die Liste aktualisiert sich beim nächsten Besuch des Startscreens von selbst. */
+  localSaves = signal<LocalSingleplayerSave[]>([]);
+
   constructor(
     public dialog:MatDialog,
     public auth: Auth,
@@ -39,7 +47,8 @@ export class StartscreenComponent implements OnInit {
     private store: Store,
     private JSON: ToJSONService,
     private gameFactory: GameFactoryService,
-    private gameRepo: GameRepositoryService
+    private gameRepo: GameRepositoryService,
+    private localSaveService: LocalSingleplayerSaveService
   ) {}
 
 
@@ -47,6 +56,23 @@ export class StartscreenComponent implements OnInit {
     if (!this.currentUserName()) {
       this.userService.getCurrentUser()
     }
+    this.localSaves.set(this.localSaveService.listSaves());
+  }
+
+  /** Fortsetzen eines lokalen Spielstands aus "Meine Spielstände" - GameComponent/
+   * PlayerHandComponent laden den Rest (Encounter/Hand/Held) selbst beim Betreten der Route,
+   * siehe PlayerHandComponent.loadLocalGameOnce(). */
+  resumeLocalSave(saveId: string): void {
+    this.store.dispatch(new CurrentGameAction(saveId));
+    this.route.navigate(['/local-game/' + saveId]);
+  }
+
+  /** `player` ist bewusst ein loses Feld-Bag (siehe local-singleplayer-save.service.ts) - vor
+   * der Heldenauswahl (frisch erstelltes, noch nie betretenes Spiel) existiert `choosenHero`
+   * noch nicht. */
+  heroNameOf(save: LocalSingleplayerSave): string {
+    const choosenHero = save.player['choosenHero'] as { heroname?: string } | undefined;
+    return choosenHero?.heroname ?? 'Fortsetzen';
   }
 
   newGame() {
@@ -85,7 +111,7 @@ export class StartscreenComponent implements OnInit {
 
     try {
       await this.gameRepo.createGame(gameId, this.JSON.gameToJSON(game));
-      this.route.navigate(['/game/' + gameId]);
+      this.route.navigate([(isLocalGameId(gameId) ? '/local-game/' : '/game/') + gameId]);
     } catch {
       this.startscreenError = 'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
     }

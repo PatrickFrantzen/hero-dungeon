@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { isLocalGameId } from 'src/app/services/local-game-id.util';
 
 import { DialogGameSettingsComponent } from './dialog-game-settings.component';
 
@@ -25,5 +26,26 @@ describe('DialogChooseHeroComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('generates a local- gameId for singleplayer instead of a Firestore gameId', async () => {
+    await TestBed.resetTestingModule().configureTestingModule({
+      imports: [DialogGameSettingsComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: MatDialogRef, useValue: { close: () => {} } },
+        { provide: MAT_DIALOG_DATA, useValue: { singleplayerMode: true } },
+      ],
+    }).compileComponents();
+    const singleplayerFixture = TestBed.createComponent(DialogGameSettingsComponent);
+    const singleplayerComponent = singleplayerFixture.componentInstance;
+    let result: { gameId: string } | undefined;
+    spyOn(singleplayerComponent as unknown as { closeWith: (r: unknown) => void }, 'closeWith').and.callFake(
+      (r: unknown) => (result = r as { gameId: string })
+    );
+
+    singleplayerComponent.getGameSettings(1, 'easy', 'ignored');
+
+    expect(isLocalGameId(result!.gameId)).toBeTrue();
   });
 });
