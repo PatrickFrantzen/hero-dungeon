@@ -36,6 +36,26 @@ export class HeropowerComponent {
     this.sheetOpen.update((open) => !open);
   }
 
+  /** Issue #93: ersetzt die zehn strukturell identischen `@if (heroName() == '...')`-Blöcke im
+   * Template (ein Block pro Held, alle mit demselben Icon) durch einen einzigen Klick-Handler,
+   * der per Lookup an die passende, unveränderte `heroPower*()`-Methode delegiert. */
+  private readonly heroPowerHandlers: Record<string, () => void> = {
+    Gladiator: () => this.heroPowerGladiator(),
+    Barbar: () => this.heroPowerBarbar(),
+    Zauberin: () => this.heroPowerZauberin(),
+    Magier: () => this.heroPowerMagier(),
+    Jägerin: () => this.heroPowerJaegerin(),
+    Waldläufer: () => this.heroPowerWaldlaeufer(),
+    Dieb: () => this.heroPowerDieb(),
+    Ninja: () => this.heroPowerNinja(),
+    Paladin: () => this.heroPowerPaladin(),
+    Walküre: () => this.heroPowerWalkuere(),
+  };
+
+  onActivateHeropower(): void {
+    this.heroPowerHandlers[this.heroName()]?.();
+  }
+
   constructor(
     private store: Store
   ) {}
