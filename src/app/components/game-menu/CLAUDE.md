@@ -34,7 +34,23 @@ durchgezogen).
   (`components/CLAUDE.md`, Abschnitt Dialoge), die die Verknüpfung selbst ausführt
   (`AuthFormService.linkAnonymousAccount()`).
 
-## Nicht Teil dieses Grundgerüsts
+## "Spielstand löschen" (Issue #85)
+
+Eigener, klar von "Verlassen" (reine Navigation, keine Datenänderung) getrennter Button, weil
+destruktiv — beide Modi öffnen zuerst `DialogConfirmComponent` (`components/CLAUDE.md`) über die
+private `openConfirmDialog()`, erst nach `{ confirmed: true }` passiert etwas:
+
+- **Singleplayer** (`confirmDeleteSingleplayerSave()`) — löscht direkt über
+  `LocalSingleplayerSaveService.deleteSave(gameId())` (analog zu `onSave()` oben) und navigiert
+  danach selbst zu `/startscreen`.
+- **Multiplayer** (`confirmDeleteMultiplayerGame()`) — `GameMenuComponent` kennt weder
+  `this.players` noch `currentUserId()` von `GameComponent`, kann die eigentliche Löschung also
+  nicht selbst ausführen: emittiert stattdessen einen neuen Output `deleteGame`, den
+  `GameComponent` auf `deleteOwnMultiplayerData()` verdrahtet (löscht das eigene Spieler-
+  Unterdokument + entfernt den eigenen Eintrag aus `choosenHeros`, siehe `services/CLAUDE.md`
+  und `game/CLAUDE.md`).
+
+## Nicht Teil dieses Grundgerüsts (folgt in PR 4/6, Issues #76/#78)
 
 Spiel-ID/Einladungslink anzeigen (Multiplayer) — laut
 `docs/done/login-multiplayer-onboarding-plan.md`, Abschnitt "Nicht im Scope", bewusst nicht

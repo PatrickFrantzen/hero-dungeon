@@ -55,6 +55,16 @@ describe('FirestoreRepositoryService', () => {
     );
   });
 
+  it('wraps a failing deleteDoc in a FirestoreOperationError with the offending path', async () => {
+    await expectAsync(service.deleteDoc([])).toBeRejectedWith(
+      jasmine.objectContaining({
+        name: 'FirestoreOperationError',
+        operation: 'deleteDoc',
+        path: [],
+      } as Partial<FirestoreOperationError>)
+    );
+  });
+
   describe('local- games (local Singleplayer, no Firestore access)', () => {
     afterEach(() => localStorage.clear());
 

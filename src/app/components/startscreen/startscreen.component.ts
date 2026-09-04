@@ -19,6 +19,7 @@ import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 import { AuthFormService } from 'src/app/services/auth-form.service';
 import { UserRepositoryService } from 'src/app/services/user-repository.service';
+import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
 
 @Component({
     selector: 'app-startscreen',
@@ -92,6 +93,23 @@ export class StartscreenComponent implements OnInit {
   heroNameOf(save: LocalSingleplayerSave): string {
     const choosenHero = save.player['choosenHero'] as { heroname?: string } | undefined;
     return choosenHero?.heroname ?? 'Fortsetzen';
+  }
+
+  /** "Spielstand löschen" (Issue #85) - destruktiv, deshalb erst nach Bestätigung per
+   * DialogConfirmComponent (analog zu GameMenuComponent.confirmDeleteSingleplayerSave()). */
+  deleteLocalSave(saveId: string): void {
+    this.dialog
+      .open<DialogConfirmComponent, unknown, { data: DialogConfirmResult }>(DialogConfirmComponent, {
+        data: { title: 'Spielstand löschen?', message: 'Dieser lokale Spielstand wird unwiderruflich gelöscht.' },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (!result?.data.confirmed) {
+          return;
+        }
+        this.localSaveService.deleteSave(saveId);
+        this.localSaves.set(this.localSaveService.listSaves());
+      });
   }
 
   /** Multiplayer-Einstieg (Issue #76): meldet vor dem eigentlichen Firestore-Zugriff per

@@ -8,6 +8,7 @@ import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 import { UserRepositoryService } from 'src/app/services/user-repository.service';
 import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
+import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
 
 /**
  * In-Game-Menü (Issue #74, PR 2 aus docs/planned/login-multiplayer-onboarding-plan.md) -
@@ -26,6 +27,10 @@ export class GameMenuComponent {
   isSingleplayer = input.required<boolean>();
   gameId = input.required<string>();
   leave = output<void>();
+  /** Issue #85: GameComponent führt das eigentliche Löschen aus (braucht dafür `this.players`/
+   * `currentUserId()`, die GameMenuComponent nicht kennt) - emittiert erst NACH Bestätigung
+   * durch den Nutzer (siehe confirmDeleteMultiplayerGame()). */
+  deleteGame = output<void>();
 
   isOpen = signal(false);
   /** Reine Bestätigungs-Anzeige - es gibt keinen zusätzlichen Schreibvorgang, weil jede
@@ -107,5 +112,43 @@ export class GameMenuComponent {
   saveLabel(save: LocalSingleplayerSave): string {
     const choosenHero = save.player['choosenHero'] as { heroname?: string } | undefined;
     return choosenHero?.heroname ?? save.saveId;
+  }
+
+  private openConfirmDialog(title: string, message: string, onConfirmed: () => void): void {
+    this.dialog
+      .open<DialogConfirmComponent, unknown, { data: DialogConfirmResult }>(DialogConfirmComponent, {
+        data: { title, message },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result?.data.confirmed) {
+          onConfirmed();
+        }
+      });
+  }
+
+  /** "Spielstand löschen" für Singleplayer (Issue #85) - im Unterschied zu "Verlassen"
+   * (`onLeave()`, reine Navigation) eine destruktive Aktion, deshalb eigener Button + eigener
+   * Bestätigungsdialog. Löscht direkt über LocalSingleplayerSaveService (analog zu onSave()
+   * oben) und navigiert danach zum Startscreen. */
+  confirmDeleteSingleplayerSave(): void {
+    this.openConfirmDialog(
+      'Spielstand löschen?',
+      'Dieser lokale Spielstand wird unwiderruflich gelöscht.',
+      () => {
+        this.localSaves.deleteSave(this.gameId());
+        this.router.navigate(['/startscreen']);
+      }
+    );
+  }
+
+  /** "Spielstand löschen" für Multiplayer (Issue #85) - emittiert `deleteGame` erst nach
+   * Bestätigung; GameComponent führt die eigentliche Löschung aus (siehe deleteGame oben). */
+  confirmDeleteMultiplayerGame(): void {
+    this.openConfirmDialog(
+      'Spielstand löschen?',
+      'Du wirst aus diesem Spiel entfernt. Die übrigen Mitspieler können ohne dich weiterspielen.',
+      () => this.deleteGame.emit()
+    );
   }
 }

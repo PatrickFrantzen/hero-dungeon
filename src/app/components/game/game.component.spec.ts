@@ -18,6 +18,8 @@ import {
   ensureFirebaseTestAppInitialized,
   firestoreTestProviders,
 } from 'src/testing/firebase-test-app';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { CurrentUserAction } from 'src/app/actions/currentUser-action';
@@ -34,7 +36,7 @@ describe('GameComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState, TutorialState]), GameComponent],
+    imports: [MatDialogModule, RouterTestingModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState, TutorialState]), GameComponent],
     providers: [...firestoreTestProviders(), { provide: Auth, useValue: { currentUser: null } }],
     schemas: [NO_ERRORS_SCHEMA],
 })
@@ -160,6 +162,45 @@ describe('GameComponent', () => {
 
       expect(createPlayer).toHaveBeenCalled();
       expect(dialogOpen).toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteOwnMultiplayerData (Issue #85, "Spielstand löschen" für Multiplayer)', () => {
+    beforeEach(() => {
+      store.dispatch(new CurrentUserAction('current-user-id', 'Alice'));
+      component.players = [
+        { playerId: 'current-user-id', playerName: 'Alice', playerHero: 'Barbar' },
+        { playerId: 'other-player-id', playerName: 'Bob', playerHero: 'Dieb' },
+      ];
+    });
+
+    it('deletes the own player document and removes only the own entry from choosenHeros', async () => {
+      const playerRepo = TestBed.inject(PlayerRepositoryService);
+      const deleteOwnPlayerDoc = spyOn(playerRepo, 'deleteOwnPlayerDoc').and.resolveTo();
+      const gameRepo = TestBed.inject(GameRepositoryService);
+      const addPlayerToGame = spyOn(gameRepo, 'addPlayerToGame').and.resolveTo();
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      await component.deleteOwnMultiplayerData();
+
+      expect(deleteOwnPlayerDoc).toHaveBeenCalledWith('test-game-id', 'current-user-id');
+      expect(addPlayerToGame).toHaveBeenCalledWith('test-game-id', [
+        { playerId: 'other-player-id', playerName: 'Bob', playerHero: 'Dieb' },
+      ]);
+      expect(router.navigate).toHaveBeenCalledWith(['/startscreen']);
+    });
+
+    it('shows an error and does not navigate away when deletion fails', async () => {
+      const playerRepo = TestBed.inject(PlayerRepositoryService);
+      spyOn(playerRepo, 'deleteOwnPlayerDoc').and.rejectWith(new Error('offline'));
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      await component.deleteOwnMultiplayerData();
+
+      expect(component.loadError()).toBeTruthy();
+      expect(router.navigate).not.toHaveBeenCalled();
     });
   });
 });

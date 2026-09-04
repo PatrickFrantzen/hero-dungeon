@@ -44,4 +44,12 @@ export class LocalSingleplayerSaveService {
     const saves = this.listSaves().map((existing) => (existing.saveId === saveId ? save : existing));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saves));
   }
+
+  /** Issue #85: Singleplayer-Spielstand vollständig lokal löschen (im Unterschied zu
+   * Multiplayer, wo nur der löschende Spieler entfernt wird, siehe
+   * PlayerRepositoryService.deleteOwnPlayerDoc()/GameRepositoryService.addPlayerToGame()). */
+  deleteSave(saveId: string): void {
+    const saves = this.listSaves().filter((existing) => existing.saveId !== saveId);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saves));
+  }
 }

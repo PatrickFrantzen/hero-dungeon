@@ -137,3 +137,11 @@ demselben Muster (Struktur/Test-Stil 1:1 von `dialog-account-offer/` übernommen
 Migrationsschritt nötig, da `linkWithCredential()` dieselbe `uid` behält. Ein Fehlschlag (z.B.
 E-Mail bereits vergeben) zeigt `errorMessage` im Dialog und lässt den bestehenden anonymen
 Account unverändert nutzbar, `disableClose` ebenfalls `false`.
+
+**`dialog-confirm/` (Issue #85)** — generischer Bestätigungsdialog (`DialogConfirmData: {
+title, message }` per `MAT_DIALOG_DATA`, analog zu `dialog-heropower/`s Injection-Stil) für
+destruktive Aktionen ohne Rückgängig-Option (aktuell "Spielstand löschen", Singleplayer wie
+Multiplayer, siehe `game-menu/CLAUDE.md` und `services/CLAUDE.md`). Reines "Dialog sammelt nur
+Eingaben"-Muster — der Aufrufer entscheidet nach `{ confirmed: true }`, was tatsächlich gelöscht
+wird, der Dialog selbst führt keinen Seiteneffekt aus. `disableClose` bewusst `false`
+(Standard): Abbrechen ist immer ein gültiger, folgenloser Pfad bei einer Bestätigung.

@@ -4,6 +4,7 @@
         [isSingleplayer]="currentNumberOfPlayers() === 1"
         [gameId]="currentGameId()"
         (leave)="backToStartscreen()"
+        (deleteGame)="deleteOwnMultiplayerData()"
     ></app-game-menu>
 
     @if (loadError()) {

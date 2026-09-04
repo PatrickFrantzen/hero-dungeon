@@ -57,4 +57,13 @@ describe('PlayerRepositoryService', () => {
     expect(spy).toHaveBeenCalledWith(['games', 'game-1', 'player', 'player-1']);
     expect(result).toEqual({ userId: 'player-1' });
   });
+
+  it('deleteOwnPlayerDoc deletes the games/{gameId}/player/{playerId} document via the repository (Issue #85)', async () => {
+    const repo = TestBed.inject(FirestoreRepositoryService);
+    const spy = spyOn(repo, 'deleteDoc').and.resolveTo();
+
+    await service.deleteOwnPlayerDoc('game-1', 'player-1');
+
+    expect(spy).toHaveBeenCalledWith(['games', 'game-1', 'player', 'player-1']);
+  });
 });

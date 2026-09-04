@@ -4,6 +4,7 @@ import {
   Firestore,
   QueryConstraint,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -102,6 +103,21 @@ export class FirestoreRepositoryService {
       await updateDoc(doc(this.firestore, path.join('/')), update as DocumentData);
     } catch (cause) {
       throw new FirestoreOperationError('updateFields', path, cause);
+    }
+  }
+
+  /**
+   * Issue #85: löscht ein Dokument. Bewusst **ohne** lokalen Zweig (im Unterschied zu
+   * getDoc()/setDoc()/setDocMerge()/updateFields() oben) - der einzige heutige Aufrufer
+   * (PlayerRepositoryService.deleteOwnPlayerDoc(), Multiplayer "Spielstand löschen") wird nie
+   * mit einer lokalen gameId aufgerufen: ein lokaler Singleplayer-Spielstand wird komplett über
+   * LocalSingleplayerSaveService.deleteSave() gelöscht, nicht dokumentweise.
+   */
+  async deleteDoc(path: string[]): Promise<void> {
+    try {
+      await deleteDoc(doc(this.firestore, path.join('/')));
+    } catch (cause) {
+      throw new FirestoreOperationError('deleteDoc', path, cause);
     }
   }
 

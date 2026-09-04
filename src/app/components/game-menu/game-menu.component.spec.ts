@@ -13,6 +13,7 @@ import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
+import { DialogConfirmComponent } from '../dialog-confirm/dialog-confirm.component';
 import {
   ensureAngularFireSchedulersInitialized,
   ensureFirebaseTestAppInitialized,
@@ -173,6 +174,67 @@ describe('GameMenuComponent', () => {
 
       auth.currentUser = { isAnonymous: true };
       expect(component.canLinkAccount()).toBeFalse();
+    });
+  });
+
+  describe('"Spielstand löschen" (Issue #85)', () => {
+    it('confirmDeleteSingleplayerSave asks for confirmation before deleting anything', () => {
+      const dialog = TestBed.inject(MatDialog);
+      const dialogOpen = spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+      const localSaves = TestBed.inject(LocalSingleplayerSaveService);
+      const deleteSave = spyOn(localSaves, 'deleteSave');
+
+      component.confirmDeleteSingleplayerSave();
+
+      expect(dialogOpen).toHaveBeenCalledWith(DialogConfirmComponent, jasmine.anything());
+      expect(deleteSave).not.toHaveBeenCalled();
+    });
+
+    it('confirmDeleteSingleplayerSave deletes the save and navigates to /startscreen once confirmed', () => {
+      const dialog = TestBed.inject(MatDialog);
+      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of({ data: { confirmed: true } }) } as never);
+      const localSaves = TestBed.inject(LocalSingleplayerSaveService);
+      const deleteSave = spyOn(localSaves, 'deleteSave');
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      component.confirmDeleteSingleplayerSave();
+
+      expect(deleteSave).toHaveBeenCalledWith('local-1');
+      expect(router.navigate).toHaveBeenCalledWith(['/startscreen']);
+    });
+
+    it('confirmDeleteSingleplayerSave does nothing when the dialog is cancelled', () => {
+      const dialog = TestBed.inject(MatDialog);
+      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+      const localSaves = TestBed.inject(LocalSingleplayerSaveService);
+      const deleteSave = spyOn(localSaves, 'deleteSave');
+
+      component.confirmDeleteSingleplayerSave();
+
+      expect(deleteSave).not.toHaveBeenCalled();
+    });
+
+    it('confirmDeleteMultiplayerGame emits deleteGame only once confirmed', () => {
+      const dialog = TestBed.inject(MatDialog);
+      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of({ data: { confirmed: true } }) } as never);
+      const deleteGameEmitted = jasmine.createSpy('deleteGame');
+      component.deleteGame.subscribe(deleteGameEmitted);
+
+      component.confirmDeleteMultiplayerGame();
+
+      expect(deleteGameEmitted).toHaveBeenCalled();
+    });
+
+    it('confirmDeleteMultiplayerGame does not emit deleteGame when cancelled', () => {
+      const dialog = TestBed.inject(MatDialog);
+      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+      const deleteGameEmitted = jasmine.createSpy('deleteGame');
+      component.deleteGame.subscribe(deleteGameEmitted);
+
+      component.confirmDeleteMultiplayerGame();
+
+      expect(deleteGameEmitted).not.toHaveBeenCalled();
     });
   });
 });
