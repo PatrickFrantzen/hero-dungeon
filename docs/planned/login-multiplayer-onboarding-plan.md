@@ -11,8 +11,15 @@ und damit `CardPlayService`/`GameComponent` brauchen dafür **keine** eigene Fal
 fortgesetzten Save aber einmalig nach (`loadLocalGameOnce()`); Startscreen-Sektion "Meine
 Spielstände" (Fortsetzen per Klick). Per Playwright-Smoke-Test verifiziert: Startscreen → Held
 wählen → Handkarten sichtbar → Reload auf `/local-game/:id` bleibt ohne Redirect und lädt
-Handkarten erneut → Save erscheint in "Meine Spielstände" — alles ohne jede Anmeldung. PR 2
-(In-Game-Menü) und PR 3 (Account-Angebot beim Spielende) sind noch offen.
+Handkarten erneut → Save erscheint in "Meine Spielstände" — alles ohne jede Anmeldung.
+
+**PR 2 umgesetzt** (Issue #74, TDD): `GameMenuComponent` (`components/game-menu/CLAUDE.md`),
+permanent sichtbar in `game.component.html`. Singleplayer: "Speichern" (reine Bestätigung, kein
+Extra-Write — jede Aktion persistiert bereits synchron), "Spielstände laden" (identische Liste
+wie Startscreen), "Verlassen". Multiplayer: nur "Verlassen" + Hinweistext "Automatisch
+gespeichert". Per Playwright verifiziert: Menü öffnet während laufendem Spiel, Speichern-Klick
+zeigt Bestätigung, Reload behält denselben Stand. PR 3 (Account-Angebot beim Spielende) ist noch
+offen.
 
 Zielbild mit Patrick abgestimmt und fixiert (2026-09-04) — kein Optionsvergleich mehr, sondern
 eine konkrete Entscheidung mit nummerierten PRs. Diese Diagnose ergänzt zwei bestehende Pläne,

@@ -28,6 +28,7 @@ diesem Verzeichnis gelesen/bearbeitet wird — dafür ist diese Tabelle da, nich
 | `src/app/components/enemy/` | Container/Presenter-Paar für den Gegner-Screen |
 | `src/app/components/heropower/` | Container/Presenter-Paar für Heldenfähigkeiten |
 | `src/app/components/tutorial/` | Interaktives Onboarding-Overlay (Issue #54, abgeschlossen) |
+| `src/app/components/game-menu/` | In-Game-Menü (Issue #74) — Speichern/Spielstände laden/Verlassen |
 | `src/app/services/` | Repository- vs. Business-Logik-Services, welcher Service wofür zuständig ist |
 | `src/app/states/` | NGXS-States, Registrierung, Zusammenspiel actions/states/selectors |
 | `src/models/` | Helden-/Monster-/Spiel-Datenmodell |

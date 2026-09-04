@@ -1,5 +1,11 @@
 <div class="mainfield">
 
+    <app-game-menu
+        [isSingleplayer]="currentNumberOfPlayers() === 1"
+        [gameId]="currentGameId()"
+        (leave)="backToStartscreen()"
+    ></app-game-menu>
+
     @if (loadError()) {
         <div class="game-error">{{ loadError() }}</div>
     }

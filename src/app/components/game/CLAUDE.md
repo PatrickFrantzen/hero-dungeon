@@ -1,9 +1,13 @@
 # game/ — GameComponent (Host + Dungeon-Timer)
 
-`GameComponent` hostet `EnemyContainerComponent`/`PlayerHandComponent`, lädt beim Einstieg das
-Spieldokument (`checkIfPlayerIsAlreadyPartOfGame()`) und rendert den Dungeon-Countdown-Timer.
-Kein eigener Container/Presenter-Split hier — die Komponente selbst orchestriert Firestore-Reads
+`GameComponent` hostet `EnemyContainerComponent`/`PlayerHandComponent`/`GameMenuComponent`
+(Issue #74, `game-menu/CLAUDE.md`), lädt beim Einstieg das Spieldokument
+(`checkIfPlayerIsAlreadyPartOfGame()`) und rendert den Dungeon-Countdown-Timer. Kein eigener
+Container/Presenter-Split hier — die Komponente selbst orchestriert Firestore-Reads
 (`GameRepositoryService`/`PlayerRepositoryService`) und Store-Dispatches.
+`GameMenuComponent` bekommt `[isSingleplayer]="currentNumberOfPlayers() === 1"` und
+`[gameId]="currentGameId()"` als Inputs, `(leave)` ist auf das bestehende
+`backToStartscreen()` verdrahtet — permanent sichtbar, unabhängig von `currentGameStatus()`.
 
 ## Dungeon-Timer — Feature ist über mehrere Verzeichnisse verteilt
 
