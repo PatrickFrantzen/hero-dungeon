@@ -49,9 +49,10 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   Ein `undefined`-Mob-Eintrag führt beim `.shift()` in `GameFactoryService.buildNewGame()`/
   `CardPlayService.continueToNextDungeon()` zu einem TypeError, sobald er zufällig zuerst gezogen
   wird — `monster.class.spec.ts` hat einen Regressionstest über alle Boss-/Schwierigkeits-/
-  Spielerzahl-Kombinationen dafür. `loadSoloQuests()` filtert zusätzlich `type !== 'Mini-Boss'`
-  heraus (neben `name !== 'Chaos'`) — der Singleplayer-Modus zieht laut
-  `docs/planned/singleplayer-mode-plan.md` nur normale Event-Karten, keine Mini-Bosse.
+  Spielerzahl-Kombinationen dafür. `loadSoloQuests()` filtert nur noch `name !== 'Chaos'` heraus
+  (seit Issue #90) — Mini-Bosse sind seither auch im Singleplayer Teil des Quest-Ziehpools,
+  genau wie im Multiplayer; ausschließlich "Chaos" bleibt gefiltert, weil es eine
+  Zielspieler-Weitergabe voraussetzt, die es im Solo-Modus nicht gibt.
 - **`monster-collection.data.ts`** — die eigentlichen Monster-Datenliterale, bewusst aus der
   Klasse ausgelagert (gleiches Prinzip wie `hero-definitions.ts`: Daten getrennt von Logik).
   `questCollection` enthält alle 5 Mini-Bosse (`type: 'Mini-Boss'`) und 4 Ereigniskarten; nur

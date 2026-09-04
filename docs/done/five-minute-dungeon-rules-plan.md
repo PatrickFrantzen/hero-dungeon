@@ -89,9 +89,11 @@ TODO 9 umgesetzt (Event-Handling im Mehrspieler + Verhinderung-Karte + Mini-Boss
   dem Dungeon auf. Ihr müsst beide besiegen, bevor es weitergeht") passt nicht in den
   bestehenden Ein-`currentEnemy`-nach-dem-anderen-Loop und ist nicht umgesetzt — verbleibt als
   offener Punkt für einen künftigen Plan.
-- `Monster.loadSoloQuests()` filtert zusätzlich Mini-Bosse heraus (`type !== 'Mini-Boss'`), damit
-  der Singleplayer-Modus bei seiner dokumentierten Regel bleibt (`singleplayer-mode-plan.md`:
-  "5 normale Monster + 1 Event").
+- `Monster.loadSoloQuests()` filterte zusätzlich Mini-Bosse heraus (`type !== 'Mini-Boss'`), damit
+  der Singleplayer-Modus bei seiner damals dokumentierten Regel blieb (`singleplayer-mode-plan.md`:
+  "5 normale Monster + 1 Event"). **Nachtrag (2026-09-04, Issue #90):** diese Einschränkung wurde
+  auf Wunsch von Patrick wieder aufgehoben — Mini-Bosse sind seither auch im Singleplayer Teil
+  des Quest-Ziehpools, `loadSoloQuests()` filtert nur noch `name !== 'Chaos'`.
 
 **TODO 10 (Mini-Bosse vor Heldenfähigkeiten schützen) ist als Nebeneffekt bereits erfüllt, ohne
 Codeänderung nötig gewesen:** `heropower.component.ts`s `heroPowerBarbar()`/`heroPowerGladiator()`/
