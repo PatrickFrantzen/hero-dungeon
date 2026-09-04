@@ -123,3 +123,12 @@ bereits bestehenden `[disabled]`-Pattern in `DialogGameSettingsComponent` (dort 
 `FormControl.invalid`). Ein neuer Dialog mit Pflichtauswahl sollte demselben Muster folgen:
 `disableClose: true` an der `.open()`-Aufrufstelle + `[disabled]` auf dem Bestätigungs-Button,
 solange keine gültige Auswahl vorliegt.
+
+**Ausnahme vom "Dialog sammelt nur Eingaben"-Muster:** `dialog-account-offer/` (Issue #75,
+`GameComponent`, "Account erstellen?" bei Singleplayer-Spielende) führt Registrierung +
+Migration selbst aus (`AuthFormService.register()` + `LocalSaveMigrationService.migrateAll()`),
+statt wie die drei obigen Dialoge nur Formulardaten zurückzugeben und den Aufrufer async
+arbeiten zu lassen — analog zu `SignupComponent.register()`, weil der Dialog ohnehin schon
+Formular-/Fehlerzustand hält. `disableClose` ist hier bewusst `false` (Standard): Ablehnen ist
+ein legitimer, folgenloser Pfad, kein "Klick geht ins Leere" wie bei den Pflichtauswahl-Dialogen
+oben.

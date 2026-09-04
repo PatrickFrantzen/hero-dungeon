@@ -9,6 +9,20 @@ Container/Presenter-Split hier — die Komponente selbst orchestriert Firestore-
 `[gameId]="currentGameId()"` als Inputs, `(leave)` ist auf das bestehende
 `backToStartscreen()` verdrahtet — permanent sichtbar, unabhängig von `currentGameStatus()`.
 
+## Account-Angebot bei Singleplayer-Spielende (Issue #75, PR 3)
+
+`offerAccountCreationOnGameEnd()` (per `effect()` im Konstruktor, da eine reine
+`computed()`/Template-Bedingung keinen "gerade erst passiert"-Übergang erkennen kann) öffnet
+`DialogAccountOfferComponent`, sobald `currentGameStatus()` von einem anderen Wert nach
+`'won'`/`'lost'` wechselt (`lastGameStatus`-Vergleich, kein Signal - reine Buchhaltung, keine
+eigene Reaktivität nötig) **und** das Spiel lokal + Solo + ohne Account ist
+(`isLocalGameId(currentGameId())`, `currentNumberOfPlayers() === 1`, `!currentUserId()`).
+`retryCampaign()`/`continueToNextDungeon()` setzen `gameStatus` wieder auf `'playing'` zurück,
+ein späteres erneutes `'lost'`/`'won'` ist daher eine neue Transition und öffnet den Dialog
+erneut (Zielbild: "Frage erscheint beim nächsten Spielende erneut"). Der Dialog selbst
+(`dialog-account-offer/`) führt Registrierung + Migration aus, `GameComponent` wertet das
+Ergebnis nicht weiter aus (kein Navigations-/State-Wechsel nach Abschluss).
+
 ## Dungeon-Timer — Feature ist über mehrere Verzeichnisse verteilt
 
 Ein persistierter Fünf-Minuten-Timer, der mit der ersten gespielten Karte startet und das Spiel
