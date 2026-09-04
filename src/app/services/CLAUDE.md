@@ -25,6 +25,14 @@ Repository-Services unten gebündelt.
   (`GameStats`, siehe `src/app/components/game/CLAUDE.md`).
 - **`current-user.service.ts`** — Auth-State (`@angular/fire/auth`) + zugehöriges
   Firestore-Nutzerdokument.
+- **`local-singleplayer-save.service.ts`** — CRUD (`listSaves()`/`createSave()`/`getSave()`/
+  `updateSave()`) für lokale Singleplayer-Spielstände, komplett ohne Firestore/Auth (LocalStorage,
+  Schlüssel `hero-dungeon.local-singleplayer-saves`). Persistenz-Unterbau für
+  `docs/planned/login-multiplayer-onboarding-plan.md` PR 1 (Issue #73) — ein `LocalSingleplayerSave`
+  bündelt `game: Game` + `player` (Held/Hand-/Nachzieh-/Ablagestapel), analog zu `games/{gameId}`
+  + Player-Dokument, nur lokal serialisiert. Noch **nicht** an `GameComponent`/`CardPlayService`/
+  `PlayerHandComponent` angebunden (folgt als nächster TDD-Schritt in Issue #73) — aktuell nur der
+  CRUD-Kern.
 
 ## Business-Logik-Services (kein/kaum Firestore-Zugriff)
 
