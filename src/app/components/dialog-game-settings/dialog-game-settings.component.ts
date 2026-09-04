@@ -30,9 +30,9 @@ export class DialogGameSettingsComponent extends BaseDialogComponent<GameSetting
 
   selectedValue:string = 'easy';
   difficulties: Difficulty[] = [
-    {value: 'easy', viewValue: 'easy'},
-    {value: 'medium', viewValue: 'medium'},
-    {value: 'hard', viewValue: 'hard'}
+    {value: 'easy', viewValue: 'Lehrling'},
+    {value: 'medium', viewValue: 'Held'},
+    {value: 'hard', viewValue: 'Dungeon-Master'}
   ];
 
   constructor(dialogRef: MatDialogRef<DialogGameSettingsComponent, { data: GameSettingsDialogResult }>) {

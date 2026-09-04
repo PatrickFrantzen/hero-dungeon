@@ -32,14 +32,14 @@ describe('GameFactoryService', () => {
     expect(Array.isArray(game.allBosses)).toBeTrue();
   });
 
-  it('buildNewGame creates six pre-boss encounters for a singleplayer game', () => {
+  it('buildNewGame creates ten pre-boss encounters for a singleplayer game on Lehrling-Schwierigkeit (Issue #86)', () => {
     const game = service.buildNewGame(1, 'easy', 'solo-1');
     const preBossEncounters = [game.currentEnemy, ...game.Mob];
 
     expect(game.numberOfPlayers).toBe(1);
     expect(game.currentBoss.name).toBe('Baby-Barbar');
-    expect(preBossEncounters.length).toBe(6);
-    expect(preBossEncounters.filter((entry) => entry.token.includes('event')).length).toBe(1);
+    expect(preBossEncounters.length).toBe(10);
+    expect(preBossEncounters.filter((entry) => entry.token.includes('event')).length).toBe(2);
     expect(preBossEncounters.some((entry) => entry.name === 'Chaos')).toBeFalse();
   });
 });

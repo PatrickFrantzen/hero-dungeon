@@ -48,4 +48,12 @@ describe('DialogChooseHeroComponent', () => {
 
     expect(isLocalGameId(result!.gameId)).toBeTrue();
   });
+
+  it('labels the difficulty options as Lehrling/Held/Dungeon-Master while keeping easy/medium/hard as values (Issue #86)', () => {
+    expect(component.difficulties).toEqual([
+      { value: 'easy', viewValue: 'Lehrling' },
+      { value: 'medium', viewValue: 'Held' },
+      { value: 'hard', viewValue: 'Dungeon-Master' },
+    ]);
+  });
 });
