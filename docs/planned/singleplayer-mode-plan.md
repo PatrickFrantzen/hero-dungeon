@@ -13,6 +13,13 @@ kompilieren, können in dieser Umgebung aber nicht starten, weil kein Chrome/Chr
 `ChromeHeadlessCI` installiert ist. Firestore-Rules-Tests können in dieser Umgebung nicht starten,
 weil Java fehlt.
 
+**Nachtrag (2026-09-04, Issue #86):** Die weiter unten (und in PR 1) beschriebene feste Regel "5
+normale Monster + 1 Event" für `numberOfPlayers === 1` gilt nicht mehr — der Schwierigkeitsgrad
+(Lehrling/Held/Dungeon-Master, vormals easy/medium/hard) wirkt sich inzwischen wie im
+Multiplayer auf die Monster-/Event-Anzahl pro Boss aus (`Monster.createMob()`, Details/Tabelle
+in Issue #86 und `src/models/CLAUDE.md`). Die ursprüngliche 5+1-Regel war zuvor unabhängig vom
+gewählten Schwierigkeitsgrad hart codiert — ein Bug, kein bewusstes Feature.
+
 **Nachtrag (2026-09-04):** Die weiter unten offene "Produktentscheidung" (Variante A vs. B) ist
 mit `docs/planned/login-multiplayer-onboarding-plan.md` entschieden — **Variante B (echter
 Offline/Local-Singleplayer)** ist die beschlossene Richtung. Der Persistenz-/Login-Umbau dafür

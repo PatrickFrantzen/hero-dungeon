@@ -19,44 +19,43 @@ export class Monster {
   createMob(numberOfPlayers: number, currentBossName: string, difficulty: string) {
     if (currentBossName == 'Baby-Barbar') {
       if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 10, 4, 12, 6, 14, 8, 16, 10);
-        // this.getMonsterForGame(numberOfPlayers, 1, 0, 12, 6, 14, 8, 16, 10); // zum testen
+        this.getMonsterForGame(numberOfPlayers, 8, 2, 10, 4, 12, 6, 14, 8, 16, 10);
       } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 14, 4, 16, 6, 18, 8, 20, 10);
+        this.getMonsterForGame(numberOfPlayers, 12, 2, 14, 4, 16, 6, 18, 8, 20, 10);
       } else {
-        this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
+        this.getMonsterForGame(numberOfPlayers, 16, 2, 18, 4, 20, 6, 22, 8, 24, 10);
       }
     } else if (currentBossName == 'Der Flecken-Schrecken') {
       if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 14, 4, 16, 6, 18, 8, 20, 10);
+        this.getMonsterForGame(numberOfPlayers, 12, 2, 14, 4, 16, 6, 18, 8, 20, 10);
       } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
+        this.getMonsterForGame(numberOfPlayers, 16, 2, 18, 4, 20, 6, 22, 8, 24, 10);
       } else {
-        this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
+        this.getMonsterForGame(numberOfPlayers, 20, 2, 22, 4, 24, 6, 26, 8, 28, 10);
       }
     } else if (currentBossName == 'Zola, die Gorgone') {
       if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 18, 4, 20, 6, 22, 8, 24, 10);
+        this.getMonsterForGame(numberOfPlayers, 16, 2, 18, 4, 20, 6, 22, 8, 24, 10);
       } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
+        this.getMonsterForGame(numberOfPlayers, 20, 2, 22, 4, 24, 6, 26, 8, 28, 10);
       } else {
-        this.getMonsterForGame(numberOfPlayers, 26, 4, 28, 6, 30, 8, 32, 10);
+        this.getMonsterForGame(numberOfPlayers, 24, 2, 26, 4, 28, 6, 30, 8, 32, 10);
       }
     } else if (currentBossName == 'Verdammt, ein Drache!!!') {
       if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 22, 4, 24, 6, 26, 8, 28, 10);
+        this.getMonsterForGame(numberOfPlayers, 20, 2, 22, 4, 24, 6, 26, 8, 28, 10);
       } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 26, 4, 28, 6, 30, 8, 32, 10);
+        this.getMonsterForGame(numberOfPlayers, 24, 2, 26, 4, 28, 6, 30, 8, 32, 10);
       } else {
-        this.getMonsterForGame(numberOfPlayers, 30, 4, 32, 6, 34, 8, 36, 10);
+        this.getMonsterForGame(numberOfPlayers, 28, 2, 30, 4, 32, 6, 34, 8, 36, 10);
       }
     } else {
       if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 26, 4, 28, 6, 30, 8, 32, 10);
+        this.getMonsterForGame(numberOfPlayers, 24, 2, 26, 4, 28, 6, 30, 8, 32, 10);
       } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 30, 4, 32, 6, 34, 8, 36, 10);
+        this.getMonsterForGame(numberOfPlayers, 28, 2, 30, 4, 32, 6, 34, 8, 36, 10);
       } else {
-        this.getMonsterForGame(numberOfPlayers, 34, 4, 36, 6, 38, 8, 40, 10);
+        this.getMonsterForGame(numberOfPlayers, 32, 2, 34, 4, 36, 6, 38, 8, 40, 10);
       }
     }
     return this.Mob;
@@ -64,6 +63,8 @@ export class Monster {
 
   getMonsterForGame(
     numberOfPlayers: number,
+    monsterOne: number,
+    questOne: number,
     monsterTwo: number,
     questTwo: number,
     monsterThree: number,
@@ -75,8 +76,8 @@ export class Monster {
   ) {
     switch (numberOfPlayers) {
       case 1:
-        this.loadMonster(5);
-        this.loadSoloQuests(1);
+        this.loadMonster(monsterOne);
+        this.loadSoloQuests(questOne);
         break;
       case 2:
         this.loadMonster(monsterTwo);
@@ -132,9 +133,10 @@ export class Monster {
     }
   }
 
-  /** Singleplayer zieht nur Event-Karten (siehe singleplayer-mode-plan.md: "5 normale Monster +
-   * 1 Event") - 'Chaos' fällt raus, weil es eine Zielspieler-Weitergabe voraussetzt, die es im
-   * Solo-Modus nicht gibt; Mini-Bosse fallen raus, weil sie laut Plan nicht Teil des
+  /** Singleplayer zieht nur normale Event-Karten, keine Mini-Bosse/Chaos (siehe
+   * singleplayer-mode-plan.md und Issue #86 für die Monster-/Event-Anzahl pro Boss/
+   * Schwierigkeitsgrad) - 'Chaos' fällt raus, weil es eine Zielspieler-Weitergabe voraussetzt,
+   * die es im Solo-Modus nicht gibt; Mini-Bosse fallen raus, weil sie laut Plan nicht Teil des
    * Solo-Dungeons sind. */
   loadSoloQuests(numberOfQuestCards: number) {
     let questCollectionCopy = this.questCollection.filter((quest) => quest.name !== 'Chaos' && quest.type !== 'Mini-Boss');

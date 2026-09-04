@@ -23,7 +23,23 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
 ## monster/
 
 - **`monster.class.ts`** (`Monster`) — Auswahl-/Schwierigkeitslogik (welcher Gegner als
-  nächstes kommt, ~130 Zeilen). `loadMonster()`/`loadQuests()`/`loadSoloQuests()` deckeln die
+  nächstes kommt, ~130 Zeilen). `createMob(numberOfPlayers, currentBossName, difficulty)` ist
+  für `numberOfPlayers === 1` (Singleplayer) und `2..5` (Multiplayer) identisch aufgebaut: pro
+  Boss (`Baby-Barbar`/`Der Flecken-Schrecken`/`Zola, die Gorgone`/`Verdammt, ein Drache!!!`/
+  `Der Dungeon-Overlord`, letzterer als `else`-Zweig) und Schwierigkeitsgrad (`easy`/`medium`/
+  `hard` — Anzeige-Labels seit Issue #86 "Lehrling"/"Held"/"Dungeon-Master", siehe
+  `dialog-game-settings.component.ts`) eine
+  eigene Monster-/Event-Kartenzahl. Die Multiplayer-Werte (2-5 Spieler) sind 1:1 aus der
+  Originalanleitung übernommen (per Foto-Vergleich aller 5 Boss-Karten verifiziert, 2026-09-04);
+  die Singleplayer-Spalte (`monsterOne`/`questOne` in `getMonsterForGame()`) hat **kein**
+  Original-Vorbild (die Anleitung kennt keine 1-Spieler-Variante) und ist eine mit Patrick
+  abgestimmte Fortschreibung derselben linearen Formel (Monster = `(2×Spieler+6) +
+  4×(Boss-Index-1) + 4×Schwierigkeits-Index`, Events konstant `2×Spieler`) auf einen Spieler —
+  Details/Tabelle in Issue #86. Vorher war `case 1:` in `getMonsterForGame()` fest auf 5 Monster
+  + 1 Event codiert, unabhängig vom gewählten Schwierigkeitsgrad — ein Bug (Issue #86), kein
+  bewusstes Feature; `docs/planned/singleplayer-mode-plan.md` beschreibt das noch als
+  ursprüngliche PR-1-Regel, hat aber inzwischen einen Nachtrag dazu.
+  `loadMonster()`/`loadQuests()`/`loadSoloQuests()` deckeln die
   angeforderte Kartenzahl per `Math.min()` auf die tatsächlich verfügbare Anzahl in der
   jeweiligen Collection — ohne den Schutz pusht die Ziehschleife `undefined`-Einträge, sobald
   mehr Karten angefordert werden als vorhanden sind. `questTwo`/`-Drei`/`-Vier`/`-Fünf` in
