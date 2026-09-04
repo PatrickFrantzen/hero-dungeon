@@ -181,3 +181,20 @@ lesen, nicht nur die ursprüngliche Diagnose.
 - Bei neuen Komponenten/Services das bereits etablierte Signal-Pattern verwenden (`input()`,
   `output()`, `store.selectSignal()`, `computed()`, `effect()`, `ChangeDetectionStrategy.OnPush`)
   statt zur älteren Decorator-/`@Select()`-API zurückzufallen.
+
+## Agent skills
+
+### Issue tracker
+
+Issues leben in GitHub Issues (github.com/PatrickFrantzen/hero-dungeon), Zugriff über die
+`gh`-CLI. Siehe `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Standard-Label-Vokabular unverändert übernommen (`needs-triage`, `needs-info`,
+`ready-for-agent`, `ready-for-human`, `wontfix`). Siehe `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-Context-Layout (`CONTEXT.md` + `docs/adr/` am Repo-Root — `docs/adr/` existiert noch
+nicht, wird von `/domain-modeling` bei Bedarf angelegt). Siehe `docs/agents/domain.md`.
