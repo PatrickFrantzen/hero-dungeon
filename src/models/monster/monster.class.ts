@@ -116,11 +116,11 @@ export class Monster {
   /** Math.min() schützt davor, mehr Karten zu ziehen als in `questCollection` verfügbar sind -
    * ohne den Schutz pusht die Schleife `undefined` ins Mob-Array, sobald `questCollectionCopy`
    * durch vorherige splice()-Aufrufe leer ist (Math.random() * 0 = 0, splice(0,1) auf leerem
-   * Array liefert []). Das tritt konkret ab 3 Spielern auf, weil questTwo/-Drei/-Vier/-Fünf
-   * (4/6/8/10) den aktuell nur 4 aktiven Event-Kartentypen entwachsen sind (Mini-Bosse sind
-   * auskommentiert, siehe docs/done/five-minute-dungeon-rules-plan.md TODO 9) - ein
-   * `undefined`-Eintrag im Mob-Array führt beim späteren `.shift()` zu einem TypeError, sobald
-   * er zufällig an erster Stelle landet. */
+   * Array liefert []). Das tritt konkret bei 5 Spielern auf, weil questFive (10) die aktuell nur
+   * 9 aktiven Quest-Kartentypen übersteigt ("Hinterhalt" bleibt auskommentiert, siehe
+   * docs/done/five-minute-dungeon-rules-plan.md TODO 9) - ein `undefined`-Eintrag im Mob-Array
+   * führt beim späteren `.shift()` zu einem TypeError, sobald er zufällig an erster Stelle
+   * landet. */
   loadQuests(numberOfQuestCards: number) {
     let questCollectionCopy = [...this.questCollection];
     const count = Math.min(numberOfQuestCards, questCollectionCopy.length);
@@ -133,13 +133,11 @@ export class Monster {
     }
   }
 
-  /** Singleplayer zieht nur normale Event-Karten, keine Mini-Bosse/Chaos (siehe
-   * singleplayer-mode-plan.md und Issue #86 für die Monster-/Event-Anzahl pro Boss/
-   * Schwierigkeitsgrad) - 'Chaos' fällt raus, weil es eine Zielspieler-Weitergabe voraussetzt,
-   * die es im Solo-Modus nicht gibt; Mini-Bosse fallen raus, weil sie laut Plan nicht Teil des
-   * Solo-Dungeons sind. */
+  /** Singleplayer zieht aus demselben Quest-Pool wie Multiplayer (inkl. Mini-Bosse), nur 'Chaos'
+   * fällt raus, weil es eine Zielspieler-Weitergabe voraussetzt, die es im Solo-Modus nicht gibt
+   * (siehe Issue #86 für die Monster-/Event-Anzahl pro Boss/Schwierigkeitsgrad). */
   loadSoloQuests(numberOfQuestCards: number) {
-    let questCollectionCopy = this.questCollection.filter((quest) => quest.name !== 'Chaos' && quest.type !== 'Mini-Boss');
+    let questCollectionCopy = this.questCollection.filter((quest) => quest.name !== 'Chaos');
     const count = Math.min(numberOfQuestCards, questCollectionCopy.length);
     for (let i = 0; i < count; i++) {
       const randomIndex = Math.floor(
