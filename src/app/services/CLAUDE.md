@@ -54,9 +54,12 @@ Repository-Services unten gebündelt.
   zu `games/{gameId}` + Player-Dokument, nur lokal serialisiert. Inzwischen über
   `LocalGameDocumentStoreService`/`FirestoreRepositoryService` an `GameComponent`/
   `CardPlayService`/`PlayerHandComponent` angebunden (siehe `firestore-repository.service.ts`
-  unten) — `PlayerHandComponent.ngOnInit()` überspringt für eine lokale gameId zusätzlich das
-  Firestore-Live-Sync komplett (kein Mitspieler, dessen Züge ankommen könnten; der Store wird
-  bei jeder eigenen Aktion ohnehin synchron aktualisiert, siehe `player-hand/CLAUDE.md`).
+  unten) — `PlayerHandComponent.ngOnInit()` überspringt für eine lokale gameId das
+  Firestore-Live-Sync (kein Mitspieler, dessen Züge ankommen könnten; der Store wird bei jeder
+  eigenen Aktion ohnehin synchron aktualisiert), lädt aber per `loadLocalGameOnce()` einmalig
+  denselben Store-Aufbau, den sonst der erste Firestore-Snapshot liefert — sonst bliebe der Store
+  beim **Fortsetzen** eines bestehenden lokalen Saves (z.B. nach einem Reload) leer, siehe
+  `player-hand/CLAUDE.md`.
 
 ## Business-Logik-Services (kein/kaum Firestore-Zugriff)
 

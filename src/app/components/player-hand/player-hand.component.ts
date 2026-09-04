@@ -21,6 +21,7 @@ import { CardPlayService } from 'src/app/services/card-play.service';
 import { FirestoreOperationError } from 'src/app/services/firestore-repository.service';
 import { FirestoreSyncService } from 'src/app/services/firestore-sync.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
+import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { HeropowerService } from 'src/app/services/heropower.service';
 import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { HeropowerDialogPlayer } from '../dialog-results';
@@ -180,6 +181,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private gameRepo: GameRepositoryService,
+    private playerRepo: PlayerRepositoryService,
     private firestoreSync: FirestoreSyncService,
     private heropowerService: HeropowerService,
     private cardPlayService: CardPlayService,
@@ -190,9 +192,12 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     // Lokale Singleplayer-Spielstände (Issue #73) brauchen kein Firestore-Live-Sync: es gibt
     // keine Mitspieler, deren Züge ankommen könnten, und jede eigene Aktion aktualisiert den
     // Store bereits synchron über CardPlayService/HeropowerService (siehe reportWriteFailure()-
-    // Kommentar unten) - ohne diesen Guard würde eine "reine Singleplayer, ohne Anmeldung"-Partie
-    // trotzdem eine echte Firestore-Verbindung aufbauen.
+    // Kommentar unten). Ein Spielstand, der (z.B. nach einem Reload) nicht neu angelegt, sondern
+    // aus einem bestehenden lokalen Save fortgesetzt wird, braucht trotzdem EINMAL denselben
+    // Store-Aufbau, den sonst der erste Firestore-Snapshot liefert - loadLocalGameOnce() bildet
+    // genau das nach, nur aus LocalGameDocumentStoreService statt einem onSnapshot-Callback.
     if (isLocalGameId(this.currentGameId())) {
+      this.loadLocalGameOnce();
       return;
     }
     this.gameSubscr = this.firestoreSync.watchGamesCollection().subscribe(async () => {
@@ -215,6 +220,37 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           },
         });
     });
+  }
+
+  /** Einmaliger Ersatz für die Firestore-Live-Sync-Kette oben, nur für lokale Singleplayer-
+   * Spielstände: lädt Game-/Player-Dokument je einmal aus LocalGameDocumentStoreService (über
+   * gameRepo/playerRepo, die für eine lokale gameId automatisch dorthin umleiten) und dispatcht
+   * dieselben Actions wie updateFromDatabase()/updatePlayerFromDatabase(). Ein brandneues Spiel
+   * hat noch kein Player-Dokument (choosenHero fehlt, bis GameComponent.openDialog() ihn
+   * anlegt) - data/playerData bleiben dann undefined, was hier bewusst zu keinem Dispatch führt,
+   * da GameComponent/openDialog() die initialen Werte für diesen Fall bereits selbst dispatcht. */
+  private async loadLocalGameOnce(): Promise<void> {
+    let data: DocumentData | undefined;
+    try {
+      data = await this.gameRepo.getGame(this.currentGameId());
+    } catch {
+      this.loadError.set('Der Spielstand konnte nicht geladen werden. Bitte Seite neu laden.');
+      return;
+    }
+    if (data) {
+      this.updateFromDatabase(data);
+    }
+
+    let playerData: DocumentData | undefined;
+    try {
+      playerData = await this.playerRepo.getPlayer(this.currentGameId(), this.currentPlayerId());
+    } catch {
+      this.loadError.set('Die Verbindung zum Spiel wurde unterbrochen. Bitte Seite neu laden.');
+      return;
+    }
+    if (playerData) {
+      this.updatePlayerFromDatabase(playerData);
+    }
   }
 
   /** Kurzer Vibrations-Pulse bei Karte spielen/Heropower auslösen (Issue #51). iOS Safari kennt
