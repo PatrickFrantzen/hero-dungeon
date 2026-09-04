@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DocumentData, serverTimestamp } from '@angular/fire/firestore';
 import { GameStats, GameStatus } from 'src/models/game';
 import { Mob } from 'src/models/monster/monster.class';
@@ -14,7 +14,7 @@ import { isLocalGameId } from './local-game-id.util';
   providedIn: 'root',
 })
 export class GameRepositoryService {
-  constructor(private repo: FirestoreRepositoryService) {}
+  private repo = inject(FirestoreRepositoryService);
 
   /**
    * `lastActivityAt` (Issue #76, PR 4) ist die Grundlage der 7-Tage-TTL-Policy auf anonyme

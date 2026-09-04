@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, output } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -24,6 +24,9 @@ import { HeropowerComponent } from '../heropower.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeropowerContainerComponent {
+  private store = inject(Store);
+  private diebService = inject(DiebService);
+
   gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
   currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   user = this.store.selectSignal(CurrentUserSelectors.currentUser);
@@ -46,7 +49,7 @@ export class HeropowerContainerComponent {
   // *when* a heropower resolves and delegates the *how* back up to its parent.
   readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere' | 'magier'>();
 
-  constructor(private store: Store, private diebService: DiebService) {
+  constructor() {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
     effect(() => {
       const enemy = this.enemy();

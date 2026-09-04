@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatButton } from '@angular/material/button';
 import { BaseDialogComponent } from '../dialog-base.component';
@@ -28,12 +28,7 @@ export interface DialogConfirmResult {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogConfirmComponent extends BaseDialogComponent<DialogConfirmResult> {
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: DialogConfirmData,
-    dialogRef: MatDialogRef<DialogConfirmComponent, { data: DialogConfirmResult }>
-  ) {
-    super(dialogRef);
-  }
+  data = inject<DialogConfirmData>(MAT_DIALOG_DATA);
 
   onConfirm(): void {
     this.closeWith({ confirmed: true });

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { createHero } from 'src/models/helden/hero.class';
 import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
 import { CdkScrollable } from '@angular/cdk/scrolling';
@@ -37,10 +37,6 @@ export class DialogChooseHeroComponent extends BaseDialogComponent<ChooseHeroDia
       value: createHero(def.id, this.dialogData?.useExtraDeck ?? false).toJSON(),
       viewValue: def.heroName,
     }));
-
-  constructor(dialogRef: MatDialogRef<DialogChooseHeroComponent, { data: ChooseHeroDialogResult }>) {
-    super(dialogRef);
-  }
 
   getChoosenHero(choosenHero: Heros | undefined) {
     if (!choosenHero) {
