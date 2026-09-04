@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
-import { NgxsModule } from '@ngxs/store';
+import { NgxsModule, Store } from '@ngxs/store';
+import { CurrentGameAction } from 'src/app/actions/currentGame-action';
 import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CardStackState } from 'src/app/states/cardStack-state';
 import { cardsInHandState } from 'src/app/states/cardsInHand-state';
@@ -40,5 +41,14 @@ describe('PlayerHandComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('does not subscribe to Firestore sync for a local- game (no network access needed for solo)', () => {
+    TestBed.inject(Store).dispatch(new CurrentGameAction('local-1'));
+    const localFixture = TestBed.createComponent(PlayerHandComponent);
+
+    localFixture.detectChanges();
+
+    expect(localFixture.componentInstance.gameSubscr).toBeUndefined();
   });
 });

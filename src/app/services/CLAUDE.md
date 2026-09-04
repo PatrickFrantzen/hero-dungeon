@@ -9,7 +9,26 @@ Repository-Services unten gebündelt.
 
 - **`firestore-repository.service.ts`** — Basis: `FirestoreOperationError` (typisierter Fehler
   mit Operation + Pfad) und DI-injiziertes `Firestore`. Andere Repository-Services bauen darauf
-  auf statt jeweils eigene Fehlerbehandlung zu erfinden.
+  auf statt jeweils eigene Fehlerbehandlung zu erfinden. **Einziger Umschaltpunkt lokal/
+  Firestore (Issue #73):** `getDoc()`/`setDoc()`/`updateFields()` prüfen zuerst, ob `path[1]`
+  (die gameId) laut `local-game-id.util.ts` (`isLocalGameId()`, Präfix `local-`) ein lokaler
+  Singleplayer-Spielstand ist — falls ja, wird komplett ohne Firestore-Zugriff an
+  `LocalGameDocumentStoreService` delegiert. Da `GameRepositoryService`/`PlayerRepositoryService`
+  ausnahmslos über diese drei Basismethoden gehen, brauchen **keine** ihrer ~21 spezifischen
+  Methoden (`updateCurrentEnemyToken()`, `updatePlayerCards()`, usw.) eine eigene lokal/Firestore-
+  Fallunterscheidung — genauso wenig `CardPlayService`/`HeropowerService`/`GameComponent`, die
+  nur über diese Repository-Services schreiben.
+- **`local-game-id.util.ts`** — `isLocalGameId(gameId)`/`LOCAL_GAME_ID_PREFIX` (`'local-'`).
+  `DialogGameSettingsComponent.getGameSettings()` vergibt diesen Präfix beim Anlegen eines
+  Singleplayer-Spiels; `StartscreenComponent.createGame()` navigiert bei einer lokalen gameId auf
+  `local-game/:id` statt `game/:id` (siehe `app.routes.ts`).
+- **`local-game-document-store.service.ts`** — bildet dieselbe getDoc/setDoc/updateFields-
+  Semantik wie `FirestoreRepositoryService` ab, aber auf `LocalSingleplayerSaveService`
+  (LocalStorage) statt Firestore. Kennt nur die zwei Pfadformen, die
+  `GameRepositoryService`/`PlayerRepositoryService` verwenden (`['games', gameId]` bzw.
+  `['games', gameId, 'player', playerId]`) — ein `setDoc` auf den Game-Pfad legt bei Bedarf einen
+  neuen `LocalSingleplayerSave` an (Bootstrap, `player` startet als leeres Feld-Bag, bis der
+  Player-Pfad geschrieben wird).
 - **`firestore-sync.service.ts`** — die beiden Live-Subscriptions, die `PlayerHandComponent`
   braucht (`watchGamesCollection()`, `watchPlayerDoc()`), inkl. `onSnapshot`-Fehler-Callback,
   der als `FirestoreOperationError` auf den Observable-Error-Kanal gemeldet wird statt
@@ -29,10 +48,15 @@ Repository-Services unten gebündelt.
   `updateSave()`) für lokale Singleplayer-Spielstände, komplett ohne Firestore/Auth (LocalStorage,
   Schlüssel `hero-dungeon.local-singleplayer-saves`). Persistenz-Unterbau für
   `docs/planned/login-multiplayer-onboarding-plan.md` PR 1 (Issue #73) — ein `LocalSingleplayerSave`
-  bündelt `game: Game` + `player` (Held/Hand-/Nachzieh-/Ablagestapel), analog zu `games/{gameId}`
-  + Player-Dokument, nur lokal serialisiert. Noch **nicht** an `GameComponent`/`CardPlayService`/
-  `PlayerHandComponent` angebunden (folgt als nächster TDD-Schritt in Issue #73) — aktuell nur der
-  CRUD-Kern.
+  bündelt `game: Game` + `player` (loses Feld-Bag, `Record<string, unknown>` — Spieler-Dokumente
+  werden von `GameRepositoryService`/`PlayerRepositoryService` per generischem `updateFields()`
+  mit beliebigen Teilmengen beschrieben, ein festes Interface würde das nicht abbilden), analog
+  zu `games/{gameId}` + Player-Dokument, nur lokal serialisiert. Inzwischen über
+  `LocalGameDocumentStoreService`/`FirestoreRepositoryService` an `GameComponent`/
+  `CardPlayService`/`PlayerHandComponent` angebunden (siehe `firestore-repository.service.ts`
+  unten) — `PlayerHandComponent.ngOnInit()` überspringt für eine lokale gameId zusätzlich das
+  Firestore-Live-Sync komplett (kein Mitspieler, dessen Züge ankommen könnten; der Store wird
+  bei jeder eigenen Aktion ohnehin synchron aktualisiert, siehe `player-hand/CLAUDE.md`).
 
 ## Business-Logik-Services (kein/kaum Firestore-Zugriff)
 

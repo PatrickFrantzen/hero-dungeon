@@ -15,6 +15,7 @@ import { StartTutorial } from 'src/app/actions/tutorial-action';
 import { GameFactoryService } from 'src/app/services/game-factory.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
+import { isLocalGameId } from 'src/app/services/local-game-id.util';
 
 @Component({
     selector: 'app-startscreen',
@@ -85,7 +86,7 @@ export class StartscreenComponent implements OnInit {
 
     try {
       await this.gameRepo.createGame(gameId, this.JSON.gameToJSON(game));
-      this.route.navigate(['/game/' + gameId]);
+      this.route.navigate([(isLocalGameId(gameId) ? '/local-game/' : '/game/') + gameId]);
     } catch {
       this.startscreenError = 'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
     }

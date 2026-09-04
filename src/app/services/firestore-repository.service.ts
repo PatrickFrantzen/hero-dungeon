@@ -12,6 +12,8 @@ import {
   updateDoc,
   where,
 } from '@angular/fire/firestore';
+import { LocalGameDocumentStoreService } from './local-game-document-store.service';
+import { isLocalGameId } from './local-game-id.util';
 
 export class FirestoreOperationError extends Error {
   constructor(
@@ -38,8 +40,20 @@ export class FirestoreOperationError extends Error {
 })
 export class FirestoreRepositoryService {
   private firestore = inject(Firestore);
+  private localStore = inject(LocalGameDocumentStoreService);
+
+  /** `games/{gameId}`- bzw. `games/{gameId}/player/{playerId}`-Pfade mit lokaler gameId
+   * (path[1], siehe local-game-id.util.ts) werden komplett ohne Firestore-Zugriff über
+   * LocalGameDocumentStoreService bedient - der einzige Umschaltpunkt zwischen lokalem
+   * Singleplayer und Firestore-Multiplayer, siehe Issue #73. */
+  private isLocalPath(path: string[]): boolean {
+    return path.length >= 2 && isLocalGameId(path[1]);
+  }
 
   async getDoc<T extends DocumentData>(path: string[]): Promise<T | undefined> {
+    if (this.isLocalPath(path)) {
+      return this.localStore.getDoc<T>(path);
+    }
     try {
       const snap = await getDoc(doc(this.firestore, path.join('/')));
       return snap.data() as T | undefined;
@@ -49,6 +63,10 @@ export class FirestoreRepositoryService {
   }
 
   async setDoc<T extends object>(path: string[], data: T): Promise<void> {
+    if (this.isLocalPath(path)) {
+      this.localStore.setDoc(path, data);
+      return;
+    }
     try {
       await setDoc(doc(this.firestore, path.join('/')), data);
     } catch (cause) {
@@ -57,6 +75,10 @@ export class FirestoreRepositoryService {
   }
 
   async updateFields<T extends object>(path: string[], update: Partial<T>): Promise<void> {
+    if (this.isLocalPath(path)) {
+      this.localStore.updateFields(path, update);
+      return;
+    }
     try {
       await updateDoc(doc(this.firestore, path.join('/')), update as DocumentData);
     } catch (cause) {

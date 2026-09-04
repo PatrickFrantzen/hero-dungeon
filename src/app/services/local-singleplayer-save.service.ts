@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Game } from 'src/models/game';
 
-export interface LocalSingleplayerSavePlayer {
-  playerId: string;
-  choosenHero: unknown;
-  handstack: string[];
-  cardstack: string[];
-  deliveryStack: string[];
-}
+/** Bewusst ein loses Feld-Bag statt eines festen Interfaces: `games/{gameId}/player/{playerId}`
+ * wird in GameRepositoryService/PlayerRepositoryService per generischem `updateFields(path,
+ * patch: Partial<T>)` beschrieben (beliebige Teilmengen von userId/userNickname/choosenHero/
+ * handstack/cardstack/deliveryStack je nach Aufrufstelle) - ein lokales Äquivalent muss dieselbe
+ * Flexibilität haben, siehe LocalGameDocumentStoreService. */
+export type LocalSingleplayerSavePlayer = Record<string, unknown>;
 
 export interface LocalSingleplayerSave {
   saveId: string;

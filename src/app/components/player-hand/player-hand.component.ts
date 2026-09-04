@@ -22,6 +22,7 @@ import { FirestoreOperationError } from 'src/app/services/firestore-repository.s
 import { FirestoreSyncService } from 'src/app/services/firestore-sync.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { HeropowerService } from 'src/app/services/heropower.service';
+import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { HeropowerDialogPlayer } from '../dialog-results';
 import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.component';
 import { NgStyle } from '@angular/common';
@@ -173,7 +174,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.dragDeltaY.set(0);
   }
 
-  gameSubscr!: Subscription;
+  gameSubscr?: Subscription;
   playerSubsc?: Subscription;
 
   constructor(
@@ -186,6 +187,14 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Lokale Singleplayer-Spielstände (Issue #73) brauchen kein Firestore-Live-Sync: es gibt
+    // keine Mitspieler, deren Züge ankommen könnten, und jede eigene Aktion aktualisiert den
+    // Store bereits synchron über CardPlayService/HeropowerService (siehe reportWriteFailure()-
+    // Kommentar unten) - ohne diesen Guard würde eine "reine Singleplayer, ohne Anmeldung"-Partie
+    // trotzdem eine echte Firestore-Verbindung aufbauen.
+    if (isLocalGameId(this.currentGameId())) {
+      return;
+    }
     this.gameSubscr = this.firestoreSync.watchGamesCollection().subscribe(async () => {
       let data: DocumentData | undefined;
       try {
@@ -415,7 +424,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.gameSubscr.unsubscribe();
+    this.gameSubscr?.unsubscribe();
     this.playerSubsc?.unsubscribe();
   }
 }
