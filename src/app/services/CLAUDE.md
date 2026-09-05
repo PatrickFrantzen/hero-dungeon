@@ -197,7 +197,22 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
 ## Business-Logik-Services (kein/kaum Firestore-Zugriff)
 
 - **`card-play.service.ts`** — Karten-/Encounter-Regeln (Karte ausspielen, Encounter-Auflösung
-  inkl. Singleplayer-Sonderfälle). **Fehlerbehandlung (2026-09-05, Architecture-Review-Kandidat
+  inkl. Singleplayer-Sonderfälle). **Strategy-Extraktion, in Arbeit (2026-09-05, siehe
+  To-Do.md):** die Sonderkarten ohne Zielspieler-Auswahl (bisher `if (card === 'x')`-Zweige in
+  `chooseCard()`, aufrufend an private `resolve*()`-Methoden) werden schrittweise als eigene,
+  unabhängig testbare `CardEffect`-Klassen unter `src/app/services/card-effects/` extrahiert und
+  über die neue `cardEffects`-Lookup-Map (statt weiterer `if`-Zweige) aufgelöst.
+  `buildCardEffectContext(gameId, playerId)` bindet dafür die bestehenden privaten
+  Hilfsmethoden (`ensureGameTimerStarted`/`resumeGameTimerIfPaused`/`saveHand`/
+  `checkForNextEnemy`/Store-Dispatch) in ein schmales `CardEffectContext`-Interface (
+  `card-effects/card-effect.types.ts`) — keine Duplikation, die Strategie kennt weder Store noch
+  Repository-Services. Erste Karte umgesetzt: `magischeBombe` (`card-effects/
+  magische-bombe.effect.ts` + eigenes Spec, unabhängig von TestBed/NGXS-Store testbar). Noch
+  offen: `göttlicherSchild`/`heiligeHandgranate`/`heiltrank`/`joker` folgen im selben Muster. Die
+  fünf Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung) bleiben bewusst
+  eigenständige öffentliche `resolve*()`-Methoden (andere Aufrufkonvention — direkt von
+  `PlayerHandComponent` nach Dialog-Auswahl, nicht über `chooseCard()`/die Lookup-Map).
+  **Fehlerbehandlung (2026-09-05, Architecture-Review-Kandidat
   1):** alle öffentlichen Methoden geben ein `Promise<void>` zurück statt (wie zuvor) einen
   `reportWriteFailure`-Callback als letzten Parameter entgegenzunehmen — die Promise rejected,
   sobald einer der intern ausgelösten, weiterhin fire-and-forget laufenden Firestore-Writes

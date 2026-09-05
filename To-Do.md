@@ -46,10 +46,15 @@ externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patri
 6. **`card-play.service.ts` refactorn** (859 Zeilen, größte Datei im Repo) — God-Service mit
    ~40 privaten Hilfsmethoden für die Kartenregeln, Auswahl der Karten-Logik läuft über lange
    `if (card === 'x')`-Ketten statt über ein Strategy-Pattern oder eine Lookup-Table.
-   - Kartenwirkungen in einzelne Strategie-Klassen/Funktionen auslagern, eine pro Kartentyp
-     (z.B. `spende.strategy.ts`, `stehlen.strategy.ts`, `rest.strategy.ts`), mit gemeinsamem
-     Interface (`CardEffect { apply(context): GameStateDelta }` o.ä.)
-   - Card-Typ → Strategie-Zuordnung über eine Lookup-Map statt `if`/`switch`-Ketten auflösen
+   **In Arbeit (TDD, 2026-09-05):** Seams abgestimmt — `CardEffect { apply(ctx, playerId, card,
+   currHand) }` mit schmalem `CardEffectContext`-Interface (`card-effects/card-effect.types.ts`),
+   Lookup-Map `cardEffects` in `CardPlayService` statt weiterer `if`-Zweige. Erste Karte
+   (`magischeBombe`) extrahiert + eigenes, TestBed-unabhängiges Spec grün, bestehende
+   `card-play.service.spec.ts` (15 Fälle) unverändert grün. Details: `src/app/services/CLAUDE.md`.
+   - [x] Kartenwirkungen in einzelne Strategie-Klassen auslagern — `magischeBombe` erledigt,
+     `göttlicherSchild`/`heiligeHandgranate`/`heiltrank`/`joker` folgen im selben Muster
+   - [x] Card-Typ → Strategie-Zuordnung über eine Lookup-Map statt `if`/`switch`-Ketten auflösen
+     (für die bereits extrahierten Karten; die vier verbleibenden `if`-Zweige folgen)
    - Die drei separaten `bumpStat`-Implementierungen (`card-play.service.ts`,
      `heropower.service.ts`, `dieb.service.ts`) im Zuge dessen neu bewerten — aktuell laut
      `src/app/services/CLAUDE.md` bewusst getrennt gehalten

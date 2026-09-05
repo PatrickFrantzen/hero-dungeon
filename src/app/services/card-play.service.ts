@@ -24,6 +24,8 @@ import { GameFactoryService } from './game-factory.service';
 import { startHandSize } from 'src/models/start-hand-size.util';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
+import { CardEffect, CardEffectContext } from './card-effects/card-effect.types';
+import { MagischeBombeEffect } from './card-effects/magische-bombe.effect';
 
 // Feste Gegnertypen (monster-collection.data.ts) - Ereigniskarten tragen im `type`-Feld
 // stattdessen ihren Fließtext-Effekt (z.B. "Jeder gibt seine Handkarten..."), damit lassen sie
@@ -78,6 +80,16 @@ export class CardPlayService {
   private currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
   private currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
 
+  /** Kartenwirkungen ohne Zielspieler-Auswahl, die sich als eigenständige, unabhängig
+   * testbare CardEffect-Strategie ausdrücken lassen - Lookup statt weiterer `if (card === 'x')`-
+   * Zweige in chooseCard(). Wird schrittweise um die übrigen Sonderkarten ergänzt
+   * (göttlicherSchild/heiligeHandgranate/heiltrank/joker), siehe To-Do.md. Die fünf
+   * Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung) bleiben bewusst außen vor -
+   * andere Aufrufkonvention (direkt von PlayerHandComponent nach Dialog-Auswahl). */
+  private readonly cardEffects: Record<string, CardEffect> = {
+    magischeBombe: new MagischeBombeEffect(),
+  };
+
   constructor(
     private store: Store,
     private gameRepo: GameRepositoryService,
@@ -109,6 +121,11 @@ export class CardPlayService {
 
     this.store.dispatch(new UpdateHeropowerArray([]));
 
+    const effect = this.cardEffects[card];
+    if (effect) {
+      return effect.apply(this.buildCardEffectContext(gameId, playerId), playerId, card, currHand);
+    }
+
     if (card === 'göttlicherSchild') {
       return this.resolveGoettlicherSchild(gameId, playerId, card, currHand);
     }
@@ -123,10 +140,6 @@ export class CardPlayService {
 
     if (card === 'joker') {
       return this.resolveJoker(gameId, playerId, card, currHand);
-    }
-
-    if (card === 'magischeBombe') {
-      return this.resolveMagischeBombe(gameId, playerId, card, currHand);
     }
 
     const writes: Promise<void>[] = [];
@@ -583,27 +596,19 @@ export class CardPlayService {
     return Promise.all(writes).then(() => undefined);
   }
 
-  /** Magier/Zauberin "Magische Bombe": bringt alle 5 Symbole auf einmal, muss aber nicht alle
-   * nutzen (Anleitung S. 8) - entfernt von der aktuellen Bedrohung je ein Vorkommen jeder der 5
-   * Symbolfarben, falls vorhanden. Wirkt nicht gegen Ereigniskarten. */
-  private resolveMagischeBombe(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const currEne = [...this.currentEnemy().token];
-    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return Promise.resolve();
-
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId)];
-
-    ['red', 'yellow', 'green', 'blue', 'purple'].forEach((symbol) => {
-      const index = currEne.indexOf(symbol);
-      if (index !== -1) currEne.splice(index, 1);
-    });
-
-    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
-    writes.push(this.checkForNextEnemy(gameId, this.currentEnemy()));
-
-    writes.push(this.saveHand(gameId, playerId, card, currHand));
-
-    return Promise.all(writes).then(() => undefined);
+  /** Baut die CardEffectContext-Adapter-Schicht für eine gegebene gameId - bindet die
+   * bestehenden privaten Hilfsmethoden (keine Duplikation), damit eine CardEffect-Strategie sie
+   * ohne Kenntnis von Store/gameId/Repository-Services aufrufen kann. */
+  private buildCardEffectContext(gameId: string, playerId: string): CardEffectContext {
+    return {
+      currentEnemy: () => this.currentEnemy(),
+      dispatchMonsterTokenUpdate: (tokens) => this.store.dispatch(new UpdateMonsterTokenArray(tokens)),
+      updateCurrentEnemyToken: (mob) => this.gameRepo.updateCurrentEnemyToken(gameId, mob),
+      checkForNextEnemy: (mob) => this.checkForNextEnemy(gameId, mob),
+      ensureGameTimerStarted: () => this.ensureGameTimerStarted(gameId),
+      resumeGameTimerIfPaused: () => this.resumeGameTimerIfPaused(gameId),
+      saveHand: (card, currHand) => this.saveHand(gameId, playerId, card, currHand),
+    };
   }
 
   private checkHandsize(gameId: string, playerId: string, handsize: string[], discardedCards: string[]): WithWrites<string[]> {
