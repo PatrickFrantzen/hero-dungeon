@@ -78,10 +78,12 @@ sind die Eck-Badges des Schild-Symbols blau statt gelb eingefärbt (stilistische
 Artwork, keine falsche Zuordnung — mit Patrick abgeglichen) — die Karte zeigt Schwert (rot) +
 Schild (gelb/Verteidigung).
 
-**Bewusste Inkonsistenz (weiterhin offen):** Die vier reinen Doppel-Karten (`yellow_yellow.png`,
-`purple_purple.png`, `blue_blue.png`, `green_green.png`) sind eigenständige Bilddateien, keine
-programmatisch aus den Einzelsymbolen zusammengesetzten Grafiken — sie bleiben im alten
-Diagonal-Schnitt-Stil, bis auch dafür neues Artwork vorliegt.
+**Inkonsistenz behoben (2026-09-05):** Die vier reinen Doppel-Karten (`yellow_yellow.png`,
+`purple_purple.png`, `blue_blue.png`, `green_green.png`) sowie `red_red.png` haben jetzt
+ebenfalls von Patrick geliefertes Artwork im "Münzen"-Stil (gleiches Verfahren: Pillow, 450px
+Breite, 256-Farben quantisiert) statt des alten Diagonal-Schnitt-Stils — bleiben weiterhin
+eigenständige Bilddateien, keine programmatisch aus den Einzelsymbolen zusammengesetzten
+Grafiken. Dateinamen unverändert, keine Code-Änderung nötig.
 
 ## Swipe-Geste zum Karte-Spielen (Issue #52)
 
