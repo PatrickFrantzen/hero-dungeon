@@ -112,6 +112,23 @@ describe('CardPlayService', () => {
     expect(playerRepo.updateDeliveryStack).toHaveBeenCalledWith('game-1', 'player-1', ['red']);
   });
 
+  it('restCard counts the rested card towards the cardsCycled statistic (Bug A)', () => {
+    seedGameState({ hand: ['red', 'blue'], cardStack: ['green'], enemy: { name: 'Goblin', type: 'Monster', token: ['yellow'] } });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const playerRepo = TestBed.inject(PlayerRepositoryService);
+    const statsSpy = spyOn(gameRepo, 'updateStats').and.resolveTo();
+    spyOn(playerRepo, 'updateHandstack').and.resolveTo();
+    spyOn(playerRepo, 'updateCardstack').and.resolveTo();
+    spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
+    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+
+    service.restCard('game-1', 'player-1', 'red', reportWriteFailure);
+
+    expect(store.selectSnapshot((state) => state.currentGame.stats.cardsCycled)).toBe(1);
+    expect(statsSpy).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ cardsCycled: 1 }));
+  });
+
   it('resolveEvent applies Plötzliche Krankheit by discarding the full hand and drawing back to five', () => {
     seedGameState({
       hand: ['red', 'blue'],

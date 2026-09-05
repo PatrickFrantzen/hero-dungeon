@@ -236,8 +236,9 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   und nachgezogen wird, solange irgendwo (Hand/Nachzieh-/Ablagestapel) noch eine Karte liegt. Die
   zweite Verlustbedingung ("Gruppe kann die geforderten Symbole nicht mehr aufbringen") ist
   bewusst nicht umgesetzt — siehe TODO 11 im Plan.
-  `bumpStat()`/`ensureGameTimerStarted()`/`checkForNextEnemy()`/`drawCards()` schreiben zusätzlich
-  die Kampagnen-Statistik (`GameStats`) fort — Details in `src/app/components/game/CLAUDE.md`.
+  `bumpStat()`/`ensureGameTimerStarted()`/`checkForNextEnemy()`/`drawCards()`/`restCard()`
+  schreiben zusätzlich die Kampagnen-Statistik (`GameStats`) fort — Details in
+  `src/app/components/game/CLAUDE.md`.
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,
@@ -247,7 +248,12 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   zählen über ihr eigenes `bumpStat()` (bewusst nicht mit `CardPlayService.bumpStat()` geteilt)
   die `heropowersUsed`-Statistik hoch.
 - **`dieb.service.ts`** — heldenspezifische Sonderlogik für den Dieb (Solo-Held im
-  Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`).
+  Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`). Zählt seit einem Bugfix
+  (2026-09-05) `heropowersUsed` (`GameStats`) nach jeder Nutzung selbst hoch — eigenes,
+  drittes `bumpStat`-Analogon zu `CardPlayService`/`HeropowerService` (bewusst nicht geteilt,
+  gleiche Begründung wie dort), da der Dieb nicht über `HeropowerService` läuft. Vorher fehlte
+  der Zähler hier komplett (Statistik-Anzeige "Genutzte Heldenfähigkeiten" blieb beim Dieb immer
+  0), siehe `game/CLAUDE.md` Abschnitt Kampagnen-Statistik.
 - **`game-factory.service.ts`** — baut ein neues `Game`-Objekt (Startscreen: Spiel erstellen).
 - **`auth-form.service.ts`** — Login/Register-Aufrufe + Mapping der Firebase-Error-Codes auf
   deutsche Meldungen; von allen Auth-bezogenen Formularen genutzt statt eigenem Error-Mapping

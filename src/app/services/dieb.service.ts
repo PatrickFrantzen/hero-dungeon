@@ -5,7 +5,9 @@ import { CurrentCardStackSelector } from '../selectors/currentCardStack-selector
 import { CurrentGameSelectors } from '../selectors/currentGame-selector';
 import { CurrentUserSelectors } from '../selectors/currentUser-selectors';
 import { UpdateCurrentHandAction } from '../actions/cardsInHand-action';
+import { SetGameStats } from '../actions/currentGame-action';
 import { PlayerRepositoryService } from './player-repository.service';
+import { GameRepositoryService } from './game-repository.service';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/heropower-action';
 
 @Injectable({
@@ -14,6 +16,7 @@ import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/herop
 export class DiebService {
   private store = inject(Store);
   private playerRepo = inject(PlayerRepositoryService);
+  private gameRepo = inject(GameRepositoryService);
 
   heropower(heropowerArray: string[]) {
     let currentHand = this.store.selectSnapshot(
@@ -41,5 +44,12 @@ export class DiebService {
     this.playerRepo.updateCardstack(gameId, playerId, currCardStack);
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
+
+    // Statistik-Zähler "genutzte Heldenfähigkeiten" (GameStats) - der Dieb läuft nicht über
+    // HeropowerService.bumpStat(), daher hier separat analog zum dortigen Muster.
+    const currentStats = this.store.selectSnapshot(CurrentGameSelectors.currentStats);
+    const stats = { ...currentStats, heropowersUsed: currentStats.heropowersUsed + 1 };
+    this.store.dispatch(new SetGameStats(stats));
+    this.gameRepo.updateStats(gameId, stats);
   }
 }

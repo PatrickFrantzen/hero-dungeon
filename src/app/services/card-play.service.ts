@@ -168,6 +168,11 @@ export class CardPlayService {
     const deliveryStack = [...this.currentDeliveryStack(), card];
     const drawResult = this.drawCards(currHand, [...this.currentCardStack()], deliveryStack, 1, gameId, reportWriteFailure);
 
+    // Das eigentliche Rasten-Ereignis selbst zählt als "gecyclete Karte" - unabhängig davon, ob
+    // drawCards() dabei zusätzlich den Ablagestapel neu mischen musste (das interne Reshuffle
+    // in drawCards() zählt separat, greift beim Rasten aber praktisch nie, da der Nachziehstapel
+    // dabei meist noch nicht leer ist).
+    this.bumpStat(gameId, 'cardsCycled', 1, reportWriteFailure);
     this.persistPlayerStacks(gameId, playerId, drawResult.hand, drawResult.cardStack, drawResult.deliveryStack, reportWriteFailure);
   }
 

@@ -153,13 +153,23 @@ pro Dungeon.
 - **`cardsPlayed`** — `CardPlayService.ensureGameTimerStarted()`: an allen 13 Stellen aufgerufen,
   an denen `chooseCard()`/eine `resolve*()`-Methode tatsächlich eine Karte wirksam spielt (siehe
   `services/CLAUDE.md`) — zählt bei jedem Aufruf hoch, unabhängig vom Timer-Start-Guard.
-- **`cardsCycled`** — `CardPlayService.drawCards()`: sobald der Ablagestapel gemischt zum
-  Nachziehstapel wird (Stapel leer, Ablage nicht), zählt die Anzahl der so wieder verfügbaren
-  Karten. Zentral in dieser privaten Methode, alle 6 Aufrufer reichen dafür `gameId`/
-  `reportWriteFailure` durch.
+- **`cardsCycled`** — zwei Zählstellen: `CardPlayService.drawCards()` zählt, sobald der
+  Ablagestapel gemischt zum Nachziehstapel wird (Stapel leer, Ablage nicht), die Anzahl der so
+  wieder verfügbaren Karten (zentral in dieser privaten Methode, alle 6 Aufrufer reichen dafür
+  `gameId`/`reportWriteFailure` durch); zusätzlich zählt `CardPlayService.restCard()`
+  ("Rasten", Singleplayer-Deadlock-Schutz) das eigentliche Rasten-Ereignis selbst um 1 hoch,
+  unabhängig davon, ob dabei ein Reshuffle nötig war — vorher war das die einzige Lücke: der
+  Reshuffle-Zweig in `drawCards()` griff beim Rasten praktisch nie, weil der Nachziehstapel dabei
+  meist noch nicht leer war, wodurch "Gecyclete Karten" trotz mehrfachem Rasten bei 0 blieb (Bug,
+  behoben). Rasten ist über `player-hand.component.ts`s `isSingleplayer()` bereits auf
+  Singleplayer beschränkt, daher zeigt die Statistik diesen Zähler im Multiplayer ohnehin nie an.
 - **`heropowersUsed`** — je einmal in `HeropowerService.resolveWalkuereHeropower()`/
   `resolveJaegerinHeropower()`/`resolveMagierHeropower()`/`resolveArrayHeropower()`, direkt nach
-  deren bestehendem `heropowerArray().length !== 3`-Guard.
+  deren bestehendem `heropowerArray().length !== 3`-Guard. Der Dieb (Solo-Singleplayer-Held) läuft
+  nicht über `HeropowerService`, sondern über `DiebService.heropower()` (siehe
+  `components/heropower/CLAUDE.md`) — zählt seit einem Bugfix ebenfalls hoch, per eigenem,
+  drittem `bumpStat`-Analogon direkt in `DiebService` (vorher fehlte der Zähler dort komplett,
+  sichtbarstes Symptom: "Genutzte Heldenfähigkeiten" blieb beim Dieb immer 0).
 - **Anzeige**: `GameComponent`, `.game-stats`-Block im Template, sichtbar sobald
   `gameStatus() !== 'playing'` (Boss-Bestätigung, Sieg, Niederlage) — bewusst nicht permanent
   während des laufenden Spiels eingeblendet, um die Sicht auf den Hintergrund nicht zu verdecken
