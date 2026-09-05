@@ -37,8 +37,10 @@ Vertiefung gebracht, nur zusätzliche Indirektion.
 Zwei-Browser-Setup in dieser Session verfügbar) — vor dem Merge nachholen (Karte per Tap **und**
 Swipe spielen, Rasten-Button im Singleplayer, Fächer-Layout bei 6+ Handkarten).
 
-TODO 5 (Heropower-Strategy-Pattern) bleibt offen, als nächster Kandidat vorgesehen — Diagnose/
-Vorgehen dafür siehe TODO 5 unten, unverändert gültig.
+TODO 5 bleibt offen, als nächster Kandidat vorgesehen — Diagnose/Vorgehen unten am selben Tag
+überarbeitet (Datenfelder auf `HeroDefinition` statt einer neuen `HeropowerStrategy`-
+Klassenhierarchie, deckt zusätzlich ein zweites, bisher nicht im Plan erfasstes Duplikat in
+`HeropowerContainerComponent` mit ab), noch nicht implementiert.
 
 `ng build`/`ng test --watch=false --browsers=ChromeHeadlessCI` grün nach jedem Schritt.
 **Kein manueller Multiplayer-Smoke-Test durchgeführt** (kein laufendes Firebase-
@@ -179,19 +181,45 @@ konzentrieren).
     reduziert haben.~~
   - Verifikation: `ng build`, `ng test` — grün, siehe Status-Abschnitt oben.
 
-- [ ] **TODO 5 — Stretch-Goal: Heropower-Strategy-Pattern in `heropower.component.ts`**
-  - Nur nach TODO 2 sinnvoll (setzt den neuen `HeropowerService` voraus). Ein
-    `HeropowerStrategy`-Interface (`canActivate(enemy: Mob): boolean`) pro Heldenklasse,
-    registriert in einer `Record<string, HeropowerStrategy>`-Lookup-Map, ersetzt die zehn
-    `heroPower<Name>()`-Methoden (`heropower.component.ts:45-102`) und den `switch` in
-    `HeropowerContainerComponent` (`heropower-container.component.ts:57-77`).
-  - Die Aktivierungsregel (`type === 'Person'` etc.) wandert als Konfiguration in die
-    jeweilige Heldenklasse — **erst sinnvoll nach**
-    `docs/planned/hero-data-model-plan.md`, das die Heldenklassen ohnehin auf ein
-    Konfigurationsobjekt umstellt; dort ließe sich `activatesOn` als weiteres Datenfeld
-    ergänzen, statt eine zusätzliche Klassenhierarchie für Strategien einzuführen.
+- [ ] **TODO 5 — Heropower-Aktivierungs-/Auflösungsregeln datengetrieben statt zwei
+  duplizierten `switch`/Methoden-Sets** (überarbeitete Diagnose 2026-09-05, ersetzt die
+  ursprüngliche "Strategy-Pattern"-Idee unten)
+  - **Befund**: zwei separate, aber strukturell gleiche Duplikate über je 10 Helden:
+    1. `heropower.component.ts:77-136` — zehn `heroPower<Name>()`-Methoden, die sich nur im
+       geprüften `currentEnemy().type`-Wert unterscheiden (`'Person'`/`'Monster'`/
+       `'Hindernis'`/immer aktivierbar).
+    2. `heropower-container.component.ts:60-81` — ein zweiter `switch (heroname)`, der
+       entscheidet, welches Auflösungs-Ereignis (`'array'`/`'magier'`/`'jaegerin'`/`'walkuere'`/
+       Dieb-Direktaufruf) ein Held auslöst.
+    Beide Achsen sind unabhängig voneinander (wann aktivierbar vs. wie aufgelöst) — ein
+    einzelnes `HeropowerStrategy.canActivate()`-Interface (ursprüngliche Idee unten) hätte nur
+    Duplikat 1 gelöst und Duplikat 2 unangetastet gelassen. Beide werden jetzt gemeinsam
+    angegangen, damit keine der beiden Stellen dupliziert zurückbleibt.
+  - **Lösung — Datenfelder statt Klassenhierarchie**: seit
+    `docs/done/hero-data-model-plan.md` gibt es `HERO_DEFINITIONS`/`HeroDefinition`
+    (`src/models/helden/hero-definitions.ts`) als einzige Heldenquelle, bereits
+    konfigurationsbasiert (kein Klassen-pro-Held-Muster mehr, siehe `EXTRA_DECK_FOR_HERO` als
+    Vorbild für ein weiteres Lookup-Feld). `HeropowerStrategy` als neue Klassenhierarchie wäre
+    ein Rückschritt gegen dieses bereits etablierte Muster — stattdessen zwei rein deklarative
+    Felder auf `HeroDefinition`:
+    ```ts
+    activatesOn: 'Person' | 'Monster' | 'Hindernis' | 'always';
+    resolutionKind: 'array' | 'magier' | 'jaegerin' | 'walkuere' | 'dieb';
+    ```
+    Beide Felder leben ausschließlich auf `HeroDefinition` (statischer Fakt pro Held, kein
+    Laufzeitzustand) — Komponenten schlagen per `HERO_DEFINITIONS.find(...)` nach, analog zu
+    `EXTRA_DECK_FOR_HERO`.
+  - `heropower.component.ts`: die zehn `heroPower<Name>()`-Methoden + `heroPowerHandlers`-
+    Lookup entfallen, ein einziges `onActivateHeropower()` liest `activatesOn` (per
+    Helden-Lookup über `heroName()`) und toggelt `activateHeroPower()`/`deactivateHeroPower()`
+    (`'always'` verhält sich wie die bisherigen Magier/Jägerin/Dieb/Walküre-Methoden ohne
+    Typ-Check).
+  - `HeropowerContainerComponent`: der `switch (heroname)` wird ein `resolutionKind`-Lookup;
+    `resolutionKind === 'dieb'` bleibt als eigener Zweig (`DiebService.heropower(...)` statt
+    `heropowerResolved.emit(...)`, da Dieb nie über dieses Output läuft).
   - Template `heropower.component.html`: zehn `@if`-Blöcke durch eine `@for`-Schleife über
-    eine „Icon je Heldentyp"-Liste ersetzen.
+    eine „Icon je Heldentyp"-Liste ersetzen (unverändert zur ursprünglichen Idee, hängt an
+    keinem der beiden Felder oben).
   - Dieses TODO ist bewusst optional/nice-to-have (Befund 6 ist im Review als „mittelfristig
     relevant" eingestuft, nicht kritisch) — bei Zeitdruck nach TODO 1-4 abbrechen und diesen
     Punkt für eine weitere Session zurückstellen.
