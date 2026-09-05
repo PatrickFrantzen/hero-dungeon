@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, signal } from '@
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, map } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
@@ -165,6 +165,19 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Kapselt den vierfach duplizierten `dialog.open<DialogHeropowerComponent, ...>({ data:
+   * this.currentPlayers() }).afterClosed()`-Aufruf (Architecture-Review-Kandidat 6) — jeder
+   * Aufrufer entscheidet weiterhin selbst, was mit dem gewählten Spieler passiert (ein
+   * `undefined`-Ergebnis bedeutet "Dialog ohne Auswahl geschlossen"). */
+  private pickPlayer(): Observable<HeropowerDialogPlayer | undefined> {
+    return this.dialog
+      .open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(DialogHeropowerComponent, {
+        data: this.currentPlayers(),
+      })
+      .afterClosed()
+      .pipe(map((result) => result?.data));
+  }
+
   updatePlayerFromDatabase(data: DocumentData) {
     this.store.dispatch(new UpdateCurrentHandAction(data['handstack']));
     this.store.dispatch(new UpdateCardStackAction(data['cardstack']));
@@ -245,14 +258,9 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   /** Öffnet den Zielspieler-Dialog für Spende/Stehlen/Heilkräuter/Heilung (je ein Zielspieler)
    * und ruft danach die passende CardPlayService-Methode mit dem gewählten Spieler auf. */
   private openTargetPlayerDialog(card: string) {
-    const dialogRef = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-      DialogHeropowerComponent,
-      { data: this.currentPlayers() }
-    );
-
-    dialogRef.afterClosed().subscribe((result) => {
+    this.pickPlayer().subscribe((result) => {
       if (!result) return;
-      const targetPlayerId = result.data.playerId;
+      const targetPlayerId = result.playerId;
 
       switch (card) {
         case 'spende':
@@ -274,23 +282,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   /** Öffnet den Zielspieler-Dialog zweimal nacheinander für "Wut" (zwei Zielspieler, du selbst
    * darfst einer davon sein). */
   private openWutDialog() {
-    const dialogRefOne = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-      DialogHeropowerComponent,
-      { data: this.currentPlayers() }
-    );
-
-    dialogRefOne.afterClosed().subscribe((resultOne) => {
+    this.pickPlayer().subscribe((resultOne) => {
       if (!resultOne) return;
 
-      const dialogRefTwo = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-        DialogHeropowerComponent,
-        { data: this.currentPlayers() }
-      );
-
-      dialogRefTwo.afterClosed().subscribe((resultTwo) => {
+      this.pickPlayer().subscribe((resultTwo) => {
         if (!resultTwo) return;
         this.reportWriteFailure(
-          this.cardPlayService.resolveWut(this.currentGameId(), this.currentPlayerId(), 'wut', resultOne.data.playerId, resultTwo.data.playerId)
+          this.cardPlayService.resolveWut(this.currentGameId(), this.currentPlayerId(), 'wut', resultOne.playerId, resultTwo.playerId)
         );
       });
     });
@@ -313,15 +311,11 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-      DialogHeropowerComponent,
-      { data: this.currentPlayers() }
-    );
-
-    dialogRef.afterClosed().subscribe((result) => {
+    this.pickPlayer().subscribe((result) => {
       if (!result) return;
-      const { playerId } = result.data;
-      this.reportWriteFailure(this.heropowerService.resolveJaegerinHeropowerForPlayer(this.currentGameId(), this.currentPlayerId(), playerId));
+      this.reportWriteFailure(
+        this.heropowerService.resolveJaegerinHeropowerForPlayer(this.currentGameId(), this.currentPlayerId(), result.playerId)
+      );
     });
   }
 

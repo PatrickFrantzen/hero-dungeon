@@ -34,6 +34,13 @@ Jägerins Fähigkeit-Folgedialog gedacht) und ruft erst nach dessen Schließen d
 `CardPlayService.resolve*()`-Methode mit dem/den gewählten Zielspieler(n) auf. "Wut" braucht
 zwei Zielspieler, daher zwei sequentielle Dialog-Öffnungen (`openWutDialog()`).
 
+**`pickPlayer()`-Hilfsmethode (Architecture-Review-Kandidat 6, 2026-09-05)** — die vier
+Aufrufstellen (`openTargetPlayerDialog()`, `openWutDialog()` zweimal, `openDialog()`) hatten
+denselben `dialog.open<DialogHeropowerComponent, ...>({ data: this.currentPlayers()
+}).afterClosed()`-Aufruf dupliziert. Die private `pickPlayer(): Observable<HeropowerDialogPlayer
+| undefined>` kapselt nur diesen Teil inkl. Auspacken von `result?.data`; jeder Aufrufer behält
+sein eigenes `.subscribe()` für die anschließende Auflösung.
+
 `isEventActive()`/`resolveEvent()` (Ereigniskarten-Button, sichtbar bei
 `currentEnemy().token.includes('event')`) sind Spielerzahl-unabhängig — vor der Boss-Kampagne/
 Event-Überarbeitung hießen sie `isSoloEventActive()`/`resolveSoloEvent()` und waren auf
