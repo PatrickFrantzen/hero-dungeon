@@ -266,6 +266,21 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   gleiche Begründung wie dort), da der Dieb nicht über `HeropowerService` läuft. Vorher fehlte
   der Zähler hier komplett (Statistik-Anzeige "Genutzte Heldenfähigkeiten" blieb beim Dieb immer
   0), siehe `game/CLAUDE.md` Abschnitt Kampagnen-Statistik.
+  **Bugfix (2026-09-05, "Langfinger" zog duplizierte Handkarten):** `heropower()` (Langfinger:
+  3 Karten ablegen, 5 nachziehen) schrieb den geschrumpften Nachziehstapel bisher **nur** nach
+  Firestore/LocalStorage (`playerRepo.updateCardstack()`), dispatchte aber nie
+  `UpdateCardStackAction`. Im Singleplayer gibt es kein Firestore-Live-Sync zurück in den Store
+  (`player-hand/CLAUDE.md`) — `currentCardStack` blieb dadurch für den Rest der Session auf dem
+  Stand *vor* der ersten Nutzung eingefroren, jede weitere Kartenziehung (erneute
+  Heropower-Nutzung, normales Nachfüllen der Hand über `CardPlayService`) las denselben,
+  nicht geschrumpften Stapel erneut und zog bereits ausgeteilte Karten ein zweites Mal —
+  sichtbar als duplizierte Handkarten (z.B. 4× "Stehlen" aus einem 2-Karten-Deck-Anteil). Jetzt
+  dispatcht `heropower()` `UpdateCardStackAction` analog zu `HeropowerService`s
+  `resolve*Heropower()`-Methoden. Zusätzlich landeten die 3 abgelegten Karten bisher nirgends
+  (nicht auf dem Ablagestapel, wie die Fähigkeitsbeschreibung "Lege 3 Karten auf den
+  Ablagestapel" verlangt) — sie verschwanden dauerhaft aus dem Kartenpool statt beim nächsten
+  Reshuffle (`CardPlayService.drawCards()`) wieder verfügbar zu werden; jetzt landen sie über
+  `UpdateDeliveryStack`/`playerRepo.updateDeliveryStack()` korrekt auf dem Ablagestapel.
 - **`game-factory.service.ts`** — baut ein neues `Game`-Objekt (Startscreen: Spiel erstellen).
 - **`auth-form.service.ts`** — Login/Register-Aufrufe + Mapping der Firebase-Error-Codes auf
   deutsche Meldungen; von allen Auth-bezogenen Formularen genutzt statt eigenem Error-Mapping
