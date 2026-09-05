@@ -47,7 +47,7 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
   Formel auf einen Spieler — Details/Tabelle in Issue #86. Ursprünglich war `case 1:` in
   `getMonsterForGame()` fest auf 5 Monster + 1 Event codiert, unabhängig vom gewählten
   Schwierigkeitsgrad — ein Bug (Issue #86), kein bewusstes Feature;
-  `docs/planned/singleplayer-mode-plan.md` beschreibt das noch als ursprüngliche PR-1-Regel, hat
+  `docs/done/singleplayer-mode-plan.md` beschreibt das noch als ursprüngliche PR-1-Regel, hat
   aber inzwischen einen Nachtrag dazu.
   `loadMonster()`/`loadQuests()`/`loadSoloQuests()` deckeln die
   angeforderte Kartenzahl per `Math.min()` auf die tatsächlich verfügbare Anzahl in der

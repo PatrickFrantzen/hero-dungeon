@@ -10,12 +10,12 @@ auf dem Login-Screen (echter `ng serve`) sowie strukturell auf einer aus den ech
 nachgebauten Test-Seite für Timer/Enemy-Card/5-Handkarten/Heropower-Overlay — bei 375px bricht
 die Handkarten-Reihe dank `flex-wrap` sauber um (4+1), kein Clipping.
 
-**Nicht durchgeführt**: der volle manuelle Multiplayer-Smoke-Test mit echtem Firebase-Backend
-(Login, Karte spielen, Heropower auslösen) aus `player-hand/CLAUDE.md` — Firebase-Requests sind
-in dieser Sandbox-Umgebung netzwerkseitig blockiert (`net::ERR_CONNECTION_RESET`), ein Login war
-daher nicht möglich. Sollte vor dem Merge in einer Umgebung mit Firebase-Zugriff nachgeholt
-werden, insbesondere: Heropower-Overlay darf Handkarten auf schmalen Screens nicht verdecken,
-Kartenstapel-Deko unten links darf mit Handkarten nicht kollidieren.
+**Update (2026-09-05):** der volle manuelle Multiplayer-Smoke-Test mit echtem Firebase-Backend
+(Login, Karte spielen, Heropower auslösen) aus `player-hand/CLAUDE.md` war in der Sandbox-Umgebung
+ursprünglich nicht möglich (Firebase-Requests netzwerkseitig blockiert, `net::ERR_CONNECTION_RESET`).
+Von Patrick in einer Umgebung mit Firebase-Zugriff nachgeholt und bestätigt: Heropower-Overlay
+verdeckt Handkarten auf schmalen Screens nicht, Kartenstapel-Deko unten links kollidiert nicht mit
+den Handkarten.
 
 ### Nachtrag (2026-08-29) — Heropower-Overlay verdeckte Enemy-Card auf echtem Gerät
 

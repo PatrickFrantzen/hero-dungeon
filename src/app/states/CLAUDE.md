@@ -13,7 +13,7 @@ Aktuell registriert (Stand des letzten Abgleichs): `cardsInHandState`, `CardStac
 `CurrentGameState`, `CurrentUserState`, `DeliveryStackState`, `heropowerState`, `LobbyState`,
 `EncounterState`, `TutorialState`.
 
-## Aufteilung (nach `docs/planned/currentGame-state-split-plan.md` bzw. dessen aktuellem Status)
+## Aufteilung (nach `docs/done/currentGame-state-split-plan.md`, alle TODOs umgesetzt)
 
 `currentGame-state.ts` bündelte ursprünglich vier fachlich unabhängige Verantwortlichkeiten in
 einem State. Davon sind bereits herausgelöst:
