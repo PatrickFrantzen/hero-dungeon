@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { MAT_DIALOG_DATA, MatDialog, MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatButton, MatIconButton } from '@angular/material/button';
+import { Observable, map } from 'rxjs';
 import { BaseDialogComponent } from '../dialog-base.component';
 import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
 import { LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
@@ -30,6 +31,21 @@ export interface DialogSelectSaveResult {
 }
 
 const dateFormatter = new Intl.DateTimeFormat('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+
+/** Kapselt das identische `dialog.open<...>(DialogSelectSaveComponent, { data: { entries } })
+ * .afterClosed()`, das StartscreenComponent/GameMenuComponent vorher unabhängig voneinander
+ * dupliziert hatten (Architecture-Review-Kandidat 3, 2026-09-05) — jeder Aufrufer baut weiterhin
+ * seine eigene `entries`-Liste (kennt als einziger das passende Held-/Status-Label) und
+ * behandelt das Ergebnis in seinem eigenen `.subscribe()` weiter, nur der `open()`/
+ * `afterClosed()`-Teil samt Auspacken von `result?.data` ist hier gebündelt. */
+export function openSaveSelector(dialog: MatDialog, entries: SaveListEntry[]): Observable<DialogSelectSaveResult | undefined> {
+  return dialog
+    .open<DialogSelectSaveComponent, DialogSelectSaveData, { data: DialogSelectSaveResult }>(DialogSelectSaveComponent, {
+      data: { entries },
+    })
+    .afterClosed()
+    .pipe(map((result) => result?.data));
+}
 
 /** "Spielstand auswählen" - ersetzt die bisherigen, direkt im Startscreen/GameMenu inline
  * gerenderten Listen ("Meine Spielstände"/"Meine Spiele") durch einen gemeinsamen Dialog mit

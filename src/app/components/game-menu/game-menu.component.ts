@@ -9,7 +9,7 @@ import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/ser
 import { JoinedGame, UserRepositoryService } from 'src/app/services/user-repository.service';
 import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
 import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
-import { DialogSelectSaveComponent, DialogSelectSaveData, DialogSelectSaveResult, SaveListEntry } from '../dialog-select-save/dialog-select-save.component';
+import { SaveListEntry, openSaveSelector } from '../dialog-select-save/dialog-select-save.component';
 
 /**
  * In-Game-Menü (Issue #74, PR 2 aus docs/planned/login-multiplayer-onboarding-plan.md) -
@@ -96,18 +96,13 @@ export class GameMenuComponent {
       ? this.listSaves().map((save): SaveListEntry => ({ id: save.saveId, label: this.saveLabel(save), mode: 'singleplayer', lastPlayedAt: save.updatedAt }))
       : this.myGames().map((game): SaveListEntry => ({ id: game.gameId, label: game.gameId, mode: 'multiplayer', lastPlayedAt: game.lastPlayedAt || null }));
 
-    this.dialog
-      .open<DialogSelectSaveComponent, DialogSelectSaveData, { data: DialogSelectSaveResult }>(DialogSelectSaveComponent, {
-        data: { entries },
-      })
-      .afterClosed()
-      .subscribe((result) => {
-        if (!result?.data) {
-          return;
-        }
-        this.store.dispatch(new CurrentGameAction(result.data.selectedId));
-        this.router.navigate([(result.data.mode === 'singleplayer' ? '/local-game/' : '/game/') + result.data.selectedId]);
-      });
+    openSaveSelector(this.dialog, entries).subscribe((result) => {
+      if (!result) {
+        return;
+      }
+      this.store.dispatch(new CurrentGameAction(result.selectedId));
+      this.router.navigate([(result.mode === 'singleplayer' ? '/local-game/' : '/game/') + result.selectedId]);
+    });
   }
 
   /** "Account verknüpfen" (Issue #78) - nur sinnvoll für einen anonym eingeloggten Multiplayer-

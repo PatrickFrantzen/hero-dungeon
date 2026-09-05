@@ -19,7 +19,7 @@ import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 import { AuthFormService } from 'src/app/services/auth-form.service';
 import { JoinedGame, UserRepositoryService } from 'src/app/services/user-repository.service';
-import { DialogSelectSaveComponent, DialogSelectSaveData, DialogSelectSaveResult, SaveListEntry } from '../dialog-select-save/dialog-select-save.component';
+import { SaveListEntry, openSaveSelector } from '../dialog-select-save/dialog-select-save.component';
 
 @Component({
     selector: 'app-startscreen',
@@ -114,22 +114,17 @@ export class StartscreenComponent implements OnInit {
       ),
     ];
 
-    this.dialog
-      .open<DialogSelectSaveComponent, DialogSelectSaveData, { data: DialogSelectSaveResult }>(DialogSelectSaveComponent, {
-        data: { entries },
-      })
-      .afterClosed()
-      .subscribe((result) => {
-        this.localSaves.set(this.localSaveService.listSaves());
-        if (!result?.data) {
-          return;
-        }
-        if (result.data.mode === 'singleplayer') {
-          this.resumeLocalSave(result.data.selectedId);
-        } else {
-          this.joinGame(result.data.selectedId);
-        }
-      });
+    openSaveSelector(this.dialog, entries).subscribe((result) => {
+      this.localSaves.set(this.localSaveService.listSaves());
+      if (!result) {
+        return;
+      }
+      if (result.mode === 'singleplayer') {
+        this.resumeLocalSave(result.selectedId);
+      } else {
+        this.joinGame(result.selectedId);
+      }
+    });
   }
 
   /** Multiplayer-Einstieg (Issue #76): meldet vor dem eigentlichen Firestore-Zugriff per

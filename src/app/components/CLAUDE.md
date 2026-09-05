@@ -187,3 +187,14 @@ Akzentfarben aus `startscreen/` (Lila für Singleplayer, Grün für Multiplayer)
 Löschen-Button ist per `tw-border-l` optisch vom Auswahl-Button abgetrennt und rot eingefärbt
 (klar als destruktiv erkennbar), der Dialog ist breiter (`tw-w-[320px]`/`sm:tw-w-[380px]` statt
 `tw-min-w-[280px]`) und die Actions-Zeile hat eine Trennlinie zum Listenbereich.
+
+**`openSaveSelector()`-Hilfsfunktion (Architecture-Review-Kandidat 3, 2026-09-05)** —
+`StartscreenComponent`/`GameMenuComponent` hatten unabhängig voneinander denselben
+`dialog.open<DialogSelectSaveComponent, ...>({ data: { entries } }).afterClosed()`-Aufruf
+dupliziert. `dialog-select-save.component.ts` exportiert dafür jetzt `openSaveSelector(dialog:
+MatDialog, entries: SaveListEntry[]): Observable<DialogSelectSaveResult | undefined>` — kapselt
+nur den `open()`/`afterClosed()`-Teil inkl. Auspacken von `result?.data`. Jeder Aufrufer baut
+weiterhin seine eigene `entries`-Liste (kennt als einziger das passende Held-/Status-Label,
+siehe `heroNameOf()`/`saveLabel()`) und sein eigenes `.subscribe()` für die Navigation danach —
+`StartscreenComponent` liest darin zusätzlich `localSaves` neu ein (falls im Dialog etwas
+gelöscht wurde), `GameMenuComponent` braucht das nicht, siehe `game-menu/CLAUDE.md`.
