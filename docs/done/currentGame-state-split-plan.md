@@ -16,10 +16,13 @@ Handler für dieselbe Action-Klasse über mehrere States) — ein späterer, gez
 auf die Felder der anderen States hat.
 
 `ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI` (33/33) und `npm run
-test:rules` (9/9) grün. **TODO 4 (manueller Zwei-Browser-Smoke-Test) nicht durchgeführt** —
-kein laufendes Firebase-Emulator-/Browser-Multiplayer-Setup in dieser Session verfügbar. Vor
-dem Merge nachholen: Spiel erstellen, zweiter Spieler tritt bei, Karte spielen, Heropower
-auslösen, Boss erreichen — deckt alle drei neuen States gemeinsam ab.
+test:rules` (9/9) grün.
+
+**Update (2026-09-05):** TODO 4 (manueller Zwei-Browser-Smoke-Test) von Patrick durchgeführt und
+bestätigt — Spiel erstellen, zweiter Spieler tritt bei, Karte spielen, Heropower auslösen, Boss
+erreichen funktioniert über alle drei neuen States (`LobbyState`/`EncounterState`/
+`CurrentGameState`) hinweg. Damit sind alle vier TODOs dieses Plans abgeschlossen, Plan nach
+`docs/done/` verschoben.
 
 Kontext: Punkt 4 der „Empfohlenen Reihenfolge" aus
 `docs/done/review-2026-08/00-overview.md`, Detailbefund 2/2b in
@@ -115,16 +118,16 @@ lesen ausschließlich über `CurrentGameSelectors`, nicht direkt über den State
     ändert sich nicht, nur die NGXS-Aufteilung — Rules sollten unberührt bleiben, trotzdem
     gegenprüfen).
 
-- [ ] **TODO 4 — Abschluss-Smoke-Test**
+- [x] **TODO 4 — Abschluss-Smoke-Test**
   - Zwei-Browser-Test wie in `docs/done/onpush-refactor-plan.md` empfohlen: Spiel erstellen,
     zweiter Spieler tritt bei, Karte spielen, Heropower auslösen, Boss erreichen. Deckt alle
-    drei neuen States gemeinsam ab.
+    drei neuen States gemeinsam ab. Durchgeführt 2026-09-05 (siehe Status oben).
 
 ## Verifikation (gesamter Plan)
 
 - `ng build` und `ng test --watch=false --browsers=ChromeHeadlessCI` nach jedem TODO grün.
 - `npm run test:rules` nach TODO 3 (Firestore-Struktur-Check).
-- Manueller Zwei-Browser-Smoke-Test vor dem finalen Merge (TODO 4).
+- Manueller Zwei-Browser-Smoke-Test vor dem finalen Merge (TODO 4) — erledigt.
 
 ## Nicht im Scope
 

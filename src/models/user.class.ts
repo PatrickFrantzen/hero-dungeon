@@ -15,7 +15,7 @@ export class User {
     public handstack: string[] = [];
     public deliveryStack: string[] = [];
     // Letzte Spielaktivität - Grundlage für die 7-Tage-TTL-Policy auf anonyme Multiplayer-
-    // Accounts (docs/planned/login-multiplayer-onboarding-plan.md, PR 5). Muss beim Schreiben
+    // Accounts (docs/done/login-multiplayer-onboarding-plan.md, PR 5). Muss beim Schreiben
     // ein Firestore serverTimestamp() sein, kein number/Epoch, siehe dortige Begründung.
     public lastActivityAt: Timestamp | FieldValue | null = null;
 

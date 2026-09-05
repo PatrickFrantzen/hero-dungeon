@@ -28,6 +28,31 @@ dieses neuen Plans; die hier noch offenen PR 1/1b/2/3-TODOs (Deck-Cycling/Deadlo
 Singleplayer-Helden-Filter, Siegzustand) bleiben unverändert gültig und unabhängig davon zu
 erledigen — beide Pläne ergänzen sich (Spielregeln hier, Persistenz/Auth dort).
 
+**Update (2026-09-05) — alle PRs umgesetzt, Plan nach `docs/done/` verschoben:**
+
+- **PR 1** (Solo-Spiel im bestehenden Modell) — `DialogGameSettingsComponent` erlaubt `1..5`
+  Spieler, `Monster.createMob()` hat eine eigene Formel für `numberOfPlayers === 1` (siehe
+  `src/models/CLAUDE.md`, inkl. Nachtrag Issue #86: Schwierigkeitsgrad wirkt sich jetzt auch im
+  Singleplayer auf die Monster-/Event-Anzahl aus).
+- **PR 1b** (Deck-Cycling/Deadlock-Schutz) — `CardPlayService.drawCards()` mischt den Ablagestapel
+  bei leerem Nachziehstapel neu, `checkHandDeadlockLoss()` deckt den verbleibenden Deadlock-Fall
+  ab (siehe `src/app/services/CLAUDE.md`).
+- **PR 2** (Singleplayer als eigener Einstieg) — umgesetzt im Zuge des Login-Umbaus (Issue #73,
+  `docs/done/login-multiplayer-onboarding-plan.md`): eigener Startscreen-Einstieg, kein Join-Code,
+  Heldenauswahl direkt danach.
+- **PR 3** (Siegzustand) — `GameStatus` (`'playing' | 'bossDefeated' | 'won' | 'lost'`) in
+  `src/models/game.ts`, siehe Bestätigungs-Flow in `src/app/components/game/CLAUDE.md`.
+- **PR 4** (echter Offline-Singleplayer) — umgesetzt über `LocalGameDocumentStoreService` +
+  `LocalSingleplayerSaveService` (LocalStorage statt Firestore für lokale gameIds), siehe
+  `src/app/services/CLAUDE.md`, Abschnitt "Repository-Services". Kein separater
+  `SingleplayerGameState`/`GameSessionPort`, wie ursprünglich als Option skizziert — stattdessen
+  bleibt `CardPlayService`/`GameRepositoryService`/`PlayerRepositoryService` gemeinsamer Code für
+  beide Modi, `FirestoreRepositoryService` schaltet pro Pfad intern zwischen Firestore und
+  LocalStorage um.
+
+Alle Verifikationsschritte (Build/Tests/manueller Smoke-Test) sind über die genannten
+Folge-Pläne abgedeckt, kein separater Nachvollzug hier nötig.
+
 ## Aktueller Ist-Ablauf im Code
 
 ### 1. Spiel erstellen

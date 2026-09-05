@@ -17,7 +17,7 @@ export interface LocalSingleplayerSave {
 
 /**
  * CRUD für lokale Singleplayer-Spielstände (LocalStorage) - Persistenz-Unterbau für
- * `docs/planned/login-multiplayer-onboarding-plan.md` PR 1. Kein Firestore-Zugriff.
+ * `docs/done/login-multiplayer-onboarding-plan.md` PR 1. Kein Firestore-Zugriff.
  */
 const STORAGE_KEY = 'hero-dungeon.local-singleplayer-saves';
 

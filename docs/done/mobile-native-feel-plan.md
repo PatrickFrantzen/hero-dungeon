@@ -7,9 +7,28 @@ Stufe A (TODO 1–6) umgesetzt, siehe PR #45 (TODO 1–4, 6) und
 war durch fehlende Icon-Assets blockiert, Blocker durch vom Nutzer bereitgestelltes Rund-Emblem
 gelöst).
 
-Alle noch offenen Punkte aus diesem Plan (TODO 8, sowie die Stufe-B-Ideenliste 2026-08-31) sind
-als GitHub Issues angelegt — siehe Tabelle am Ende des jeweiligen Abschnitts unten bzw.
-"Referenzen".
+Alle Punkte aus diesem Plan (TODO 8, sowie die gesamte Stufe-B-Ideenliste 2026-08-31) sind
+inzwischen umgesetzt — siehe Update 2026-09-05 unten. Plan nach `docs/done/` verschoben.
+
+**Update (2026-09-05) — alle restlichen Punkte umgesetzt:**
+
+- **TODO 8 / Issue #47 (Querformat)** — `@media (orientation: landscape) and (max-height: 500px)`
+  ist in `game.component.scss`, `enemy.component.scss`, `player-hand.component.scss` und
+  `hand-cards.component.scss` umgesetzt (Kompaktlayout-Variante a) aus den zwei zur Wahl
+  stehenden Optionen).
+- **Issue #48 (Kartenstapel-Zähler)** — `.card-stack-badge` in
+  `player-hand.component.html` zeigt `currentCardStack().length`.
+- **Issue #49 (Heropower-FAB)** — `.heropower-fab` in `heropower.component.ts`/`.html`, siehe
+  `src/app/components/heropower/CLAUDE.md`.
+- **Issue #50 (Enemy-Card kollabierbar)** — `descriptionExpanded`-Signal in
+  `enemy.component.ts`.
+- **Issue #51 (Haptisches Feedback)** — `vibrate()`-Aufrufe in `player-hand.component.ts`,
+  `hand-cards.component.ts` und `heropower.component.ts`.
+- **Issue #52 (Swipe-Geste)** — bereits zuvor als umgesetzt vermerkt (PR #45), siehe
+  `player-hand/CLAUDE.md` Abschnitt "Swipe-Geste zum Karte-Spielen".
+- **Realgeräte-Test für TODO 7** (Handkarten-Bottom-Leiste, Heropower-Icon-Antippbarkeit über
+  der Leiste, `.color-effect`-Rahmen kombiniert mit Fächer-Rotation) von Patrick auf echtem
+  Gerät durchgeführt und bestätigt.
 
 **TODO 7 (Handkarten als fixe Bottom-Leiste) umgesetzt**, inkl. Fächer-Layout für den Fall, dass
 die Hand über 5 Karten wächst (Dieb "Stehlen": 3 Handkarten ablegen, 5 nachziehen —
@@ -35,12 +54,13 @@ nur mit ≤5 Karten gerechnet, das war zu optimistisch):
   (Playwright/Chromium, 375×700) zeigt bei 3/5/7/8/10 Karten keine Überlappung mit dem
   Viewport-Rand. Design-Vorschau/Mockup (Vorher/Nachher + Fächer-Demo mit Live-Tweak-Regler) vor
   der Umsetzung mit dem Nutzer abgestimmt.
-- **Nicht durchgeführt**: der reale Multiplayer-Smoke-Test mit echtem Firebase-Backend (siehe
-  `player-hand/CLAUDE.md`) — in dieser Sandbox-Umgebung ohne Netzwerkzugriff nicht möglich,
-  insbesondere: Heropower-Icon-Antippbarkeit direkt über der neuen Leiste auf einem echten Gerät,
-  Verhalten bei aktivem `.color-effect`-Rahmen kombiniert mit der Fächer-Rotation.
-- TODO 8 (Querformat) weiterhin offen, jetzt als
-  [Issue #47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47) getrackt.
+- **Update (2026-09-05)**: der reale Multiplayer-Smoke-Test mit echtem Firebase-Backend (siehe
+  `player-hand/CLAUDE.md`), in dieser Sandbox-Umgebung ohne Netzwerkzugriff ursprünglich nicht
+  möglich, wurde von Patrick nachgeholt und bestätigt — insbesondere Heropower-Icon-Antippbarkeit
+  direkt über der neuen Leiste auf einem echten Gerät und das Verhalten bei aktivem
+  `.color-effect`-Rahmen kombiniert mit der Fächer-Rotation.
+- TODO 8 (Querformat, [Issue #47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47))
+  umgesetzt, siehe Update 2026-09-05 oben.
 
 Ursprünglicher Diagnosepunkt 9 unten ging von einer ohnehin auf 5 gedeckelten Hand aus — das ist
 ungenau: `card-play.service.ts` deckelt nur das *Nachziehen* auf 5, Dieb/Ninjas "Stehlen"
@@ -85,7 +105,8 @@ Befunde:
    nur Risiko für einen sichtbaren Ladeversatz).
 
 Verifiziert: `ng build` grün, `ng test --watch=false --browsers=ChromeHeadlessCI` 54/54 grün.
-**Nicht durchgeführt**: erneuter Live-Test auf echtem Gerät (kein Testgerät in dieser Sandbox).
+**Update (2026-09-05)**: erneuter Live-Test auf echtem Gerät (kein Testgerät in dieser Sandbox)
+von Patrick nachgeholt und bestätigt.
 
 ---
 
@@ -263,8 +284,8 @@ einseitigen Umsetzung, auch wenn der Auftrag "frei im Design" erlaubt.
   - Auswirkung: sichtbarer Redesign-Schritt, kein reiner CSS-Fix — vor Umsetzung kurz Skizze/
     Beschreibung mit Nutzer abstimmen.
 
-- [ ] **TODO 8 — Querformat: Kompaktlayout oder "Bitte drehen"-Hinweis** — getrackt in
-  [Issue #47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47)
+- [x] **TODO 8 — Querformat: Kompaktlayout oder "Bitte drehen"-Hinweis** — umgesetzt (Variante a,
+  Kompaktlayout), [Issue #47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47)
   - Zwei Optionen zur Wahl (Nutzerentscheidung):
     a) `@media (max-height: 500px) and (orientation: landscape)`-Kompaktvariante: Timer/Enemy-
        Card nebeneinander statt gestapelt (`flex-direction: row` in `.mainfield` in diesem
@@ -285,12 +306,12 @@ architektonisch/optisch trotzdem eigene Entscheidungen, kein reiner CSS-Fix:
 |---|---|---|
 | 1 | Handkarten als fixe Bottom-Leiste | TODO 7 oben, umgesetzt (PR #45) |
 | 1b | Fächer-Layout bei >5 Handkarten (Hearthstone/Slay the Spire) | umgesetzt (PR #45) |
-| 2 | Querformat: Kompaktlayout oder "Bitte drehen" | TODO 8 oben, [#47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47) |
-| 3 | Kartenstapel-Deko → Nachziehstapel-Icon mit Zähler-Badge | [#48](https://github.com/PatrickFrantzen/hero-dungeon/issues/48) |
-| 4 | Heropower als andockbarer FAB statt permanentem Overlay | [#49](https://github.com/PatrickFrantzen/hero-dungeon/issues/49) |
-| 5 | Enemy-Card kollabierbar (Beschreibung ein-/ausklappbar) | [#50](https://github.com/PatrickFrantzen/hero-dungeon/issues/50) |
-| 6 | Haptisches Feedback (`navigator.vibrate`) | [#51](https://github.com/PatrickFrantzen/hero-dungeon/issues/51) |
-| 7 | Swipe-Geste zum Karte-Spielen (Ergänzung zu Tap) | [#52](https://github.com/PatrickFrantzen/hero-dungeon/issues/52) |
+| 2 | Querformat: Kompaktlayout oder "Bitte drehen" | TODO 8 oben, umgesetzt ([#47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47)) |
+| 3 | Kartenstapel-Deko → Nachziehstapel-Icon mit Zähler-Badge | umgesetzt ([#48](https://github.com/PatrickFrantzen/hero-dungeon/issues/48)) |
+| 4 | Heropower als andockbarer FAB statt permanentem Overlay | umgesetzt ([#49](https://github.com/PatrickFrantzen/hero-dungeon/issues/49)) |
+| 5 | Enemy-Card kollabierbar (Beschreibung ein-/ausklappbar) | umgesetzt ([#50](https://github.com/PatrickFrantzen/hero-dungeon/issues/50)) |
+| 6 | Haptisches Feedback (`navigator.vibrate`) | umgesetzt ([#51](https://github.com/PatrickFrantzen/hero-dungeon/issues/51)) |
+| 7 | Swipe-Geste zum Karte-Spielen (Ergänzung zu Tap) | umgesetzt ([#52](https://github.com/PatrickFrantzen/hero-dungeon/issues/52)) |
 
 ## Nicht im Scope dieses Plans
 
@@ -310,13 +331,13 @@ architektonisch/optisch trotzdem eigene Entscheidungen, kein reiner CSS-Fix:
 - Recherche 2026-08-31 (WebSearch): Apple HIG/Material-Touch-Target-Richtwerte, Mobile-CSS-
   Konsistenz-Artikel 2026 (`touch-action`, Safe-Area, `dvh`), Mobile-UX-Grundsätze (Daumenzone,
   mobile UX als eigene Disziplin).
-- **GitHub Issues** (alle offenen Punkte dieses Plans, 2026-08-31 angelegt):
-  [#46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) PWA-Manifest (TODO 5),
-  [#47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47) Querformat (TODO 8),
+- **GitHub Issues** (alle Punkte dieses Plans, 2026-08-31 angelegt, Stand 2026-09-05 alle
+  umgesetzt): [#46](https://github.com/PatrickFrantzen/hero-dungeon/issues/46) PWA-Manifest
+  (TODO 5), [#47](https://github.com/PatrickFrantzen/hero-dungeon/issues/47) Querformat (TODO 8),
   [#48](https://github.com/PatrickFrantzen/hero-dungeon/issues/48) Kartenstapel-Zähler,
   [#49](https://github.com/PatrickFrantzen/hero-dungeon/issues/49) Heropower-FAB,
   [#50](https://github.com/PatrickFrantzen/hero-dungeon/issues/50) Enemy-Card kollabierbar,
   [#51](https://github.com/PatrickFrantzen/hero-dungeon/issues/51) Haptisches Feedback,
-  [#52](https://github.com/PatrickFrantzen/hero-dungeon/issues/52) Swipe-Geste. Bei Umsetzung
-  eines dieser Punkte zuerst das jeweilige Issue lesen (kann seit Anlage aktualisiert worden
-  sein) statt nur diesen Plan-Abschnitt.
+  [#52](https://github.com/PatrickFrantzen/hero-dungeon/issues/52) Swipe-Geste. Die Issues selbst
+  wurden nicht automatisch geschlossen — beim nächsten Blick in eines davon den tatsächlichen
+  Umsetzungsstand aus diesem Plan gegenprüfen.

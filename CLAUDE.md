@@ -3,7 +3,7 @@
 Kartenbasiertes Multiplayer-Dungeon-Spiel (Web) mit Firebase-Backend. Diese Datei ist die
 projektweite Orientierung für KI-Assistenten in diesem Repo — Details zu einzelnen Bereichen
 stehen in den verzeichnis-lokalen `CLAUDE.md`-Dateien aus dem Index unten, nicht hier. Stand:
-2026-08-29. Diese Datei wird nicht automatisch aktuell gehalten.
+2026-09-05. Diese Datei wird nicht automatisch aktuell gehalten.
 
 **Pflicht bei jeder Änderung: die betroffene(n) `CLAUDE.md`-Datei(en) mitpflegen.** Wer eine
 Komponente/einen Service/State/ein Modell ändert, das in einer verzeichnis-lokalen `CLAUDE.md`
@@ -130,10 +130,12 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
 
 - Player-Hand-Komponente: `docs/done/player-hand-decomposition-plan.md`
 - Firestore-Fehlerbehandlung/Repository-Layer: `docs/done/firestore-repository-service-plan.md`
-- `currentGame-state.ts`-Aufteilung: `docs/planned/currentGame-state-split-plan.md`
+- `currentGame-state.ts`-Aufteilung (inkl. Zwei-Browser-Smoke-Test, 2026-09-05 durchgeführt):
+  `docs/done/currentGame-state-split-plan.md`
 - Heldendatenmodell: `docs/done/hero-data-model-plan.md`
 - Dialog-/Auth-Vereinheitlichung: `docs/done/dialog-auth-unification-plan.md`
-- Singleplayer-Modus: `docs/planned/singleplayer-mode-plan.md`
+- Singleplayer-Modus (alle 4 PRs umgesetzt, 2026-09-05 als abgeschlossen markiert):
+  `docs/done/singleplayer-mode-plan.md`
 - Login-Umbau (beschlossen 2026-09-04, alle 6 PRs/Issues #73–#78 umgesetzt): kein Login-Zwang
   mehr vor dem Startscreen, Singleplayer läuft komplett lokal (mehrere parallele Spielstände,
   Account-Angebot erst beim Spielende), Multiplayer ist anonym mit 7-Tage-Ablauf ab letzter
@@ -148,12 +150,11 @@ hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
   vorgesehen, kein aktiver Plan dafür.
 - App war nicht responsive (kein `@media` im Projekt, feste Pixel-Positionierung v.a. in
   `player-hand`/`heropower`): `docs/done/responsive-design-plan.md` — Layout auf
-  Flexbox/`clamp()` umgestellt, voller Multiplayer-Smoke-Test mit Firebase-Login steht laut
-  Status-Abschnitt im Plan noch aus. Folgearbeit "fühlt sich mobil wie ein Spiel an" (Touch-
-  Härtung, Safe-Area, Handkarten als fixe Fächer-Leiste u.a.):
-  `docs/planned/mobile-native-feel-plan.md` — Stufe A (inkl. PWA-Manifest, Issue #46) + TODO 7
-  umgesetzt, restliche offene Punkte (Querformat, Heropower-FAB, Kartenstapel-Zähler, Haptik,
-  Swipe-Geste) als GitHub Issues #47–#52 getrackt, siehe Referenzen-Abschnitt im Plan.
+  Flexbox/`clamp()` umgestellt, voller Multiplayer-Smoke-Test mit Firebase-Login 2026-09-05
+  nachgeholt und bestätigt. Folgearbeit "fühlt sich mobil wie ein Spiel an" (Touch-Härtung,
+  Safe-Area, Handkarten als fixe Fächer-Leiste u.a.): `docs/done/mobile-native-feel-plan.md` —
+  Stufe A (inkl. PWA-Manifest, Issue #46) + Stufe B (Querformat, Heropower-FAB,
+  Kartenstapel-Zähler, Haptik, Swipe-Geste, GitHub Issues #47–#52) vollständig umgesetzt.
 - Interaktives In-Game-Tutorial ([Issue #54](https://github.com/PatrickFrantzen/hero-dungeon/issues/54)) ist **abgeschlossen** — alle 5 PRs (Grundgerüst, Inhalte für
   alle sieben Stationen, Auto-Trigger beim ersten Singleplayer-Spiel) umgesetzt, Plan nach
   `docs/done/tutorial-plan.md` verschoben. Details: `src/app/components/tutorial/CLAUDE.md`.

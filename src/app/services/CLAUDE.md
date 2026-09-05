@@ -279,7 +279,7 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   `Promise<void>` zurück statt einen `reportWriteFailure`-Callback zu akzeptieren, `PlayerHandComponent`
   hängt sein eigenes `.catch()` an die zurückgegebene Promise.
 - **`dieb.service.ts`** — heldenspezifische Sonderlogik für den Dieb (Solo-Held im
-  Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`). Zählt seit einem Bugfix
+  Singleplayer-Modus, siehe `docs/done/singleplayer-mode-plan.md`). Zählt seit einem Bugfix
   (2026-09-05) `heropowersUsed` (`GameStats`) nach jeder Nutzung selbst hoch — eigenes,
   drittes `bumpStat`-Analogon zu `CardPlayService`/`HeropowerService` (bewusst nicht geteilt,
   gleiche Begründung wie dort), da der Dieb nicht über `HeropowerService` läuft. Vorher fehlte

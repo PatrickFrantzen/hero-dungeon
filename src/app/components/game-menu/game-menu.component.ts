@@ -12,7 +12,7 @@ import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/d
 import { SaveListEntry, openSaveSelector } from '../dialog-select-save/dialog-select-save.component';
 
 /**
- * In-Game-Menü (Issue #74, PR 2 aus docs/planned/login-multiplayer-onboarding-plan.md) -
+ * In-Game-Menü (Issue #74, PR 2 aus docs/done/login-multiplayer-onboarding-plan.md) -
  * permanent erreichbar unabhängig von currentGameStatus(), eingebunden in game.component.html.
  * Presenter im Sinne des Issues, greift aber direkt auf LocalSingleplayerSaveService/Store zu
  * (kein eigener Container nötig, analog zu game.component.ts/startscreen/, siehe
