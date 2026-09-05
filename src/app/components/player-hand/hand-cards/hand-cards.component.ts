@@ -3,7 +3,7 @@ import { NgStyle } from '@angular/common';
 
 // Reiner Presenter (kein Store-/Firestore-Zugriff) - kapselt das Fächer-Layout und die
 // Swipe-Geste der Handkarten, extrahiert aus PlayerHandComponent
-// (docs/planned/player-hand-decomposition-plan.md, TODO 4). PlayerHandComponent bleibt für
+// (docs/done/player-hand-decomposition-plan.md, TODO 4). PlayerHandComponent bleibt für
 // vibrate()/reportWriteFailure()/chooseCard() zuständig - dieser Presenter meldet nur, welche
 // Karte per Tap/Swipe gewählt oder welche per Rasten-Button abgelegt wurde.
 @Component({

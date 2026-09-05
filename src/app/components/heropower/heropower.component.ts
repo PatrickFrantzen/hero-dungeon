@@ -37,7 +37,7 @@ export class HeropowerComponent {
     this.sheetOpen.update((open) => !open);
   }
 
-  /** Issue #93 + TODO 5 aus docs/planned/player-hand-decomposition-plan.md: ersetzt die
+  /** Issue #93 + TODO 5 aus docs/done/player-hand-decomposition-plan.md: ersetzt die
    * ursprünglich zehn strukturell identischen `heroPower<Name>()`-Methoden (unterschieden sich
    * nur im geprüften `currentEnemy().type`) durch einen Lookup auf `HeroDefinition.activatesOn`
    * — ein unbekannter/leerer Heldenname ist weiterhin ein No-op. */

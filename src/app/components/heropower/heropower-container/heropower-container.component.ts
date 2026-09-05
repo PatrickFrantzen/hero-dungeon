@@ -53,7 +53,7 @@ export class HeropowerContainerComponent {
   constructor() {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
     // Welches Ereignis ein Held auslöst, steht als resolutionKind auf seiner HeroDefinition
-    // (TODO 5 aus docs/planned/player-hand-decomposition-plan.md, ersetzt den vorherigen
+    // (TODO 5 aus docs/done/player-hand-decomposition-plan.md, ersetzt den vorherigen
     // switch(heroname)) — Dieb bleibt Sonderfall, da er nie über heropowerResolved läuft,
     // sondern DiebService direkt aufruft.
     effect(() => {

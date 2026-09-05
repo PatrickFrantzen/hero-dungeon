@@ -2,7 +2,7 @@
 
 `PlayerHandComponent` war der zentrale Hotspot im Projekt (mischte Firestore-Zugriff, NGXS-
 Dispatch, Spielregeln und UI in einer ~586-Zeilen-Klasse). Seit
-`docs/planned/player-hand-decomposition-plan.md` (TODO 1–3, dann TODO 4 Teil 1, siehe
+`docs/done/player-hand-decomposition-plan.md` (TODO 1–3, dann TODO 4 Teil 1, siehe
 Status-Abschnitte in diesem Plan) ist die Komponente auf ~320 Zeilen reduziert:
 
 - Firestore-Sync ausgelagert in `FirestoreSyncService` (`services/CLAUDE.md`).
@@ -25,7 +25,7 @@ Presenter kennt weder `CardPlayService` noch das `loadError`-Signal. Kartenstape
 Event-Button und Fehleranzeige bleiben bewusst im Host-Template: sie haben keine eigene
 Business-Logik und sind eng an `PlayerHandComponent`s Signale gekoppelt, eine weitere
 Aufspaltung dort würde nur Indirektion ohne echte Vertiefung hinzufügen (siehe
-`docs/planned/player-hand-decomposition-plan.md`, Status 2026-09-05).
+`docs/done/player-hand-decomposition-plan.md`, Status 2026-09-05).
 
 Fünf Aktionskarten (Spende, Stehlen, Heilkräuter, Wut, Heilung) brauchen vor der Auflösung einen
 Zielspieler — `chooseCard(card)` fängt diese Kartennamen ab (`singleTargetActionCards`-Set bzw.
@@ -40,10 +40,9 @@ Event-Überarbeitung hießen sie `isSoloEventActive()`/`resolveSoloEvent()` und 
 Singleplayer beschränkt; `CardPlayService.resolveEvent()` wendet den Effekt jetzt auf alle
 Spieler an, nicht nur auf den klickenden.
 
-**Vor jeder größeren Änderung hier zuerst `docs/planned/player-hand-decomposition-plan.md`
-lesen** — dort steht der aktuelle Umsetzungsstand (welche TODOs offen sind, u.a. optionale
-Sub-Komponenten fürs Template und ein Heropower-Strategy-Pattern) und die Begründung für
-bewusst nicht vereinheitlichte Stellen (siehe `HeropowerService`-Hinweis in
+**Vor jeder größeren Änderung hier zuerst `docs/done/player-hand-decomposition-plan.md`
+lesen** — alle 5 TODOs sind umgesetzt (Status-Abschnitte im Plan), trotzdem lohnt der Blick für
+die Begründung bewusst nicht vereinheitlichter Stellen (siehe `HeropowerService`-Hinweis in
 `services/CLAUDE.md`).
 
 Diese Komponente ist der zentrale Ort, an dem Store-Dispatches, Firestore-Reads und
