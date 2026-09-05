@@ -212,11 +212,9 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   sicher. Private Hilfsmethoden, die sowohl einen Wert zurückgeben als auch selbst schreiben
   (`checkHandsize()`, `drawCards()`), bündeln Wert + noch laufende Write-Promises in einem
   `WithWrites<T>`-Objekt (`{ value, writes }`), das der Aufrufer synchron ausliest und dessen
-  `writes` er in seine eigene Sammlung übernimmt. **Bewusst nicht mitgezogen:** `HeropowerService`
-  hat dasselbe `ReportWriteFailure`-Callback-Muster (eigene, nicht geteilte Typdefinition) -
-  eigener Kandidat für dieselbe Vertiefung, hier nicht angefasst. `chooseCard()` ist der
-  Einstiegspunkt für alle Karten ohne weitere Nutzereingabe — neue Kartenregeln hier einhängen,
-  nicht an der Komponente vorbei.
+  `writes` er in seine eigene Sammlung übernimmt. `HeropowerService` (unten) hat dieselbe
+  Umstellung im selben Zug mitbekommen. `chooseCard()` ist der Einstiegspunkt für alle Karten
+  ohne weitere Nutzereingabe — neue Kartenregeln hier einhängen, nicht an der Komponente vorbei.
   `resolveEvent()` (aufgerufen über den "Event ausführen"-Button in `PlayerHandComponent`,
   sichtbar sobald `currentEnemy().token.includes('event')` — Spielerzahl-unabhängig) wendet den
   Ereignis-Effekt auf ALLE Spieler an (`applyEventToSelf()`/`applyEventToOtherPlayers()`), nicht
@@ -276,7 +274,10 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   erneut prüfen, nicht blind zusammenlegen. `resolveMagierHeropower()` pausiert zusätzlich den
   Dungeon-Timer (`src/app/components/game/CLAUDE.md`). Alle vier `resolve*Heropower()`-Methoden
   zählen über ihr eigenes `bumpStat()` (bewusst nicht mit `CardPlayService.bumpStat()` geteilt)
-  die `heropowersUsed`-Statistik hoch.
+  die `heropowersUsed`-Statistik hoch. **Fehlerbehandlung (2026-09-05, Folgeschritt zu
+  `CardPlayService` oben):** dieselbe Umstellung wie dort — alle öffentlichen Methoden geben
+  `Promise<void>` zurück statt einen `reportWriteFailure`-Callback zu akzeptieren, `PlayerHandComponent`
+  hängt sein eigenes `.catch()` an die zurückgegebene Promise.
 - **`dieb.service.ts`** — heldenspezifische Sonderlogik für den Dieb (Solo-Held im
   Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`). Zählt seit einem Bugfix
   (2026-09-05) `heropowersUsed` (`GameStats`) nach jeder Nutzung selbst hoch — eigenes,

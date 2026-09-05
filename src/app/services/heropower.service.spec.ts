@@ -37,15 +37,13 @@ describe('HeropowerService', () => {
   it('resolveWalkuereHeropower does nothing if fewer than 3 heropower cards are selected', () => {
     const playerRepo = TestBed.inject(PlayerRepositoryService);
     const writeSpy = spyOn(playerRepo, 'updateHandstack');
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.resolveWalkuereHeropower('game-1', 'player-1', reportWriteFailure);
+    service.resolveWalkuereHeropower('game-1', 'player-1');
 
     expect(writeSpy).not.toHaveBeenCalled();
-    expect(reportWriteFailure).not.toHaveBeenCalled();
   });
 
-  it('resolveArrayHeropower clears the enemy token, reports the write, and notifies the callback', () => {
+  it('resolveArrayHeropower clears the enemy token, writes stats, and notifies the callback', async () => {
     const snapshot = store.snapshot();
     store.reset({
       ...snapshot,
@@ -58,13 +56,12 @@ describe('HeropowerService', () => {
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const updateSpy = spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
+    spyOn(gameRepo, 'updateStats').and.resolveTo();
     const onEnemyTokenCleared = jasmine.createSpy('onEnemyTokenCleared');
 
-    service.resolveArrayHeropower('game-1', 'player-1', reportWriteFailure, onEnemyTokenCleared);
+    await service.resolveArrayHeropower('game-1', 'player-1', onEnemyTokenCleared);
 
     expect(updateSpy).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ token: [] }));
-    expect(reportWriteFailure).toHaveBeenCalled();
     expect(onEnemyTokenCleared).toHaveBeenCalledWith(jasmine.objectContaining({ token: [] }));
   });
 });

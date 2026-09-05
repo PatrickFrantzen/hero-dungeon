@@ -316,29 +316,24 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere' | 'magier') {
     this.vibrate();
-    const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
     switch (kind) {
       case 'magier':
-        this.heropowerService.resolveMagierHeropower(this.currentGameId(), this.currentPlayerId(), reportWriteFailure);
+        this.reportWriteFailure(this.heropowerService.resolveMagierHeropower(this.currentGameId(), this.currentPlayerId()));
         break;
       case 'array':
-        this.heropowerService.resolveArrayHeropower(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          reportWriteFailure,
-          (enemy) => this.reportWriteFailure(this.cardPlayService.checkForNextEnemy(this.currentGameId(), enemy))
+        this.reportWriteFailure(
+          this.heropowerService.resolveArrayHeropower(this.currentGameId(), this.currentPlayerId(), (enemy) =>
+            this.reportWriteFailure(this.cardPlayService.checkForNextEnemy(this.currentGameId(), enemy))
+          )
         );
         break;
       case 'jaegerin':
-        this.heropowerService.resolveJaegerinHeropower(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          reportWriteFailure,
-          () => this.openDialog()
+        this.reportWriteFailure(
+          this.heropowerService.resolveJaegerinHeropower(this.currentGameId(), this.currentPlayerId(), () => this.openDialog())
         );
         break;
       case 'walkuere':
-        this.heropowerService.resolveWalkuereHeropower(this.currentGameId(), this.currentPlayerId(), reportWriteFailure);
+        this.reportWriteFailure(this.heropowerService.resolveWalkuereHeropower(this.currentGameId(), this.currentPlayerId()));
         break;
     }
   }
@@ -438,12 +433,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (!result) return;
       const { playerId } = result.data;
-      this.heropowerService.resolveJaegerinHeropowerForPlayer(
-        this.currentGameId(),
-        this.currentPlayerId(),
-        playerId,
-        (write) => this.reportWriteFailure(write)
-      );
+      this.reportWriteFailure(this.heropowerService.resolveJaegerinHeropowerForPlayer(this.currentGameId(), this.currentPlayerId(), playerId));
     });
   }
 
