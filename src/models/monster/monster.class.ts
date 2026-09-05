@@ -11,94 +11,42 @@ export interface Mob {
   token: string[];
 }
 
+/** Reihenfolge bestimmt den Boss-Index für die Monster-/Quest-Formel in `createMob()` - ein
+ * Bossname, der hier nicht auftaucht (aktuell nur "Der Dungeon-Overlord", der ursprüngliche
+ * `else`-Zweig), fällt auf den Index direkt nach dem letzten gelisteten Boss zurück (siehe
+ * `bossIndex` dort), genau wie vorher der `else`-Zweig jeden unbekannten Namen wie den
+ * schwersten Boss behandelte. */
+const BOSS_ORDER = ['Baby-Barbar', 'Der Flecken-Schrecken', 'Zola, die Gorgone', 'Verdammt, ein Drache!!!'];
+
+const DIFFICULTY_INDEX: Record<string, number> = { easy: 0, medium: 1 };
+
 export class Monster {
   public Mob: Mob[] = [];
 
   constructor() {}
 
-  createMob(numberOfPlayers: number, currentBossName: string, difficulty: string) {
-    if (currentBossName == 'Baby-Barbar') {
-      if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 8, 2, 10, 4, 12, 6, 14, 8, 16, 10);
-      } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 12, 2, 14, 4, 16, 6, 18, 8, 20, 10);
-      } else {
-        this.getMonsterForGame(numberOfPlayers, 16, 2, 18, 4, 20, 6, 22, 8, 24, 10);
-      }
-    } else if (currentBossName == 'Der Flecken-Schrecken') {
-      if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 12, 2, 14, 4, 16, 6, 18, 8, 20, 10);
-      } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 16, 2, 18, 4, 20, 6, 22, 8, 24, 10);
-      } else {
-        this.getMonsterForGame(numberOfPlayers, 20, 2, 22, 4, 24, 6, 26, 8, 28, 10);
-      }
-    } else if (currentBossName == 'Zola, die Gorgone') {
-      if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 16, 2, 18, 4, 20, 6, 22, 8, 24, 10);
-      } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 20, 2, 22, 4, 24, 6, 26, 8, 28, 10);
-      } else {
-        this.getMonsterForGame(numberOfPlayers, 24, 2, 26, 4, 28, 6, 30, 8, 32, 10);
-      }
-    } else if (currentBossName == 'Verdammt, ein Drache!!!') {
-      if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 20, 2, 22, 4, 24, 6, 26, 8, 28, 10);
-      } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 24, 2, 26, 4, 28, 6, 30, 8, 32, 10);
-      } else {
-        this.getMonsterForGame(numberOfPlayers, 28, 2, 30, 4, 32, 6, 34, 8, 36, 10);
-      }
-    } else {
-      if (difficulty == 'easy') {
-        this.getMonsterForGame(numberOfPlayers, 24, 2, 26, 4, 28, 6, 30, 8, 32, 10);
-      } else if (difficulty == 'medium') {
-        this.getMonsterForGame(numberOfPlayers, 28, 2, 30, 4, 32, 6, 34, 8, 36, 10);
-      } else {
-        this.getMonsterForGame(numberOfPlayers, 32, 2, 34, 4, 36, 6, 38, 8, 40, 10);
-      }
-    }
-    return this.Mob;
-  }
+  /** Monster-/Quest-Anzahl folgt einer geschlossenen Formel statt einer 5×3-Boss-/Schwierigkeits-
+   * Kaskade mit 11 positionellen Zahlen-Parametern (ehemals `getMonsterForGame()`, siehe
+   * git-history) - Formel und Herleitung stehen in `src/models/CLAUDE.md` und im Test-Kommentar
+   * in `monster.class.spec.ts`, hier nur die Anwendung. Ein unbekannter `difficulty`-String
+   * (aktuell nur durch fehlerhaften Aufruf möglich) fällt wie vorher auf "hard" (Index 2)
+   * zurück, da `DIFFICULTY_INDEX` nur "easy"/"medium" kennt. */
+  createMob(numberOfPlayers: number, currentBossName: string, difficulty: string): Mob[] {
+    const bossIndex = BOSS_ORDER.includes(currentBossName) ? BOSS_ORDER.indexOf(currentBossName) : BOSS_ORDER.length;
+    const difficultyIndex = DIFFICULTY_INDEX[difficulty] ?? 2;
 
-  getMonsterForGame(
-    numberOfPlayers: number,
-    monsterOne: number,
-    questOne: number,
-    monsterTwo: number,
-    questTwo: number,
-    monsterThree: number,
-    questThree: number,
-    monsterFour: number,
-    questFour: number,
-    monsterFive: number,
-    questFive: number
-  ) {
-    switch (numberOfPlayers) {
-      case 1:
-        this.loadMonster(monsterOne);
-        this.loadSoloQuests(questOne);
-        break;
-      case 2:
-        this.loadMonster(monsterTwo);
-        this.loadQuests(questTwo);
-        break;
-      case 3:
-        this.loadMonster(monsterThree);
-        this.loadQuests(questThree);
-        break;
-      case 4:
-        this.loadMonster(monsterFour);
-        this.loadQuests(questFour);
-        break;
-      case 5:
-        this.loadMonster(monsterFive);
-        this.loadQuests(questFive);
-        break;
-      default:
-        break;
+    const monsterCount = 2 * numberOfPlayers + 6 + 4 * bossIndex + 4 * difficultyIndex;
+    const questCount = 2 * numberOfPlayers;
+
+    this.loadMonster(monsterCount);
+    if (numberOfPlayers === 1) {
+      this.loadSoloQuests(questCount);
+    } else {
+      this.loadQuests(questCount);
     }
     shuffle(this.Mob);
+
+    return this.Mob;
   }
 
   loadMonster(numberOfMonsterCards: number) {
