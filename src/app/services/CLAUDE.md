@@ -197,8 +197,24 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
 ## Business-Logik-Services (kein/kaum Firestore-Zugriff)
 
 - **`card-play.service.ts`** — Karten-/Encounter-Regeln (Karte ausspielen, Encounter-Auflösung
-  inkl. Singleplayer-Sonderfälle). `chooseCard()` ist der Einstiegspunkt für alle Karten ohne
-  weitere Nutzereingabe — neue Kartenregeln hier einhängen, nicht an der Komponente vorbei.
+  inkl. Singleplayer-Sonderfälle). **Fehlerbehandlung (2026-09-05, Architecture-Review-Kandidat
+  1):** alle öffentlichen Methoden geben ein `Promise<void>` zurück statt (wie zuvor) einen
+  `reportWriteFailure`-Callback als letzten Parameter entgegenzunehmen — die Promise rejected,
+  sobald einer der intern ausgelösten, weiterhin fire-and-forget laufenden Firestore-Writes
+  fehlschlägt (`Promise.all(writes)` über alle gesammelten Write-Promises einer Methode, keine
+  Einzelmeldung mehr pro Write). Aufrufer (`PlayerHandComponent`/`GameComponent`) hängen ihr
+  eigenes `.catch()` mit einer für ihren Call-Site passenden Fehlermeldung an die zurückgegebene
+  Promise, statt eine Callback-Closure durchzureichen — vorher fädelte sich `ReportWriteFailure`
+  unverändert durch ~40 private Hilfsmethoden, obwohl nur die ~14 öffentlichen Einstiegspunkte
+  tatsächlich unterschiedliche Fehlermeldungen brauchen. Kein Instanzfeld für diesen Zustand:
+  `CardPlayService` ist ein Singleton, mehrere private Hilfsmethoden sind bereits `async` (haben
+  also echte Await-Punkte) - ein geteiltes Feld wäre bei zeitlich überlappenden Aufrufen nicht
+  sicher. Private Hilfsmethoden, die sowohl einen Wert zurückgeben als auch selbst schreiben
+  (`checkHandsize()`, `drawCards()`), bündeln Wert + noch laufende Write-Promises in einem
+  `WithWrites<T>`-Objekt (`{ value, writes }`), das der Aufrufer synchron ausliest und dessen
+  `writes` er in seine eigene Sammlung übernimmt. `HeropowerService` (unten) hat dieselbe
+  Umstellung im selben Zug mitbekommen. `chooseCard()` ist der Einstiegspunkt für alle Karten
+  ohne weitere Nutzereingabe — neue Kartenregeln hier einhängen, nicht an der Komponente vorbei.
   `resolveEvent()` (aufgerufen über den "Event ausführen"-Button in `PlayerHandComponent`,
   sichtbar sobald `currentEnemy().token.includes('event')` — Spielerzahl-unabhängig) wendet den
   Ereignis-Effekt auf ALLE Spieler an (`applyEventToSelf()`/`applyEventToOtherPlayers()`), nicht
@@ -258,7 +274,10 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   erneut prüfen, nicht blind zusammenlegen. `resolveMagierHeropower()` pausiert zusätzlich den
   Dungeon-Timer (`src/app/components/game/CLAUDE.md`). Alle vier `resolve*Heropower()`-Methoden
   zählen über ihr eigenes `bumpStat()` (bewusst nicht mit `CardPlayService.bumpStat()` geteilt)
-  die `heropowersUsed`-Statistik hoch.
+  die `heropowersUsed`-Statistik hoch. **Fehlerbehandlung (2026-09-05, Folgeschritt zu
+  `CardPlayService` oben):** dieselbe Umstellung wie dort — alle öffentlichen Methoden geben
+  `Promise<void>` zurück statt einen `reportWriteFailure`-Callback zu akzeptieren, `PlayerHandComponent`
+  hängt sein eigenes `.catch()` an die zurückgegebene Promise.
 - **`dieb.service.ts`** — heldenspezifische Sonderlogik für den Dieb (Solo-Held im
   Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`). Zählt seit einem Bugfix
   (2026-09-05) `heropowersUsed` (`GameStats`) nach jeder Nutzung selbst hoch — eigenes,

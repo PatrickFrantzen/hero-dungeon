@@ -128,7 +128,7 @@ Aktuelle Diagnosen und TODOs stehen in den einzelnen `docs/planned/*-plan.md`-Da
 (z.B. Player-Hand-Hotspot in `src/app/components/player-hand/CLAUDE.md`). Root-`CLAUDE.md` hält
 hier nur noch fest, welche größeren Themen offen sind, nicht mehr die Details:
 
-- Player-Hand-Komponente: `docs/planned/player-hand-decomposition-plan.md`
+- Player-Hand-Komponente: `docs/done/player-hand-decomposition-plan.md`
 - Firestore-Fehlerbehandlung/Repository-Layer: `docs/done/firestore-repository-service-plan.md`
 - `currentGame-state.ts`-Aufteilung: `docs/planned/currentGame-state-split-plan.md`
 - Heldendatenmodell: `docs/done/hero-data-model-plan.md`

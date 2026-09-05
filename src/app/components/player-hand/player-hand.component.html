@@ -15,25 +15,12 @@
     <span class="card-stack-badge">{{ currentCardStack().length }}</span>
   </div>
 
-    <div class="currentHandStack">
-      @for (card of currentHand() ; track card; let i = $index) {
-        <div class="hand-card" [ngStyle]="handCardStyle(i)" [class.dragging]="draggingIndex() === i">
-          <img
-            (click)="chooseCard(card)"
-            (touchstart)="onCardTouchStart($event, i)"
-            (touchmove)="onCardTouchMove($event, i)"
-            (touchend)="onCardTouchEnd($event, i, card)"
-            (touchcancel)="onCardTouchCancel(i)"
-            src="./assets/img/cards/{{card}}.png" alt="{{card}}" decoding="async">
-          @if (isSingleplayer()) {
-            <button
-              class="rest-button tw-rounded-full tw-bg-purple-700/90 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-medium tw-text-white tw-shadow tw-transition-colors hover:tw-bg-purple-600"
-              (click)="restCard(card)"
-            >Rasten</button>
-          }
-        </div>
-        }
-      </div>
+    <app-hand-cards
+      [hand]="currentHand()"
+      [singleplayer]="isSingleplayer()"
+      (cardChosen)="chooseCard($event)"
+      (cardRested)="restCard($event)"
+    ></app-hand-cards>
 
       <app-heropower-container (heropowerResolved)="onHeropowerResolved($event)"></app-heropower-container>
     </div>

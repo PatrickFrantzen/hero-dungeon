@@ -1,0 +1,89 @@
+.currentHandStack {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: clamp(2px, 1vw, 12px);
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 4px clamp(16px, 6vw, 40px) 0;
+    box-sizing: border-box;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+// Fächer-Layout (Hearthstone/Slay-the-Spire-Prinzip, siehe hand-cards.component.ts
+// handCardStyles()): Rotation/Hochversatz/Skalierung kommen als CSS-Custom-Properties per
+// [ngStyle] rein, die transform-Deklaration selbst bleibt hier - so kollidiert das :active-
+// Press-Feedback unten nicht mit den Inline-Styles (Inline-style transform würde jede
+// Stylesheet-Regel gleicher Eigenschaft überstimmen, Custom Properties dagegen nicht).
+.hand-card {
+    // position: relative als Anker fürs .rest-button-Badge unten (absolut positioniert statt
+    // wie vorher unter dem Bild im Fluss - siehe dortiger Kommentar für die Begründung).
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    // --drag-y (Issue #52, Swipe-Geste) ist 0px im Ruhezustand und wird von
+    // hand-cards.component.ts nur während eines aktiven Touch-Drags an genau diesem Index
+    // gesetzt (handCardStyle()) - überlagert die Fächer-Basisposition, statt sie zu ersetzen.
+    transform: rotate(var(--rot, 0deg)) translateY(calc(var(--y, 0px) - var(--drag-y, 0px))) scale(var(--scale, 1));
+    transform-origin: 50% 130%;
+    transition: transform 0.18s ease-out, margin-left 0.18s ease-out;
+
+    img {
+        width: clamp(70px, 15vw, 150px);
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        // pan-x statt des Browser-Default (erlaubt beides): das vertikale Wischen soll komplett
+        // von onCardTouchMove()/preventDefault() gesteuert werden, nicht mit einem nativen
+        // Scroll-Gesture um das Touch-Event konkurrieren. Horizontales Scrollen der Fächer-Reihe
+        // (falls bei sehr vielen Karten trotz des Fixes aus #47/Live-Test-Fixes nötig) bleibt
+        // dadurch weiterhin möglich.
+        touch-action: pan-x;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    &:active {
+        transform: rotate(var(--rot, 0deg)) translateY(calc(var(--y, 0px) - var(--drag-y, 0px) - 10px)) scale(calc(var(--scale, 1) * 0.97));
+        z-index: 999 !important;
+    }
+
+    // Während des Ziehens keine Transition, damit die Karte dem Finger 1:1 folgt statt
+    // hinterherzueiern - die Snap-Back-/Spiel-Animation nach Loslassen nutzt wieder die
+    // Transition oben, sobald diese Klasse (per draggingIndex()-Signal) entfernt wird.
+    &.dragging {
+        transition: none;
+    }
+}
+
+// Live-Test-Feedback (2026-09-03): das Rasten-Feld saß vorher unter jedem Handkartenbild im
+// normalen Dokumentfluss - bei vielen Karten (Singleplayer, Deck cycled auf 7+ Karten) wuchs die
+// Fächer-Reihe dadurch so hoch, dass der Button in der fixen .card-area-Leiste unten aus dem
+// sichtbaren Viewport rutschte. Jetzt als kompaktes Badge auf der Karte selbst (position:
+// relative auf .hand-card oben) - trägt nicht mehr zur Höhe der Reihe bei, unabhängig von der
+// Kartenanzahl.
+.rest-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
+}
+
+// Querformat-Kompaktlayout (Issue #47, TODO 8 Option a) - engere Leiste, kleinere Handkarten,
+// damit auf ~375-430px Viewporthöhe noch Platz für Timer/Enemy-Card (game.component.scss,
+// enemy.component.scss in PlayerHandComponents Host, siehe player-hand.component.scss) bleibt.
+@media (orientation: landscape) and (max-height: 500px) {
+    .hand-card img {
+        width: clamp(50px, 10vw, 90px);
+    }
+}

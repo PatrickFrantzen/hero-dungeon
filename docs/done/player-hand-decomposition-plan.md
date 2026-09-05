@@ -17,6 +17,38 @@ beide sind im Plan selbst als optional/nice-to-have markiert, TODO 5 setzt zusä
 `docs/done/hero-data-model-plan.md` auf, das seit dieser Session verfügbar ist, falls eine
 künftige Session das aufgreifen will.
 
+## Status (2026-09-05)
+
+**TODO 4 (Teil 1) umgesetzt**: `HandCardsComponent` (`player-hand/hand-cards/`) übernimmt das
+Fächer-Layout (`handCardStyles()`/`handCardStyle()`) und die Swipe-Geste (`onCardTouch*()`)
+inkl. des zugehörigen Handkarten-Renderings (Bild + Rasten-Button) — reiner Presenter
+(`hand = input.required<string[]>()`, `singleplayer = input.required<boolean>()`,
+`cardChosen`/`cardRested` als `output<string>()`), kein Store-/Firestore-Zugriff.
+`PlayerHandComponent` bleibt für `vibrate()`/`reportWriteFailure()`/`chooseCard()`/`restCard()`
+zuständig und reicht `currentHand()`/`isSingleplayer()` nur noch als Inputs durch. Damit auf
+~320 Zeilen reduziert (vorher 444). `CardStackComponent`/`PlayerHandCardsComponent` für den
+verbleibenden Rest des Templates (Kartenstapel-Zähler, Event-Button, Fehleranzeige) bewusst
+nicht mit ausgelagert — dieser Rest ist bereits ohne eigene Business-Logik und eng an
+`PlayerHandComponent`s eigene Signale gekoppelt, eine weitere Aufspaltung hätte hier keine echte
+Vertiefung gebracht, nur zusätzliche Indirektion.
+
+`ng build`/`ng test --watch=false --browsers=ChromeHeadlessCI` grün (175/175) nach dem Schritt.
+**Kein manueller Multiplayer-Smoke-Test durchgeführt** (weiterhin kein Firebase-Emulator-/
+Zwei-Browser-Setup in dieser Session verfügbar) — vor dem Merge nachholen (Karte per Tap **und**
+Swipe spielen, Rasten-Button im Singleplayer, Fächer-Layout bei 6+ Handkarten).
+
+**TODO 5 umgesetzt (2026-09-05, direkt im Anschluss an die Planüberarbeitung)**: `activatesOn`/
+`resolutionKind` auf `HeroDefinition` (`src/models/helden/hero-definitions.ts`) ersetzen sowohl
+die zehn `heroPower<Name>()`-Methoden in `heropower.component.ts` als auch den `switch
+(heroname)` in `HeropowerContainerComponent` — Details siehe
+`src/app/components/heropower/CLAUDE.md`. `ng build`/`ng test --watch=false
+--browsers=ChromeHeadlessCI` grün (176/176, 3 der bisherigen Tests durch verhaltensbasierte
+Tests ersetzt, die tatsächlich prüfen ob `heropowerActivated()` je Held/Gegnertyp korrekt
+kippt, statt auf entfernte Methoden zu spyen). Damit sind alle 5 TODOs aus diesem Plan
+abgearbeitet — Verschiebung nach `docs/done/` steht noch aus (siehe `docs/CLAUDE.md`-Konvention),
+da der ausstehende manuelle Multiplayer-Smoke-Test (siehe Verifikation unten) in dieser Session
+weiterhin nicht durchführbar war.
+
 `ng build`/`ng test --watch=false --browsers=ChromeHeadlessCI` grün nach jedem Schritt.
 **Kein manueller Multiplayer-Smoke-Test durchgeführt** (kein laufendes Firebase-
 Emulator-/Zwei-Browser-Setup in dieser Session verfügbar) — der Plan verlangt diesen
@@ -146,26 +178,55 @@ konzentrieren).
   - Verifikation: `ng build`, `ng test`, manueller Test „Karte spielen (Einzel- und
     Doppelkarte), Gegner besiegen, nächster Gegner/Boss lädt" — der Kernspielloop.
 
-- [ ] **TODO 4 — Sub-Komponenten fürs Template (optional, nach TODO 1-3)**
-  - `player-hand.component.html` in `CardStackComponent`/`PlayerHandCardsComponent`
+- [x] **TODO 4 — Sub-Komponenten fürs Template (optional, nach TODO 1-3)** — Fächer-/Swipe-Teil
+  am 2026-09-05 als `HandCardsComponent` umgesetzt, siehe Status-Abschnitt oben. Der
+  ursprünglich vorgeschlagene `CardStackComponent`-Schnitt (Kartenstapel-Zähler) wurde bewusst
+  nicht umgesetzt, siehe Begründung dort.
+  - ~~`player-hand.component.html` in `CardStackComponent`/`PlayerHandCardsComponent`
     aufteilen, analog zum bestehenden `EnemyContainerComponent`/`HeropowerContainerComponent`-
     Muster. Erst sinnvoll, wenn TODO 1-3 die Komponente bereits auf reine Orchestrierung
-    reduziert haben.
-  - Verifikation: `ng build`, `ng test`.
+    reduziert haben.~~
+  - Verifikation: `ng build`, `ng test` — grün, siehe Status-Abschnitt oben.
 
-- [ ] **TODO 5 — Stretch-Goal: Heropower-Strategy-Pattern in `heropower.component.ts`**
-  - Nur nach TODO 2 sinnvoll (setzt den neuen `HeropowerService` voraus). Ein
-    `HeropowerStrategy`-Interface (`canActivate(enemy: Mob): boolean`) pro Heldenklasse,
-    registriert in einer `Record<string, HeropowerStrategy>`-Lookup-Map, ersetzt die zehn
-    `heroPower<Name>()`-Methoden (`heropower.component.ts:45-102`) und den `switch` in
-    `HeropowerContainerComponent` (`heropower-container.component.ts:57-77`).
-  - Die Aktivierungsregel (`type === 'Person'` etc.) wandert als Konfiguration in die
-    jeweilige Heldenklasse — **erst sinnvoll nach**
-    `docs/planned/hero-data-model-plan.md`, das die Heldenklassen ohnehin auf ein
-    Konfigurationsobjekt umstellt; dort ließe sich `activatesOn` als weiteres Datenfeld
-    ergänzen, statt eine zusätzliche Klassenhierarchie für Strategien einzuführen.
+- [x] **TODO 5 — Heropower-Aktivierungs-/Auflösungsregeln datengetrieben statt zwei
+  duplizierten `switch`/Methoden-Sets** (überarbeitete Diagnose 2026-09-05, ersetzt die
+  ursprüngliche "Strategy-Pattern"-Idee unten)
+  - **Befund**: zwei separate, aber strukturell gleiche Duplikate über je 10 Helden:
+    1. `heropower.component.ts:77-136` — zehn `heroPower<Name>()`-Methoden, die sich nur im
+       geprüften `currentEnemy().type`-Wert unterscheiden (`'Person'`/`'Monster'`/
+       `'Hindernis'`/immer aktivierbar).
+    2. `heropower-container.component.ts:60-81` — ein zweiter `switch (heroname)`, der
+       entscheidet, welches Auflösungs-Ereignis (`'array'`/`'magier'`/`'jaegerin'`/`'walkuere'`/
+       Dieb-Direktaufruf) ein Held auslöst.
+    Beide Achsen sind unabhängig voneinander (wann aktivierbar vs. wie aufgelöst) — ein
+    einzelnes `HeropowerStrategy.canActivate()`-Interface (ursprüngliche Idee unten) hätte nur
+    Duplikat 1 gelöst und Duplikat 2 unangetastet gelassen. Beide werden jetzt gemeinsam
+    angegangen, damit keine der beiden Stellen dupliziert zurückbleibt.
+  - **Lösung — Datenfelder statt Klassenhierarchie**: seit
+    `docs/done/hero-data-model-plan.md` gibt es `HERO_DEFINITIONS`/`HeroDefinition`
+    (`src/models/helden/hero-definitions.ts`) als einzige Heldenquelle, bereits
+    konfigurationsbasiert (kein Klassen-pro-Held-Muster mehr, siehe `EXTRA_DECK_FOR_HERO` als
+    Vorbild für ein weiteres Lookup-Feld). `HeropowerStrategy` als neue Klassenhierarchie wäre
+    ein Rückschritt gegen dieses bereits etablierte Muster — stattdessen zwei rein deklarative
+    Felder auf `HeroDefinition`:
+    ```ts
+    activatesOn: 'Person' | 'Monster' | 'Hindernis' | 'always';
+    resolutionKind: 'array' | 'magier' | 'jaegerin' | 'walkuere' | 'dieb';
+    ```
+    Beide Felder leben ausschließlich auf `HeroDefinition` (statischer Fakt pro Held, kein
+    Laufzeitzustand) — Komponenten schlagen per `HERO_DEFINITIONS.find(...)` nach, analog zu
+    `EXTRA_DECK_FOR_HERO`.
+  - `heropower.component.ts`: die zehn `heroPower<Name>()`-Methoden + `heroPowerHandlers`-
+    Lookup entfallen, ein einziges `onActivateHeropower()` liest `activatesOn` (per
+    Helden-Lookup über `heroName()`) und toggelt `activateHeroPower()`/`deactivateHeroPower()`
+    (`'always'` verhält sich wie die bisherigen Magier/Jägerin/Dieb/Walküre-Methoden ohne
+    Typ-Check).
+  - `HeropowerContainerComponent`: der `switch (heroname)` wird ein `resolutionKind`-Lookup;
+    `resolutionKind === 'dieb'` bleibt als eigener Zweig (`DiebService.heropower(...)` statt
+    `heropowerResolved.emit(...)`, da Dieb nie über dieses Output läuft).
   - Template `heropower.component.html`: zehn `@if`-Blöcke durch eine `@for`-Schleife über
-    eine „Icon je Heldentyp"-Liste ersetzen.
+    eine „Icon je Heldentyp"-Liste ersetzen (unverändert zur ursprünglichen Idee, hängt an
+    keinem der beiden Felder oben).
   - Dieses TODO ist bewusst optional/nice-to-have (Befund 6 ist im Review als „mittelfristig
     relevant" eingestuft, nicht kritisch) — bei Zeitdruck nach TODO 1-4 abbrechen und diesen
     Punkt für eine weitere Session zurückstellen.

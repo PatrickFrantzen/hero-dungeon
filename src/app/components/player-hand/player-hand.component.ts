@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, map } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
@@ -26,8 +26,8 @@ import { HeropowerService } from 'src/app/services/heropower.service';
 import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { HeropowerDialogPlayer } from '../dialog-results';
 import { DialogHeropowerComponent } from '../dialog-heropower/dialog-heropower.component';
-import { NgStyle } from '@angular/common';
 import { HeropowerContainerComponent } from '../heropower/heropower-container/heropower-container.component';
+import { HandCardsComponent } from './hand-cards/hand-cards.component';
 
 // OnPush: the Firestore onSnapshot callbacks in updateFromDatabase/updatePlayerFromDatabase
 // below now only dispatch NGXS actions instead of also mutating plain fields directly, so all
@@ -36,7 +36,7 @@ import { HeropowerContainerComponent } from '../heropower/heropower-container/he
     selector: 'app-player-hand',
     templateUrl: './player-hand.component.html',
     styleUrls: ['./player-hand.component.scss'],
-    imports: [NgStyle, HeropowerContainerComponent],
+    imports: [HeropowerContainerComponent, HandCardsComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerHandComponent implements OnInit, OnDestroy {
@@ -62,118 +62,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   private readonly singleTargetActionCards = new Set(['spende', 'stehlen', 'heilkräuter', 'heile']);
 
   loadError = signal<string | null>(null);
-
-  /** Fächer-Layout für die Handkarten, sobald mehr als 5 Karten gehalten werden (Dieb "Stehlen":
-   * 3 Handkarten ablegen, 5 nachziehen - kann die Hand auf bis zu 7 Karten wachsen lassen, siehe
-   * dieb.service.ts). Bei ≤5 Karten bleibt die bestehende, nicht überlappende Reihe (Flexbox-
-   * `gap`) unverändert - Inspiration Hearthstone/Slay the Spire: Karten überlappen statt in eine
-   * zweite Reihe umzubrechen, fächern sich in einem Bogen auf und schrumpfen ab 6 Karten leicht,
-   * damit die Reihe auch auf schmalen Screens eine einzige bleibt. Gesetzt werden nur CSS-Custom-
-   * Properties (`--rot`/`--y`/`--scale`) plus `margin-left`/`z-index` - die eigentliche
-   * `transform`-Deklaration (inkl. `:active`-Press-Feedback) steht in player-hand.component.scss,
-   * damit Inline-Styles nicht mit dem CSS-`:active`-Zustand kollidieren.
-   *
-   * Live-Test (2026-09-01) zeigte: die äußeren Karten rutschten bei 7-8 Karten seitlich aus dem
-   * sichtbaren Bereich. Ursache: `margin-left` reserviert nur die UNROTIERTE Kartenbreite im
-   * Flex-Layout (CSS `transform` ändert die Layout-Box nicht), die tatsächlich sichtbare
-   * Bounding-Box einer rotierten Karte ist aber breiter (`W*cos(θ) + H*sin(θ)`) - bei der
-   * vorherigen Rotation von bis zu ±28° und einem Höhen-/Breitenverhältnis von ~1.5 wuchs die
-   * äußerste Karte dadurch spürbar über ihre reservierte Breite hinaus. Fix: Rotation deutlich
-   * gedeckelt (max. ±17° statt ±28°) und Überlappung/Schrumpfung so nachgezogen, dass die
-   * inkl. Rotationszuwachs sichtbare Gesamtbreite auch bei 8-10 Karten innerhalb eines typischen
-   * Phone-Viewports (ab ~320px) bleibt, ohne dass horizontales Scrollen nötig wird. */
-  readonly handCardStyles = computed(() => {
-    const hand = this.currentHand();
-    const total = hand.length;
-    if (total <= 5) {
-      return hand.map(() => ({}));
-    }
-
-    const spread = Math.min(34, (total - 5) * 8);
-    const overlapFraction = Math.min(0.7, 0.18 + (total - 5) * 0.09);
-    const shrink = total > 6 ? Math.max(0.68, 1 - (total - 6) * 0.07) : 1;
-
-    return hand.map((_, index) => {
-      const t = total === 1 ? 0 : index / (total - 1) - 0.5;
-      const edgeBias = Math.abs(t) * 2;
-      const style: Record<string, string> = {
-        '--rot': `${(t * spread).toFixed(1)}deg`,
-        '--y': `${(edgeBias * edgeBias * 12).toFixed(1)}px`,
-        '--scale': `${shrink}`,
-        'z-index': `${index}`,
-      };
-      if (index > 0) {
-        style['margin-left'] = `calc(clamp(70px, 15vw, 150px) * -${overlapFraction.toFixed(2)})`;
-      }
-      return style;
-    });
-  });
-
-  /** Swipe-Geste zum Karte-Spielen (Issue #52), additiv zu Tap - Tap bleibt über das
-   * bestehende (click) auf dem Bild unverändert die primäre, verlässliche Interaktion. Nach
-   * oben wischen über `swipeThresholdPx` löst `chooseCard()` genauso aus wie ein Tap; wird der
-   * Schwellwert nicht erreicht, snappt die Karte per CSS-Transition zurück in ihre
-   * Fächer-Position (kein Store-Dispatch, rein visuell). Reiner UI-Zustand, deshalb lokale
-   * Signale statt Store. */
-  private readonly swipeThresholdPx = 70;
-  private dragStartY = 0;
-  readonly draggingIndex = signal<number | null>(null);
-  readonly dragDeltaY = signal(0);
-
-  /** Merge aus dem Fächer-Basisstil (handCardStyles()) und, während eines aktiven Swipes an
-   * genau diesem Index, dem zusätzlichen `--drag-y`-Custom-Property (siehe `.hand-card`-
-   * Transform in player-hand.component.scss), das die Karte dem Finger folgen lässt. */
-  handCardStyle(index: number): Record<string, string> {
-    const base = this.handCardStyles()[index] ?? {};
-    if (this.draggingIndex() === index && this.dragDeltaY() !== 0) {
-      return { ...base, '--drag-y': `${this.dragDeltaY().toFixed(1)}px` };
-    }
-    return base;
-  }
-
-  onCardTouchStart(event: TouchEvent, index: number): void {
-    this.dragStartY = event.touches[0].clientY;
-    this.draggingIndex.set(index);
-    this.dragDeltaY.set(0);
-  }
-
-  onCardTouchMove(event: TouchEvent, index: number): void {
-    if (this.draggingIndex() !== index) {
-      return;
-    }
-    const delta = this.dragStartY - event.touches[0].clientY;
-    // Nach unten nur wenig zulassen (Finger leicht verrutscht bleibt ein Tap-Kandidat), nach
-    // oben auf das ~1.6-fache des Schwellwerts deckeln, damit die Karte dem Finger nicht
-    // beliebig weit folgt.
-    this.dragDeltaY.set(Math.max(-20, Math.min(delta, this.swipeThresholdPx * 1.6)));
-    if (Math.abs(delta) > 8) {
-      // Verhindert Seiten-Scroll/Pull-to-Refresh während des Ziehens UND den synthetischen
-      // `click`, den mobile Browser nach touchend sonst zusätzlich zum direkten
-      // chooseCard()-Aufruf unten auslösen würden (Doppel-Ausspielen der Karte).
-      event.preventDefault();
-    }
-  }
-
-  onCardTouchEnd(event: TouchEvent, index: number, card: string): void {
-    if (this.draggingIndex() !== index) {
-      return;
-    }
-    const delta = this.dragDeltaY();
-    this.draggingIndex.set(null);
-    this.dragDeltaY.set(0);
-    if (delta >= this.swipeThresholdPx) {
-      event.preventDefault();
-      this.chooseCard(card);
-    }
-  }
-
-  onCardTouchCancel(index: number): void {
-    if (this.draggingIndex() !== index) {
-      return;
-    }
-    this.draggingIndex.set(null);
-    this.dragDeltaY.set(0);
-  }
 
   gameSubscr?: Subscription;
   playerSubsc?: Subscription;
@@ -277,6 +165,19 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Kapselt den vierfach duplizierten `dialog.open<DialogHeropowerComponent, ...>({ data:
+   * this.currentPlayers() }).afterClosed()`-Aufruf (Architecture-Review-Kandidat 6) — jeder
+   * Aufrufer entscheidet weiterhin selbst, was mit dem gewählten Spieler passiert (ein
+   * `undefined`-Ergebnis bedeutet "Dialog ohne Auswahl geschlossen"). */
+  private pickPlayer(): Observable<HeropowerDialogPlayer | undefined> {
+    return this.dialog
+      .open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(DialogHeropowerComponent, {
+        data: this.currentPlayers(),
+      })
+      .afterClosed()
+      .pipe(map((result) => result?.data));
+  }
+
   updatePlayerFromDatabase(data: DocumentData) {
     this.store.dispatch(new UpdateCurrentHandAction(data['handstack']));
     this.store.dispatch(new UpdateCardStackAction(data['cardstack']));
@@ -316,29 +217,24 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   onHeropowerResolved(kind: 'array' | 'jaegerin' | 'walkuere' | 'magier') {
     this.vibrate();
-    const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
     switch (kind) {
       case 'magier':
-        this.heropowerService.resolveMagierHeropower(this.currentGameId(), this.currentPlayerId(), reportWriteFailure);
+        this.reportWriteFailure(this.heropowerService.resolveMagierHeropower(this.currentGameId(), this.currentPlayerId()));
         break;
       case 'array':
-        this.heropowerService.resolveArrayHeropower(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          reportWriteFailure,
-          (enemy) => this.cardPlayService.checkForNextEnemy(this.currentGameId(), enemy, reportWriteFailure)
+        this.reportWriteFailure(
+          this.heropowerService.resolveArrayHeropower(this.currentGameId(), this.currentPlayerId(), (enemy) =>
+            this.reportWriteFailure(this.cardPlayService.checkForNextEnemy(this.currentGameId(), enemy))
+          )
         );
         break;
       case 'jaegerin':
-        this.heropowerService.resolveJaegerinHeropower(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          reportWriteFailure,
-          () => this.openDialog()
+        this.reportWriteFailure(
+          this.heropowerService.resolveJaegerinHeropower(this.currentGameId(), this.currentPlayerId(), () => this.openDialog())
         );
         break;
       case 'walkuere':
-        this.heropowerService.resolveWalkuereHeropower(this.currentGameId(), this.currentPlayerId(), reportWriteFailure);
+        this.reportWriteFailure(this.heropowerService.resolveWalkuereHeropower(this.currentGameId(), this.currentPlayerId()));
         break;
     }
   }
@@ -356,36 +252,28 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
-      this.reportWriteFailure(write)
-    );
+    this.reportWriteFailure(this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card));
   }
 
   /** Öffnet den Zielspieler-Dialog für Spende/Stehlen/Heilkräuter/Heilung (je ein Zielspieler)
    * und ruft danach die passende CardPlayService-Methode mit dem gewählten Spieler auf. */
   private openTargetPlayerDialog(card: string) {
-    const dialogRef = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-      DialogHeropowerComponent,
-      { data: this.currentPlayers() }
-    );
-
-    dialogRef.afterClosed().subscribe((result) => {
+    this.pickPlayer().subscribe((result) => {
       if (!result) return;
-      const targetPlayerId = result.data.playerId;
-      const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
+      const targetPlayerId = result.playerId;
 
       switch (card) {
         case 'spende':
-          this.cardPlayService.resolveSpende(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveSpende(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
         case 'stehlen':
-          this.cardPlayService.resolveStehlen(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveStehlen(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
         case 'heilkräuter':
-          this.cardPlayService.resolveHeilkraeuter(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveHeilkraeuter(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
         case 'heile':
-          this.cardPlayService.resolveHeilung(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveHeilung(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
       }
     });
@@ -394,43 +282,24 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   /** Öffnet den Zielspieler-Dialog zweimal nacheinander für "Wut" (zwei Zielspieler, du selbst
    * darfst einer davon sein). */
   private openWutDialog() {
-    const dialogRefOne = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-      DialogHeropowerComponent,
-      { data: this.currentPlayers() }
-    );
-
-    dialogRefOne.afterClosed().subscribe((resultOne) => {
+    this.pickPlayer().subscribe((resultOne) => {
       if (!resultOne) return;
 
-      const dialogRefTwo = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-        DialogHeropowerComponent,
-        { data: this.currentPlayers() }
-      );
-
-      dialogRefTwo.afterClosed().subscribe((resultTwo) => {
+      this.pickPlayer().subscribe((resultTwo) => {
         if (!resultTwo) return;
-        this.cardPlayService.resolveWut(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          'wut',
-          resultOne.data.playerId,
-          resultTwo.data.playerId,
-          (write) => this.reportWriteFailure(write)
+        this.reportWriteFailure(
+          this.cardPlayService.resolveWut(this.currentGameId(), this.currentPlayerId(), 'wut', resultOne.playerId, resultTwo.playerId)
         );
       });
     });
   }
 
   restCard(card: string) {
-    this.cardPlayService.restCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
-      this.reportWriteFailure(write)
-    );
+    this.reportWriteFailure(this.cardPlayService.restCard(this.currentGameId(), this.currentPlayerId(), card));
   }
 
   resolveEvent() {
-    this.cardPlayService.resolveEvent(this.currentGameId(), this.currentPlayerId(), (write) =>
-      this.reportWriteFailure(write)
-    );
+    this.reportWriteFailure(this.cardPlayService.resolveEvent(this.currentGameId(), this.currentPlayerId()));
   }
 
   isEventActive(): boolean {
@@ -442,19 +311,10 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   }
 
   openDialog() {
-    let dialogRef = this.dialog.open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(
-      DialogHeropowerComponent,
-      { data: this.currentPlayers() }
-    );
-
-    dialogRef.afterClosed().subscribe((result) => {
+    this.pickPlayer().subscribe((result) => {
       if (!result) return;
-      const { playerId } = result.data;
-      this.heropowerService.resolveJaegerinHeropowerForPlayer(
-        this.currentGameId(),
-        this.currentPlayerId(),
-        playerId,
-        (write) => this.reportWriteFailure(write)
+      this.reportWriteFailure(
+        this.heropowerService.resolveJaegerinHeropowerForPlayer(this.currentGameId(), this.currentPlayerId(), result.playerId)
       );
     });
   }

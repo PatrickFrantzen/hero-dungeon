@@ -17,11 +17,6 @@ import { FirestoreRepositoryService } from './firestore-repository.service';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
 
-/** Passed in by the caller so a failed write surfaces on that caller's own error signal
- * instead of this (root-provided, but effectively PlayerHandComponent-only) service needing
- * its own error state. */
-export type ReportWriteFailure = (write: Promise<void>) => void;
-
 /**
  * Die drei Heropower-Auflösungen aus PlayerHandComponent (Walküre/Jägerin/"Array"-Gruppe:
  * Gladiator/Barbar/Zauberin/Waldläufer/Ninja/Paladin), inklusive der Firestore-Zugriffe, die
@@ -35,6 +30,13 @@ export type ReportWriteFailure = (write: Promise<void>) => void;
  * Nachziehen - eine bereits im Ursprungscode vorhandene, nicht dokumentierte Verhaltens-
  * Abweichung. Ohne echten Multiplayer-Test wäre ein Vereinheitlichen dieser drei Methoden ein
  * Risiko, unbeabsichtigt Spielverhalten zu ändern.
+ *
+ * Fehlerbehandlung analog zu `CardPlayService` (2026-09-05, Architecture-Review-Kandidat 1,
+ * Folgeschritt): alle öffentlichen Methoden geben ein `Promise<void>` zurück statt einen
+ * `reportWriteFailure`-Callback als letzten Parameter entgegenzunehmen. Die Promise rejected,
+ * sobald einer der intern gesammelten, weiterhin fire-and-forget laufenden Firestore-Writes
+ * fehlschlägt - der Aufrufer (`PlayerHandComponent`) hängt sein eigenes `.catch()` an, statt
+ * eine Callback-Closure durch jede private Hilfsmethode zu reichen.
  */
 @Injectable({
   providedIn: 'root',
@@ -59,16 +61,16 @@ export class HeropowerService {
   /** Statistik-Zähler "genutzte Heldenfähigkeiten" (`src/models/game.ts` GameStats) - schreibt
    * den neuen absoluten Wert lokal + nach Firestore, analog zu CardPlayService.bumpStat()
    * (bewusst nicht geteilt, siehe Klassenkommentar oben zur Nicht-Vereinheitlichung). */
-  private bumpStat(gameId: string, key: keyof GameStats, amount: number, reportWriteFailure: ReportWriteFailure): void {
-    if (amount <= 0) return;
+  private bumpStat(gameId: string, key: keyof GameStats, amount: number): Promise<void> {
+    if (amount <= 0) return Promise.resolve();
     const stats = { ...this.currentStats(), [key]: this.currentStats()[key] + amount };
     this.store.dispatch(new SetGameStats(stats));
-    reportWriteFailure(this.gameRepo.updateStats(gameId, stats));
+    return this.gameRepo.updateStats(gameId, stats);
   }
 
-  resolveWalkuereHeropower(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
-    if (this.heropowerArray().length !== 3) return;
-    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
+  resolveWalkuereHeropower(gameId: string, playerId: string): Promise<void> {
+    if (this.heropowerArray().length !== 3) return Promise.resolve();
+    const writes = [this.bumpStat(gameId, 'heropowersUsed', 1)];
 
     this.heropowerArray().forEach((card) => {
       let currHand = [...this.currentHand()];
@@ -82,35 +84,35 @@ export class HeropowerService {
         let currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
-        reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, currHand));
-        reportWriteFailure(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
+        writes.push(this.playerRepo.updateHandstack(gameId, playerId, currHand));
+        writes.push(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));
       }
     });
 
-    this.giveOtherPlayersCards(gameId, playerId, reportWriteFailure);
+    writes.push(this.giveOtherPlayersCards(gameId, playerId));
 
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
+
+    return Promise.all(writes).then(() => undefined);
   }
 
-  private async giveOtherPlayersCards(
-    gameId: string,
-    playerId: string,
-    reportWriteFailure: ReportWriteFailure
-  ): Promise<void> {
+  private async giveOtherPlayersCards(gameId: string, playerId: string): Promise<void> {
     const otherPlayers = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
       [where('gameId', '==', gameId), where('userId', '!=', playerId)]
     );
-    otherPlayers.forEach((data) => this.drawTwoCardsForOtherPlayer(gameId, data, reportWriteFailure));
+    await Promise.all(otherPlayers.map((data) => this.drawTwoCardsForOtherPlayer(gameId, data)));
   }
 
-  private drawTwoCardsForOtherPlayer(gameId: string, data: DocumentData, reportWriteFailure: ReportWriteFailure): void {
+  private drawTwoCardsForOtherPlayer(gameId: string, data: DocumentData): Promise<void> {
     const userId = data['userId'];
     let currentCardStack = data['cardstack'];
     let currentHand = data['handstack'];
+    const writes: Promise<void>[] = [];
+
     for (let i = 0; i < 2; i++) {
       let currHand = [...currentHand];
       let currCardStack = [...currentCardStack];
@@ -119,23 +121,20 @@ export class HeropowerService {
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
 
-        reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, currHand));
-        reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
+        writes.push(this.playerRepo.updateHandstack(gameId, userId, currHand));
+        writes.push(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
 
         currentCardStack = currCardStack;
         currentHand = currHand;
       }
     }
+
+    return Promise.all(writes).then(() => undefined);
   }
 
-  resolveJaegerinHeropower(
-    gameId: string,
-    playerId: string,
-    reportWriteFailure: ReportWriteFailure,
-    openFollowUpDialog: () => void
-  ): void {
-    if (this.heropowerArray().length !== 3) return;
-    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
+  resolveJaegerinHeropower(gameId: string, playerId: string, openFollowUpDialog: () => void): Promise<void> {
+    if (this.heropowerArray().length !== 3) return Promise.resolve();
+    const writes = [this.bumpStat(gameId, 'heropowersUsed', 1)];
 
     this.heropowerArray().forEach((card) => {
       let currHand = [...this.currentHand()];
@@ -149,44 +148,36 @@ export class HeropowerService {
         let currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
-        reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, currHand));
-        reportWriteFailure(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
+        writes.push(this.playerRepo.updateHandstack(gameId, playerId, currHand));
+        writes.push(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));
       }
     });
+
     openFollowUpDialog();
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
+
+    return Promise.all(writes).then(() => undefined);
   }
 
   /** Wird aufgerufen, nachdem der Spieler im "Heropower auswählen"-Dialog einen Zielspieler
    * gewählt hat (vorher: getOtherPlayerDataTogivePlayerCards() + playerIdForHeropowerAction-Feld
    * in PlayerHandComponent - der gewählte Spieler wird jetzt direkt als Parameter durchgereicht). */
-  async resolveJaegerinHeropowerForPlayer(
-    gameId: string,
-    currentPlayerId: string,
-    targetPlayerId: string,
-    reportWriteFailure: ReportWriteFailure
-  ): Promise<void> {
+  async resolveJaegerinHeropowerForPlayer(gameId: string, currentPlayerId: string, targetPlayerId: string): Promise<void> {
     const targetPlayerDocs = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
       [where('userId', '==', targetPlayerId)]
     );
-    targetPlayerDocs.forEach((data) =>
-      this.drawFourCardsForJaegerinTarget(gameId, currentPlayerId, data, reportWriteFailure)
-    );
+    await Promise.all(targetPlayerDocs.map((data) => this.drawFourCardsForJaegerinTarget(gameId, currentPlayerId, data)));
   }
 
-  private drawFourCardsForJaegerinTarget(
-    gameId: string,
-    currentPlayerId: string,
-    data: DocumentData,
-    reportWriteFailure: ReportWriteFailure
-  ): void {
+  private drawFourCardsForJaegerinTarget(gameId: string, currentPlayerId: string, data: DocumentData): Promise<void> {
     const userId = data['userId'];
     let currentCardStack = data['cardstack'];
     let currentHand = data['handstack'];
+    const writes: Promise<void>[] = [];
 
     if (currentPlayerId === userId) {
       for (let i = 0; i < 4; i++) {
@@ -197,8 +188,8 @@ export class HeropowerService {
           const getCardForHand = currCardStack.shift()!;
           currHand.push(getCardForHand);
 
-          reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, currHand));
-          reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
+          writes.push(this.playerRepo.updateHandstack(gameId, userId, currHand));
+          writes.push(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
 
           this.store.dispatch(new UpdateCardStackAction(currCardStack));
           this.store.dispatch(new UpdateCurrentHandAction(currHand));
@@ -213,21 +204,23 @@ export class HeropowerService {
           const getCardForHand = currCardStack.shift()!;
           currHand.push(getCardForHand);
 
-          reportWriteFailure(this.playerRepo.updateHandstack(gameId, userId, currHand));
-          reportWriteFailure(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
+          writes.push(this.playerRepo.updateHandstack(gameId, userId, currHand));
+          writes.push(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
 
           currentCardStack = currCardStack;
           currentHand = currHand;
         }
       }
     }
+
+    return Promise.all(writes).then(() => undefined);
   }
 
   /** Magier "Zeit einfrieren": 3 Handkarten ablegen, dafür pausiert der Dungeon-Timer, bis
    * jemand eine Karte in die Tischmitte spielt (CardPlayService.resumeGameTimerIfPaused()). */
-  resolveMagierHeropower(gameId: string, playerId: string, reportWriteFailure: ReportWriteFailure): void {
-    if (this.heropowerArray().length !== 3) return;
-    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
+  resolveMagierHeropower(gameId: string, playerId: string): Promise<void> {
+    if (this.heropowerArray().length !== 3) return Promise.resolve();
+    const writes = [this.bumpStat(gameId, 'heropowersUsed', 1)];
 
     this.heropowerArray().forEach((card) => {
       const indexOfHandCard = this.currentHand().indexOf(card);
@@ -239,28 +232,25 @@ export class HeropowerService {
     if (this.timerStartedAt() !== null && this.timerPausedAt() === null) {
       const pausedAt = Date.now();
       this.store.dispatch(new SetGameTimerPauseState(pausedAt, this.timerPausedSecondsTotal()));
-      reportWriteFailure(this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal()));
+      writes.push(this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal()));
     }
 
-    reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, this.currentHand()));
+    writes.push(this.playerRepo.updateHandstack(gameId, playerId, this.currentHand()));
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
+
+    return Promise.all(writes).then(() => undefined);
   }
 
-  resolveArrayHeropower(
-    gameId: string,
-    playerId: string,
-    reportWriteFailure: ReportWriteFailure,
-    onEnemyTokenCleared: (enemy: Mob) => void
-  ): void {
-    if (this.heropowerArray().length !== 3) return;
-    this.bumpStat(gameId, 'heropowersUsed', 1, reportWriteFailure);
+  resolveArrayHeropower(gameId: string, playerId: string, onEnemyTokenCleared: (enemy: Mob) => void): Promise<void> {
+    if (this.heropowerArray().length !== 3) return Promise.resolve();
+    const writes = [this.bumpStat(gameId, 'heropowersUsed', 1)];
 
     let currEnemyToken = [...this.currentEnemy().token];
     currEnemyToken.length = 0;
 
     this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
-    reportWriteFailure(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
+    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
     onEnemyTokenCleared(this.currentEnemy());
 
     this.heropowerArray().forEach((card) => {
@@ -273,8 +263,8 @@ export class HeropowerService {
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
 
-        reportWriteFailure(this.playerRepo.updateHandstack(gameId, playerId, currHand));
-        reportWriteFailure(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
+        writes.push(this.playerRepo.updateHandstack(gameId, playerId, currHand));
+        writes.push(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
 
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));
@@ -282,5 +272,7 @@ export class HeropowerService {
     });
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
+
+    return Promise.all(writes).then(() => undefined);
   }
 }

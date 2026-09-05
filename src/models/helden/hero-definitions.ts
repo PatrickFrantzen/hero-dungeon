@@ -16,6 +16,14 @@ export interface HeroDefinition {
   heroPower: string;
   description: string;
   cardCounts: Map<string, number>;
+  /** Encounter-Typ, der die Heldenfähigkeit freischaltet ('always' = unabhängig vom Gegnertyp)
+   * — genutzt von HeropowerComponent.onActivateHeropower() statt zehn eigenen heroPower<Name>()-
+   * Methoden, siehe components/heropower/CLAUDE.md. */
+  activatesOn: 'Person' | 'Monster' | 'Hindernis' | 'always';
+  /** Welches Auflösungs-Ereignis die Fähigkeit bei 3 gewählten Karten auslöst — genutzt von
+   * HeropowerContainerComponent statt eines eigenen switch(heroname), siehe
+   * components/heropower/CLAUDE.md. */
+  resolutionKind: 'array' | 'magier' | 'jaegerin' | 'walkuere' | 'dieb';
 }
 
 const barbarGladiatorCardCounts = new Map([
@@ -91,6 +99,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'Schlagkräftige Argumente',
     description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Monster',
     cardCounts: barbarGladiatorCardCounts,
+    activatesOn: 'Monster',
+    resolutionKind: 'array',
   },
   {
     id: 'dieb',
@@ -98,6 +108,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'Langfinger',
     description: 'Lege 3 Karten auf den Ablagestapel und ziehe dafür 5 Karten.',
     cardCounts: diebNinjaCardCounts,
+    activatesOn: 'always',
+    resolutionKind: 'dieb',
   },
   {
     id: 'gladiator',
@@ -105,6 +117,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'Furchteinflößend',
     description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch eine Person',
     cardCounts: barbarGladiatorCardCounts,
+    activatesOn: 'Person',
+    resolutionKind: 'array',
   },
   {
     id: 'jägerin',
@@ -113,6 +127,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     description:
       'Lege 3 Karten auf den Ablagestapel, dafür zieht einer von euch 4 Karten; das kannst auch du selbst sein.',
     cardCounts: jägerinWaldläuferCardCounts,
+    activatesOn: 'always',
+    resolutionKind: 'jaegerin',
   },
   {
     id: 'magier',
@@ -121,6 +137,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     description:
       'Lege 3 Karten auf den Ablagestapel und halte dafür die Zeit an, bis jemand eine Karte in die Tischmitte spielt.',
     cardCounts: magierZauberinCardCounts,
+    activatesOn: 'always',
+    resolutionKind: 'magier',
   },
   {
     id: 'ninja',
@@ -128,6 +146,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'Supersprung',
     description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Hindernis.',
     cardCounts: diebNinjaCardCounts,
+    activatesOn: 'Hindernis',
+    resolutionKind: 'array',
   },
   {
     id: 'paladin',
@@ -135,6 +155,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'Blendend',
     description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Monster',
     cardCounts: paladinWalküreCardCounts,
+    activatesOn: 'Monster',
+    resolutionKind: 'array',
   },
   {
     id: 'waldläufer',
@@ -142,6 +164,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'Kunstschuss',
     description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch eine Person',
     cardCounts: jägerinWaldläuferCardCounts,
+    activatesOn: 'Person',
+    resolutionKind: 'array',
   },
   {
     id: 'walküre',
@@ -149,6 +173,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'Verleiht Flügel',
     description: 'Lege 3 Karten auf den Ablagestapel und dafür zieht jeder andere Mitspieler 2 Karten.',
     cardCounts: paladinWalküreCardCounts,
+    activatesOn: 'always',
+    resolutionKind: 'walkuere',
   },
   {
     id: 'zauberin',
@@ -156,6 +182,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     heroPower: 'hindernis',
     description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Hindernis',
     cardCounts: magierZauberinCardCounts,
+    activatesOn: 'Hindernis',
+    resolutionKind: 'array',
   },
 ];
 

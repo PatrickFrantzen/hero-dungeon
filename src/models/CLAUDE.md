@@ -9,7 +9,11 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
 
 - **`hero-definitions.ts`** — `HeroId`-Union (`'barbar' | 'dieb' | ...`) + `HeroDefinition[]`
   (Name, Heropower, Beschreibung, `cardCounts: Map<string, number>` pro Held). Neuer Held oder
-  geänderte Kartenverteilung: hier eintragen, keine neue Klasse anlegen.
+  geänderte Kartenverteilung: hier eintragen, keine neue Klasse anlegen. Seit 2026-09-05
+  zusätzlich `activatesOn`/`resolutionKind` (welcher Encounter-Typ die Heldenfähigkeit
+  freischaltet bzw. welches Auflösungs-Ereignis sie auslöst) — ersetzt zwei vormals duplizierte
+  `switch`/Methoden-Sets in `HeropowerComponent`/`HeropowerContainerComponent`, siehe
+  `components/heropower/CLAUDE.md`.
 - **`hero.class.ts`** — eine `Hero`-Klasse für alle Helden. `buildCardstack(cardCounts)` mischt
   die Kartenverteilung einer `HeroDefinition` zu einem Stapel (`shuffle.util.ts`).
   `createHero(id: HeroId, useExtraDeck = false)` ist die Factory: sucht die `HeroDefinition` zur
@@ -23,29 +27,35 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
 ## monster/
 
 - **`monster.class.ts`** (`Monster`) — Auswahl-/Schwierigkeitslogik (welcher Gegner als
-  nächstes kommt, ~130 Zeilen). `createMob(numberOfPlayers, currentBossName, difficulty)` ist
-  für `numberOfPlayers === 1` (Singleplayer) und `2..5` (Multiplayer) identisch aufgebaut: pro
-  Boss (`Baby-Barbar`/`Der Flecken-Schrecken`/`Zola, die Gorgone`/`Verdammt, ein Drache!!!`/
-  `Der Dungeon-Overlord`, letzterer als `else`-Zweig) und Schwierigkeitsgrad (`easy`/`medium`/
-  `hard` — Anzeige-Labels seit Issue #86 "Lehrling"/"Held"/"Dungeon-Master", siehe
-  `dialog-game-settings.component.ts`) eine
-  eigene Monster-/Event-Kartenzahl. Die Multiplayer-Werte (2-5 Spieler) sind 1:1 aus der
+  nächstes kommt). `createMob(numberOfPlayers, currentBossName, difficulty)` berechnet Monster-/
+  Quest-Kartenzahl seit 2026-09-05 über eine geschlossene Formel statt der ursprünglichen
+  5×3-Boss-/Schwierigkeits-Kaskade mit 11 positionellen Zahlen-Parametern (`getMonsterForGame()`,
+  Architecture-Review-Kandidat 4 — alle 5×3×5 Boss-/Schwierigkeits-/Spielerzahl-Zellen wurden vor
+  der Umstellung gegen die alten hartcodierten Werte verifiziert, `monster.class.spec.ts` deckt
+  das weiterhin exakt gleich ab): `BOSS_ORDER` (`Baby-Barbar`/`Der Flecken-Schrecken`/`Zola, die
+  Gorgone`/`Verdammt, ein Drache!!!`) liefert per `indexOf()` den Boss-Index, ein nicht gelisteter
+  Name (aktuell nur `Der Dungeon-Overlord`) fällt auf den Index direkt danach zurück — genau wie
+  vorher der `else`-Zweig jeden unbekannten Namen wie den schwersten Boss behandelte.
+  `DIFFICULTY_INDEX` kennt nur `easy`/`medium` (0/1), alles andere (aktuell nur `hard`) fällt auf
+  Index 2 zurück, ebenfalls unverändert zum vorherigen `if/else if/else`. Formel: `monsterCount =
+  2×Spieler + 6 + 4×Boss-Index + 4×Schwierigkeits-Index`, `questCount = 2×Spieler` (Anzeige-
+  Labels seit Issue #86 "Lehrling"/"Held"/"Dungeon-Master", siehe
+  `dialog-game-settings.component.ts`). Die Multiplayer-Werte (2-5 Spieler) sind 1:1 aus der
   Originalanleitung übernommen (per Foto-Vergleich aller 5 Boss-Karten verifiziert, 2026-09-04);
-  die Singleplayer-Spalte (`monsterOne`/`questOne` in `getMonsterForGame()`) hat **kein**
-  Original-Vorbild (die Anleitung kennt keine 1-Spieler-Variante) und ist eine mit Patrick
-  abgestimmte Fortschreibung derselben linearen Formel (Monster = `(2×Spieler+6) +
-  4×(Boss-Index-1) + 4×Schwierigkeits-Index`, Events konstant `2×Spieler`) auf einen Spieler —
-  Details/Tabelle in Issue #86. Vorher war `case 1:` in `getMonsterForGame()` fest auf 5 Monster
-  + 1 Event codiert, unabhängig vom gewählten Schwierigkeitsgrad — ein Bug (Issue #86), kein
-  bewusstes Feature; `docs/planned/singleplayer-mode-plan.md` beschreibt das noch als
-  ursprüngliche PR-1-Regel, hat aber inzwischen einen Nachtrag dazu.
+  die Singleplayer-Spalte (`numberOfPlayers === 1`) hat **kein** Original-Vorbild (die Anleitung
+  kennt keine 1-Spieler-Variante) und ist eine mit Patrick abgestimmte Fortschreibung derselben
+  Formel auf einen Spieler — Details/Tabelle in Issue #86. Ursprünglich war `case 1:` in
+  `getMonsterForGame()` fest auf 5 Monster + 1 Event codiert, unabhängig vom gewählten
+  Schwierigkeitsgrad — ein Bug (Issue #86), kein bewusstes Feature;
+  `docs/planned/singleplayer-mode-plan.md` beschreibt das noch als ursprüngliche PR-1-Regel, hat
+  aber inzwischen einen Nachtrag dazu.
   `loadMonster()`/`loadQuests()`/`loadSoloQuests()` deckeln die
   angeforderte Kartenzahl per `Math.min()` auf die tatsächlich verfügbare Anzahl in der
   jeweiligen Collection — ohne den Schutz pusht die Ziehschleife `undefined`-Einträge, sobald
-  mehr Karten angefordert werden als vorhanden sind. `questTwo`/`-Drei`/`-Vier`/`-Fünf` in
-  `createMob()` sind mit 4/6/8/10 auf die volle spätere Kartenzahl ausgelegt; `questCollection`
+  mehr Karten angefordert werden als vorhanden sind. `questCount` (`2×Spieler`) ist mit bis zu 10
+  (5 Spieler) auf die volle spätere Kartenzahl ausgelegt; `questCollection`
   hat inzwischen 9 von 10 geplanten Kartentypen aktiv (nur "Hinterhalt" bleibt auskommentiert,
-  siehe unten) — bei 5 Spielern (`questFive: 10`) greift der `Math.min()`-Schutz also weiterhin.
+  siehe unten) — bei 5 Spielern (`questCount = 10`) greift der `Math.min()`-Schutz also weiterhin.
   Ein `undefined`-Mob-Eintrag führt beim `.shift()` in `GameFactoryService.buildNewGame()`/
   `CardPlayService.continueToNextDungeon()` zu einem TypeError, sobald er zufällig zuerst gezogen
   wird — `monster.class.spec.ts` hat einen Regressionstest über alle Boss-/Schwierigkeits-/

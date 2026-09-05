@@ -27,25 +27,42 @@ describe('HeropowerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('onActivateHeropower() (Issue #93 — vereinheitlichter Klick-Handler)', () => {
-    it('delegiert für den Barbar an heroPowerBarbar()', () => {
-      store.dispatch(new CurrentUserHeroAction('Barbar', 'Wutausbruch', 'Beschreibung'));
+  describe('onActivateHeropower() (TODO 5 — datengetrieben über HeroDefinition.activatesOn)', () => {
+    it('aktiviert die Fähigkeit für den Barbar nur, wenn der Gegnertyp "Monster" ist', () => {
+      store.dispatch(new CurrentUserHeroAction('Barbar', 'Schlagkräftige Argumente', 'Beschreibung'));
+      fixture.componentRef.setInput('currentEnemy', { name: 'Goblin', type: 'Person', token: [] });
       fixture.detectChanges();
-      spyOn(component, 'heroPowerBarbar');
 
       component.onActivateHeropower();
+      expect(component.heropowerActivated()).toBe(false);
 
-      expect(component.heroPowerBarbar).toHaveBeenCalled();
+      fixture.componentRef.setInput('currentEnemy', { name: 'Goblin', type: 'Monster', token: [] });
+      fixture.detectChanges();
+      component.onActivateHeropower();
+
+      expect(component.heropowerActivated()).toBe(true);
     });
 
-    it('delegiert für die Walküre an heroPowerWalkuere()', () => {
-      store.dispatch(new CurrentUserHeroAction('Walküre', 'Vergeltung', 'Beschreibung'));
+    it('aktiviert die Fähigkeit für die Walküre unabhängig vom Gegnertyp ("always")', () => {
+      store.dispatch(new CurrentUserHeroAction('Walküre', 'Verleiht Flügel', 'Beschreibung'));
+      fixture.componentRef.setInput('currentEnemy', { name: '', type: '', token: [] });
       fixture.detectChanges();
-      spyOn(component, 'heroPowerWalkuere');
 
       component.onActivateHeropower();
 
-      expect(component.heroPowerWalkuere).toHaveBeenCalled();
+      expect(component.heropowerActivated()).toBe(true);
+    });
+
+    it('deaktiviert eine bereits aktive Fähigkeit erneut per Klick', () => {
+      store.dispatch(new CurrentUserHeroAction('Walküre', 'Verleiht Flügel', 'Beschreibung'));
+      fixture.detectChanges();
+
+      component.onActivateHeropower();
+      expect(component.heropowerActivated()).toBe(true);
+
+      component.onActivateHeropower();
+
+      expect(component.heropowerActivated()).toBe(false);
     });
 
     it('tut nichts für einen unbekannten Heldennamen', () => {
@@ -53,6 +70,7 @@ describe('HeropowerComponent', () => {
       fixture.detectChanges();
 
       expect(() => component.onActivateHeropower()).not.toThrow();
+      expect(component.heropowerActivated()).toBe(false);
     });
   });
 

@@ -59,9 +59,8 @@ describe('CardPlayService', () => {
     const gameRepo = TestBed.inject(GameRepositoryService);
     const updateSpy = spyOn(gameRepo, 'updateCurrentEnemyToken');
     const timerSpy = spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'red', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'red');
 
     expect(updateSpy).not.toHaveBeenCalled();
     expect(timerSpy).not.toHaveBeenCalled();
@@ -81,9 +80,8 @@ describe('CardPlayService', () => {
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'red', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'red');
 
     expect(gameRepo.updateTimerStartedAt).toHaveBeenCalledWith('game-1', 123456);
     expect(store.selectSnapshot((state) => state.currentGame.timerStartedAt)).toBe(123456);
@@ -92,7 +90,6 @@ describe('CardPlayService', () => {
       jasmine.objectContaining({ token: [] })
     );
     expect(playerRepo.updateDeliveryStack).toHaveBeenCalledWith('game-1', 'player-1', ['red']);
-    expect(reportWriteFailure).toHaveBeenCalled();
   });
 
   it('restCard discards the selected card and draws one replacement', () => {
@@ -102,9 +99,8 @@ describe('CardPlayService', () => {
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateCardstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.restCard('game-1', 'player-1', 'red', reportWriteFailure);
+    service.restCard('game-1', 'player-1', 'red');
 
     expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack)).toEqual(['blue', 'green']);
     expect(store.selectSnapshot((state) => state.cardStack.items.cardstack)).toEqual([]);
@@ -121,9 +117,8 @@ describe('CardPlayService', () => {
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateCardstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.restCard('game-1', 'player-1', 'red', reportWriteFailure);
+    service.restCard('game-1', 'player-1', 'red');
 
     expect(store.selectSnapshot((state) => state.currentGame.stats.cardsCycled)).toBe(1);
     expect(statsSpy).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ cardsCycled: 1 }));
@@ -144,9 +139,8 @@ describe('CardPlayService', () => {
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateCardstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.resolveEvent('game-1', 'player-1', reportWriteFailure);
+    service.resolveEvent('game-1', 'player-1');
 
     expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack).length).toBe(5);
     expect(store.selectSnapshot((state) => state.deliveryStack.items)).toEqual(['red', 'blue']);
@@ -161,9 +155,8 @@ describe('CardPlayService', () => {
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'riesensprung_hindernis', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'riesensprung_hindernis');
 
     expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy).token).toEqual(['event']);
@@ -184,9 +177,8 @@ describe('CardPlayService', () => {
     spyOn(gameRepo, 'updateNewMob').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'verhinderung_event', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'verhinderung_event');
 
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
   });
@@ -204,9 +196,8 @@ describe('CardPlayService', () => {
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'joker', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'joker');
 
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['green']);
     expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ token: ['green'] }));
@@ -220,9 +211,8 @@ describe('CardPlayService', () => {
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'joker', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'joker');
 
     expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
     expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack)).toEqual(['joker']);
@@ -241,9 +231,8 @@ describe('CardPlayService', () => {
     spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'magischeBombe', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'magischeBombe');
 
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['red']);
   });
@@ -258,9 +247,8 @@ describe('CardPlayService', () => {
     spyOn(gameRepo, 'updateGameStatus').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    service.chooseCard('game-1', 'player-1', 'red', reportWriteFailure);
+    service.chooseCard('game-1', 'player-1', 'red');
 
     expect(gameRepo.updateGameStatus).toHaveBeenCalledWith('game-1', 'won');
   });
@@ -272,13 +260,13 @@ describe('CardPlayService', () => {
     const playerRepo = TestBed.inject(PlayerRepositoryService);
     spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
     spyOn(gameRepo, 'updateGameStatus').and.resolveTo();
+    spyOn(gameRepo, 'updateStats').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateCardstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
     spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], cardstack: [], deliveryStack: [] });
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2', reportWriteFailure);
+    await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2');
 
     expect(gameRepo.updateGameStatus).toHaveBeenCalledWith('game-1', 'lost');
     expect(store.selectSnapshot((state) => state.currentGame.gameStatus)).toBe('lost');
@@ -291,13 +279,13 @@ describe('CardPlayService', () => {
     const playerRepo = TestBed.inject(PlayerRepositoryService);
     spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
     const gameStatusSpy = spyOn(gameRepo, 'updateGameStatus').and.resolveTo();
+    spyOn(gameRepo, 'updateStats').and.resolveTo();
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateCardstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
     spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], cardstack: ['yellow'], deliveryStack: [] });
-    const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-    await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2', reportWriteFailure);
+    await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2');
 
     expect(gameStatusSpy).not.toHaveBeenCalledWith('game-1', 'lost');
   });
@@ -326,9 +314,8 @@ describe('CardPlayService', () => {
           deliveryStack: [],
         },
       });
-      const reportWriteFailure = jasmine.createSpy('reportWriteFailure');
 
-      service.continueToNextDungeon('local-1', 'solo', reportWriteFailure);
+      service.continueToNextDungeon('local-1', 'solo');
       // reshuffleAllPlayersForNewDungeon() liest den lokalen Spieler asynchron per queryAll() -
       // ein Tick genügt, da LocalGameDocumentStoreService synchron auf LocalStorage arbeitet.
       await Promise.resolve();
