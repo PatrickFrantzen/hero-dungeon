@@ -11,26 +11,16 @@
                     <span class="game-menu__hint">Gespeichert!</span>
                 }
 
-                @if (listSaves().length > 0) {
-                    <div class="game-menu__saves">
-                        <span class="game-menu__saves-title">Spielstände laden</span>
-                        @for (save of listSaves(); track save.saveId) {
-                            <button class="game-menu__action" (click)="resumeSave(save.saveId)">{{ saveLabel(save) }}</button>
-                        }
-                    </div>
+                @if (hasSaves()) {
+                    <button class="game-menu__action" (click)="openSaveDialog()">Spielstände laden</button>
                 }
 
                 <button class="game-menu__action game-menu__action--danger" (click)="confirmDeleteSingleplayerSave()">Spielstand löschen</button>
             } @else {
                 <span class="game-menu__hint">Automatisch gespeichert</span>
 
-                @if (myGames().length > 0) {
-                    <div class="game-menu__saves">
-                        <span class="game-menu__saves-title">Meine Spiele</span>
-                        @for (gameId of myGames(); track gameId) {
-                            <button class="game-menu__action" (click)="resumeMultiplayerGame(gameId)">{{ gameId }}</button>
-                        }
-                    </div>
+                @if (hasSaves()) {
+                    <button class="game-menu__action" (click)="openSaveDialog()">Meine Spiele</button>
                 }
 
                 @if (canLinkAccount()) {

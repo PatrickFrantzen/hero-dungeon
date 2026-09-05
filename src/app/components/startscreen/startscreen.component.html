@@ -8,26 +8,11 @@
             class="tw-rounded tw-bg-purple-700 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-purple-600"
         >Singleplayer starten</button>
 
-        @if (localSaves().length > 0) {
-            <div class="tw-flex tw-flex-col tw-gap-2 tw-rounded tw-border tw-border-white/20 tw-p-3">
-                <span class="tw-text-sm tw-font-medium tw-text-white/80">Meine Spielstände</span>
-                @for (save of localSaves(); track save.saveId) {
-                    <div class="tw-flex tw-items-center tw-gap-1">
-                        <button
-                            (click)="resumeLocalSave(save.saveId)"
-                            class="tw-flex tw-flex-1 tw-items-center tw-justify-between tw-rounded tw-bg-white/10 tw-px-3 tw-py-2 tw-text-left tw-text-sm tw-text-white tw-transition-colors hover:tw-bg-white/20"
-                        >
-                            <span>{{ heroNameOf(save) }}</span>
-                            <span class="tw-text-white/60">{{ save.game.gameStatus }}</span>
-                        </button>
-                        <button
-                            (click)="deleteLocalSave(save.saveId)"
-                            aria-label="Spielstand löschen"
-                            class="tw-rounded tw-bg-red-900/40 tw-px-2 tw-py-2 tw-text-sm tw-text-white tw-transition-colors hover:tw-bg-red-800/60"
-                        >✕</button>
-                    </div>
-                }
-            </div>
+        @if (hasSaves()) {
+            <button
+                (click)="openSaveDialog()"
+                class="tw-rounded tw-border tw-border-white/40 tw-bg-white/10 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-white/20"
+            >Spielstand auswählen</button>
         }
 
         <div id="tutorial-target-multiplayer" class="tw-flex tw-flex-col tw-gap-3">
@@ -47,18 +32,6 @@
                 (click)="joinGame()"
                 class="tw-rounded tw-bg-green-600 tw-px-4 tw-py-2 tw-font-medium tw-text-white tw-transition-colors hover:tw-bg-green-500"
             >Join Game</button>
-
-            @if (myGames().length > 0) {
-                <div class="tw-flex tw-flex-col tw-gap-2 tw-rounded tw-border tw-border-white/20 tw-p-3">
-                    <span class="tw-text-sm tw-font-medium tw-text-white/80">Meine Spiele</span>
-                    @for (gameId of myGames(); track gameId) {
-                        <button
-                            (click)="joinGame(gameId)"
-                            class="tw-flex tw-items-center tw-justify-between tw-rounded tw-bg-white/10 tw-px-3 tw-py-2 tw-text-left tw-text-sm tw-text-white tw-transition-colors hover:tw-bg-white/20"
-                        >{{ gameId }}</button>
-                    }
-                </div>
-            }
         </div>
 
         <button

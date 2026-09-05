@@ -14,6 +14,7 @@ import { CurrentGameState } from 'src/app/states/currentGame-state';
 import { CurrentUserState } from 'src/app/states/currentUser-state';
 import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
 import { DialogConfirmComponent } from '../dialog-confirm/dialog-confirm.component';
+import { DialogSelectSaveComponent } from '../dialog-select-save/dialog-select-save.component';
 import {
   ensureAngularFireSchedulersInitialized,
   ensureFirebaseTestAppInitialized,
@@ -101,14 +102,30 @@ describe('GameMenuComponent', () => {
     localStorage.clear();
   });
 
-  it('resumeSave sets the current game and navigates to it', () => {
+  it('openSaveDialog resumes the selected local save and navigates to it', () => {
+    const dialog = TestBed.inject(MatDialog);
+    const dialogOpen = spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of({ data: { selectedId: 'local-7', mode: 'singleplayer' } }),
+    } as never);
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
 
-    component.resumeSave('local-7');
+    component.openSaveDialog();
 
+    expect(dialogOpen).toHaveBeenCalledWith(DialogSelectSaveComponent, jasmine.anything());
     expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('local-7');
     expect(router.navigate).toHaveBeenCalledWith(['/local-game/local-7']);
+  });
+
+  it('openSaveDialog does nothing when the dialog is cancelled', () => {
+    const dialog = TestBed.inject(MatDialog);
+    spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+
+    component.openSaveDialog();
+
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   describe('"Meine Spiele" für Multiplayer (Issue #78)', () => {
@@ -130,16 +147,23 @@ describe('GameMenuComponent', () => {
       mpFixture.detectChanges();
       await mpFixture.whenStable();
 
-      expect(mpFixture.componentInstance.myGames()).toEqual(['game-1', 'game-2']);
+      expect(mpFixture.componentInstance.myGames()).toEqual([
+        { gameId: 'game-1', lastPlayedAt: 0 },
+        { gameId: 'game-2', lastPlayedAt: 0 },
+      ]);
       mpFixture.destroy();
     });
 
-    it('resumeMultiplayerGame sets the current game and navigates to it', () => {
+    it('openSaveDialog resumes the selected multiplayer game and navigates to it', () => {
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
+      const dialog = TestBed.inject(MatDialog);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of({ data: { selectedId: 'game-7', mode: 'multiplayer' } }),
+      } as never);
       const mpFixture = createMultiplayerFixture();
 
-      mpFixture.componentInstance.resumeMultiplayerGame('game-7');
+      mpFixture.componentInstance.openSaveDialog();
 
       expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('game-7');
       expect(router.navigate).toHaveBeenCalledWith(['/game/game-7']);

@@ -18,8 +18,8 @@ import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
 import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 import { AuthFormService } from 'src/app/services/auth-form.service';
-import { UserRepositoryService } from 'src/app/services/user-repository.service';
-import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
+import { JoinedGame, UserRepositoryService } from 'src/app/services/user-repository.service';
+import { DialogSelectSaveComponent, DialogSelectSaveData, DialogSelectSaveResult, SaveListEntry } from '../dialog-select-save/dialog-select-save.component';
 
 @Component({
     selector: 'app-startscreen',
@@ -47,7 +47,7 @@ export class StartscreenComponent implements OnInit {
    * `currentUserId()` ab, siehe CurrentUserService.getCurrentUser()) - deshalb per effect() statt
    * einmalig in ngOnInit() geladen; lädt neu, sobald sich die Account-Id ändert (z.B. nach
    * signInAnonymously() aus newGame()/joinGame()). */
-  myGames = signal<string[]>([]);
+  myGames = signal<JoinedGame[]>([]);
 
   constructor(
     public dialog:MatDialog,
@@ -67,7 +67,7 @@ export class StartscreenComponent implements OnInit {
       if (!userId) {
         return;
       }
-      this.userRepo.getUser(userId).then((data) => this.myGames.set((data?.['games'] as string[]) ?? []));
+      this.userRepo.getJoinedGames(userId).then((games) => this.myGames.set(games));
     });
   }
 
@@ -95,20 +95,40 @@ export class StartscreenComponent implements OnInit {
     return choosenHero?.heroname ?? 'Fortsetzen';
   }
 
-  /** "Spielstand löschen" (Issue #85) - destruktiv, deshalb erst nach Bestätigung per
-   * DialogConfirmComponent (analog zu GameMenuComponent.confirmDeleteSingleplayerSave()). */
-  deleteLocalSave(saveId: string): void {
+  hasSaves(): boolean {
+    return this.localSaves().length > 0 || this.myGames().length > 0;
+  }
+
+  /** "Spielstand auswählen" (ersetzt die bisherigen inline gerenderten Listen "Meine
+   * Spielstände"/"Meine Spiele") - baut die gemeinsame Auswahlliste aus den beiden vorhandenen
+   * Signalen zusammen (Badge/Datum übernimmt der Dialog selbst) und setzt danach das Spiel
+   * fort. `localSaves` wird nach dem Schließen immer neu gelesen (billig, synchron), da im
+   * Dialog ein lokaler Spielstand gelöscht worden sein könnte. */
+  openSaveDialog(): void {
+    const entries: SaveListEntry[] = [
+      ...this.localSaves().map(
+        (save): SaveListEntry => ({ id: save.saveId, label: this.heroNameOf(save), mode: 'singleplayer', lastPlayedAt: save.updatedAt })
+      ),
+      ...this.myGames().map(
+        (game): SaveListEntry => ({ id: game.gameId, label: game.gameId, mode: 'multiplayer', lastPlayedAt: game.lastPlayedAt || null })
+      ),
+    ];
+
     this.dialog
-      .open<DialogConfirmComponent, unknown, { data: DialogConfirmResult }>(DialogConfirmComponent, {
-        data: { title: 'Spielstand löschen?', message: 'Dieser lokale Spielstand wird unwiderruflich gelöscht.' },
+      .open<DialogSelectSaveComponent, DialogSelectSaveData, { data: DialogSelectSaveResult }>(DialogSelectSaveComponent, {
+        data: { entries },
       })
       .afterClosed()
       .subscribe((result) => {
-        if (!result?.data.confirmed) {
+        this.localSaves.set(this.localSaveService.listSaves());
+        if (!result?.data) {
           return;
         }
-        this.localSaveService.deleteSave(saveId);
-        this.localSaves.set(this.localSaveService.listSaves());
+        if (result.data.mode === 'singleplayer') {
+          this.resumeLocalSave(result.data.selectedId);
+        } else {
+          this.joinGame(result.data.selectedId);
+        }
       });
   }
 

@@ -156,3 +156,25 @@ Multiplayer, siehe `game-menu/CLAUDE.md` und `services/CLAUDE.md`). Reines "Dial
 Eingaben"-Muster — der Aufrufer entscheidet nach `{ confirmed: true }`, was tatsächlich gelöscht
 wird, der Dialog selbst führt keinen Seiteneffekt aus. `disableClose` bewusst `false`
 (Standard): Abbrechen ist immer ein gültiger, folgenloser Pfad bei einer Bestätigung.
+
+**`dialog-select-save/` (2026-09-05)** — "Spielstand auswählen": ersetzt die bisherigen, direkt
+in `StartscreenComponent`/`GameMenuComponent` inline gerenderten Listen ("Meine Spielstände"/
+"Meine Spiele"/"Spielstände laden") durch einen gemeinsamen Auswahldialog. `DialogSelectSaveData:
+{ entries: SaveListEntry[] }` — `SaveListEntry` (`id`/`label`/`mode: 'singleplayer' |
+'multiplayer'`/`lastPlayedAt: number | null`) baut der Aufrufer aus seinen eigenen
+`localSaves()`/`myGames()`-Signalen zusammen (nur er kennt das passende Held-/Status-Label, siehe
+`heroNameOf()`/`saveLabel()`), der Dialog selbst sortiert absteigend nach `lastPlayedAt` (ein
+`null` - unbekannter Zeitpunkt, z.B. ein Multiplayer-Altdatensatz vor der Umstellung von
+`users/{uid}.games` auf `JoinedGame[]`, siehe `services/CLAUDE.md` - landet am Ende) und zeigt pro
+Eintrag ein Modus-Badge + formatiertes Datum (`Intl.DateTimeFormat('de-DE')`). Klick auf einen
+Eintrag schließt mit `DialogSelectSaveResult: { selectedId, mode }`, der Aufrufer entscheidet
+danach selbst, ob er zu `/local-game/:id` oder `/game/:id` navigiert (Ausnahme vom "Dialog
+sammelt nur Eingaben"-Muster: **Löschen ist Teil des Dialogs selbst**, nicht des
+Ergebnis-Contracts — nur für `mode: 'singleplayer'`-Einträge sichtbar, da Multiplayer-Einträge in
+"Meine Spiele" auch vorher keinen Löschen-Button hatten; öffnet dafür intern `dialog-confirm/`
+und ruft bei Bestätigung direkt `LocalSingleplayerSaveService.deleteSave()` auf, entfernt den
+Eintrag aus der eigenen Kopie der Liste, ohne den Dialog zu schließen). Der Aufrufer liest nach
+`afterClosed()` sicherheitshalber seine `localSaves()` neu ein (billig, synchron), falls im
+Dialog etwas gelöscht wurde. `GameMenuComponent` übergibt wegen des bereits bestehenden
+`isSingleplayer()`-Gates in seinem `effect()` nie beide Modi gleichzeitig (nur Startscreen zeigt
+Singleplayer- und Multiplayer-Einträge gemischt in einer Liste).

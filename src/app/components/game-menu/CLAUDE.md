@@ -14,20 +14,24 @@ durchgezogen).
   `true`, wenn der Save existiert — reine Nutzer-Bestätigung ("Gespeichert!"), kein neuer Write.
   Nur im Singleplayer sichtbar; Multiplayer zeigt stattdessen den Hinweistext "Automatisch
   gespeichert" (Firestore-Auto-Save bleibt dort unverändert).
-- **"Spielstände laden" (`listSaves()`/`resumeSave()`)** — nur Singleplayer, identische Liste wie
-  `StartscreenComponent`s "Meine Spielstände". `resumeSave(saveId)` dispatcht `CurrentGameAction`
-  und navigiert nach `local-game/:id` — `GameComponent`/`PlayerHandComponent` laden den Rest beim
-  Betreten der Route selbst (`loadLocalGameOnce()`).
+- **"Spielstände laden" (`openSaveDialog()`, 2026-09-05)** — nur Singleplayer, öffnet denselben
+  `DialogSelectSaveComponent` wie `StartscreenComponent` (`components/CLAUDE.md`, Abschnitt
+  Dialoge) statt einer inline gerenderten Liste; `listSaves()` liefert weiterhin die
+  zugrundeliegenden `LocalSingleplayerSave[]`, nur die Anzeige ist jetzt im Dialog. Nach einer
+  Auswahl dispatcht `openSaveDialog()` `CurrentGameAction` und navigiert nach `local-game/:id` —
+  `GameComponent`/`PlayerHandComponent` laden den Rest beim Betreten der Route selbst
+  (`loadLocalGameOnce()`).
 - **"Verlassen" (`onLeave()`)** — `leave`-Output, `GameComponent` verdrahtet ihn auf das
   bestehende `backToStartscreen()`.
 
 ## "Meine Spiele" + Account verknüpfen für Multiplayer (Issue #78)
 
 - **"Meine Spiele"** (`myGames`, analog zu `StartscreenComponent`) — lädt per `effect()` die
-  Multiplayer-Historie aus `users/{uid}.games` (`UserRepositoryService.getUser()`), sobald
-  `currentUserId()` (Store-Signal) verfügbar ist **und** `isSingleplayer()` false ist. Klick auf
-  einen Eintrag ruft `resumeMultiplayerGame(gameId)` auf (analog zu `resumeSave()`, aber Route
-  `game/:id` statt `local-game/:id`).
+  Multiplayer-Historie aus `users/{uid}.games` (`UserRepositoryService.getJoinedGames()`, liefert
+  seit 2026-09-05 `JoinedGame[]` statt `string[]`, siehe `services/CLAUDE.md`), sobald
+  `currentUserId()` (Store-Signal) verfügbar ist **und** `isSingleplayer()` false ist. Öffnet
+  ebenfalls über `openSaveDialog()` (siehe oben) den `DialogSelectSaveComponent` statt einer
+  inline gerenderten Liste — Route nach Auswahl `game/:id` statt `local-game/:id`.
 - **"Account verknüpfen"** (`canLinkAccount()`/`openLinkAccountDialog()`) — nur sichtbar, wenn
   `!isSingleplayer()` **und** `auth.currentUser?.isAnonymous` true ist (ein bereits verknüpfter/
   registrierter Account braucht den Button nicht mehr). Öffnet `DialogLinkAccountComponent`

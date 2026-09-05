@@ -152,13 +152,25 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   kein Code-Änderung hier nötig.
 - **`user-repository.service.ts`** (Issue #78) — Firestore-Zugriffe auf das `users/{uid}`-Profil-
   Dokument, getrennt von `GameRepositoryService`/`PlayerRepositoryService` (die decken
-  `games/{gameId}`-Pfade ab, nicht den Account selbst). `getUser(uid)` liest das Dokument.
-  `addJoinedGame(uid, gameId)` trägt eine gameId in die "Meine Spiele"-Liste
-  (`games: string[]`) ein — über `FirestoreRepositoryService.setDocMerge()` (neu, `{ merge: true
-  }`), da ein anonymer Nutzer zu diesem Zeitpunkt noch **kein** `users/{uid}`-Dokument hat (das
-  entstand bisher nur bei `AuthFormService.register()`) und ein normales `updateDoc()` auf ein
-  fehlendes Dokument fehlschlagen würde; `arrayUnion(gameId)` verhindert Duplikate bei
-  mehrfachem Beitritt zum selben Spiel. Schreibt dabei außerdem `lastActivityAt:
+  `games/{gameId}`-Pfade ab, nicht den Account selbst). `getUser(uid)` liest das Dokument roh.
+  **`games`-Feldformat geändert (2026-09-05, Spielstand-Auswahldialog):** war `string[]` (nur
+  gameId), ist jetzt `JoinedGame[]` (`{ gameId, lastPlayedAt: number }`), damit "Meine Spiele" im
+  neuen `DialogSelectSaveComponent` (`components/CLAUDE.md`, Abschnitt Dialoge) ein "zuletzt
+  gespielt"-Datum anzeigen kann. `getJoinedGames(uid)` liest + normalisiert in einem Schritt
+  (`normalizeJoinedGames()`, privat) — ein alter `string`-Eintrag aus der Zeit vor dieser
+  Umstellung wird zu `{ gameId, lastPlayedAt: 0 }` gemappt (sortiert dadurch im Dialog automatisch
+  ans Ende der "zuletzt gespielt"-Sortierung), ein bereits migrierter Eintrag bleibt unverändert.
+  Aufrufer (`StartscreenComponent`/`GameMenuComponent`) sollten `getJoinedGames()` statt
+  `getUser()` + eigener Normalisierung verwenden. `addJoinedGame(uid, gameId)` trägt eine gameId
+  in diese Liste ein — schreibt seit der Umstellung **kein** `arrayUnion()` mehr (das dedupliziert
+  nur exakt gleiche Werte, `lastPlayedAt` ändert sich aber bei jedem erneuten Beitritt), sondern
+  liest die aktuelle Liste, entfernt einen evtl. vorhandenen Eintrag zur selben gameId und hängt
+  einen frischen `{ gameId, lastPlayedAt: Date.now() }`-Eintrag an — Read-Modify-Write über
+  `FirestoreRepositoryService.setDocMerge()` (`{ merge: true }`, da ein anonymer Nutzer zu diesem
+  Zeitpunkt noch **kein** `users/{uid}`-Dokument hat, das entstand bisher nur bei
+  `AuthFormService.register()`); bei echtem gleichzeitigem Schreiben zweier Clients ist ein
+  Lost-Update theoretisch möglich, analog zu den übrigen Read-Modify-Write-Stellen in diesem
+  Modul (siehe `addPlayerToGame()` oben). Schreibt dabei außerdem `lastActivityAt:
   serverTimestamp()` — löst damit die in PR 4 offen gelassene Frage ("`users/{uid}.lastActivityAt`
   ist davon nicht erfasst") auf: Der erste reguläre Schreibzugriff auf `users/{uid}` für einen
   anonymen Nutzer ist genau dieser, ein zusätzlicher separater Schreibpfad nur für
@@ -236,8 +248,9 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   und nachgezogen wird, solange irgendwo (Hand/Nachzieh-/Ablagestapel) noch eine Karte liegt. Die
   zweite Verlustbedingung ("Gruppe kann die geforderten Symbole nicht mehr aufbringen") ist
   bewusst nicht umgesetzt — siehe TODO 11 im Plan.
-  `bumpStat()`/`ensureGameTimerStarted()`/`checkForNextEnemy()`/`drawCards()` schreiben zusätzlich
-  die Kampagnen-Statistik (`GameStats`) fort — Details in `src/app/components/game/CLAUDE.md`.
+  `bumpStat()`/`ensureGameTimerStarted()`/`checkForNextEnemy()`/`drawCards()`/`restCard()`
+  schreiben zusätzlich die Kampagnen-Statistik (`GameStats`) fort — Details in
+  `src/app/components/game/CLAUDE.md`.
 - **`heropower.service.ts`** — Prüft/löst die zehn unterschiedlichen Heldenfähigkeiten aus.
   Bewusst **nicht** vollständig auf eine gemeinsame Hilfsmethode vereinheitlicht (Walküre/
   Jägerin/"Array"-Gruppe haben einen dokumentierten Verhaltensunterschied im Dispatch-Timing,
@@ -247,7 +260,12 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   zählen über ihr eigenes `bumpStat()` (bewusst nicht mit `CardPlayService.bumpStat()` geteilt)
   die `heropowersUsed`-Statistik hoch.
 - **`dieb.service.ts`** — heldenspezifische Sonderlogik für den Dieb (Solo-Held im
-  Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`).
+  Singleplayer-Modus, siehe `docs/planned/singleplayer-mode-plan.md`). Zählt seit einem Bugfix
+  (2026-09-05) `heropowersUsed` (`GameStats`) nach jeder Nutzung selbst hoch — eigenes,
+  drittes `bumpStat`-Analogon zu `CardPlayService`/`HeropowerService` (bewusst nicht geteilt,
+  gleiche Begründung wie dort), da der Dieb nicht über `HeropowerService` läuft. Vorher fehlte
+  der Zähler hier komplett (Statistik-Anzeige "Genutzte Heldenfähigkeiten" blieb beim Dieb immer
+  0), siehe `game/CLAUDE.md` Abschnitt Kampagnen-Statistik.
 - **`game-factory.service.ts`** — baut ein neues `Game`-Objekt (Startscreen: Spiel erstellen).
 - **`auth-form.service.ts`** — Login/Register-Aufrufe + Mapping der Firebase-Error-Codes auf
   deutsche Meldungen; von allen Auth-bezogenen Formularen genutzt statt eigenem Error-Mapping

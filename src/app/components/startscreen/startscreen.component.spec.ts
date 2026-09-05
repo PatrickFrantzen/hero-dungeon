@@ -14,7 +14,7 @@ import { AuthFormService } from 'src/app/services/auth-form.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { UserRepositoryService } from 'src/app/services/user-repository.service';
 import { CurrentUserAction } from 'src/app/actions/currentUser-action';
-import { DialogConfirmComponent } from '../dialog-confirm/dialog-confirm.component';
+import { DialogSelectSaveComponent } from '../dialog-select-save/dialog-select-save.component';
 import { Game } from 'src/models/game';
 import {
   ensureAngularFireSchedulersInitialized,
@@ -209,44 +209,86 @@ describe('StartscreenComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(component.myGames()).toEqual(['game-1', 'game-2']);
+      expect(component.myGames()).toEqual([
+        { gameId: 'game-1', lastPlayedAt: 0 },
+        { gameId: 'game-2', lastPlayedAt: 0 },
+      ]);
     });
   });
 
-  describe('deleteLocalSave (Issue #85)', () => {
+  describe('"Spielstand auswählen" (Dialog, ersetzt die bisherigen Inline-Listen)', () => {
     beforeEach(() => {
       localStorage.clear();
       TestBed.inject(LocalSingleplayerSaveService).createSave({
         saveId: 'local-7',
         updatedAt: 1234,
         game: { gameId: 'local-7', numberOfPlayers: 1 } as unknown as Game,
-        player: {},
+        player: { choosenHero: { heroname: 'Barbar' } },
       });
       component.localSaves.set(TestBed.inject(LocalSingleplayerSaveService).listSaves());
     });
 
     afterEach(() => localStorage.clear());
 
-    it('asks for confirmation before deleting anything', () => {
+    it('hasSaves() is true once a local save or a joined game exists', () => {
+      expect(component.hasSaves()).toBe(true);
+    });
+
+    it('opens the dialog with both local saves and joined games as combined entries', () => {
+      component.myGames.set([{ gameId: 'game-1', lastPlayedAt: 5 }]);
       const dialogOpen = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(undefined),
       } as MatDialogRef<unknown>);
 
-      component.deleteLocalSave('local-7');
+      component.openSaveDialog();
 
-      expect(dialogOpen).toHaveBeenCalledWith(DialogConfirmComponent, jasmine.anything());
-      expect(component.localSaves().map((save) => save.saveId)).toEqual(['local-7']);
+      expect(dialogOpen).toHaveBeenCalledWith(
+        DialogSelectSaveComponent,
+        jasmine.objectContaining({
+          data: {
+            entries: [
+              { id: 'local-7', label: 'Barbar', mode: 'singleplayer', lastPlayedAt: 1234 },
+              { id: 'game-1', label: 'game-1', mode: 'multiplayer', lastPlayedAt: 5 },
+            ],
+          },
+        })
+      );
     });
 
-    it('removes the save from the list once confirmed', () => {
+    it('resumes the local save when the dialog closes with a singleplayer selection', () => {
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of({ data: { confirmed: true } }),
+        afterClosed: () => of({ data: { selectedId: 'local-7', mode: 'singleplayer' } }),
+      } as MatDialogRef<unknown>);
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      component.openSaveDialog();
+
+      expect(router.navigate).toHaveBeenCalledWith(['/local-game/local-7']);
+    });
+
+    it('joins the multiplayer game when the dialog closes with a multiplayer selection', async () => {
+      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
+      const getGame = spyOn(TestBed.inject(GameRepositoryService), 'getGame').and.resolveTo(undefined);
+      spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of({ data: { selectedId: 'game-1', mode: 'multiplayer' } }),
       } as MatDialogRef<unknown>);
 
-      component.deleteLocalSave('local-7');
+      component.openSaveDialog();
+      await fixture.whenStable();
+
+      expect(getGame).toHaveBeenCalledWith('game-1');
+    });
+
+    it('refreshes the local saves list after the dialog closes, in case a save was deleted inside it', () => {
+      spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<unknown>);
+      TestBed.inject(LocalSingleplayerSaveService).deleteSave('local-7');
+
+      component.openSaveDialog();
 
       expect(component.localSaves()).toEqual([]);
-      expect(TestBed.inject(LocalSingleplayerSaveService).listSaves()).toEqual([]);
     });
   });
 });
