@@ -2,13 +2,30 @@
 
 `PlayerHandComponent` war der zentrale Hotspot im Projekt (mischte Firestore-Zugriff, NGXS-
 Dispatch, Spielregeln und UI in einer ~586-Zeilen-Klasse). Seit
-`docs/planned/player-hand-decomposition-plan.md` (TODO 1–3 umgesetzt, siehe Status-Abschnitt
-oben in diesem Plan) ist die Komponente auf ~195 Zeilen reduziert:
+`docs/planned/player-hand-decomposition-plan.md` (TODO 1–3, dann TODO 4 Teil 1, siehe
+Status-Abschnitte in diesem Plan) ist die Komponente auf ~320 Zeilen reduziert:
 
 - Firestore-Sync ausgelagert in `FirestoreSyncService` (`services/CLAUDE.md`).
 - Heldenfähigkeiten-Prüfung ausgelagert in `HeropowerService`.
 - Karten-/Encounter-Regeln ausgelagert in `CardPlayService` (`chooseCard()` als Einstiegspunkt
   für Karten ohne weitere Nutzereingabe).
+- Fächer-Layout + Swipe-Geste der Handkarten ausgelagert in `hand-cards/HandCardsComponent`
+  (reiner Presenter, kein Store-/Firestore-Zugriff) — siehe eigener Abschnitt unten.
+
+## `hand-cards/` — Fächer-Layout + Swipe-Geste (2026-09-05)
+
+`HandCardsComponent` (`hand = input.required<string[]>()`, `singleplayer =
+input.required<boolean>()`, `cardChosen`/`cardRested` als `output<string>()`) rendert die
+Handkarten-Reihe inkl. Fächer-Transform (`handCardStyles()`) und Touch-Swipe
+(`onCardTouchStart/Move/End/Cancel()`) — Details/Herleitung der Layout-Berechnung stehen als
+Kommentar direkt an `handCardStyles()` in `hand-cards.component.ts`, nicht hier dupliziert.
+`PlayerHandComponent` reicht nur noch `currentHand()`/`isSingleplayer()` durch und ruft bei
+`cardChosen`/`cardRested` weiterhin selbst `vibrate()` + `reportWriteFailure()` auf — dieser
+Presenter kennt weder `CardPlayService` noch das `loadError`-Signal. Kartenstapel-Zähler,
+Event-Button und Fehleranzeige bleiben bewusst im Host-Template: sie haben keine eigene
+Business-Logik und sind eng an `PlayerHandComponent`s Signale gekoppelt, eine weitere
+Aufspaltung dort würde nur Indirektion ohne echte Vertiefung hinzufügen (siehe
+`docs/planned/player-hand-decomposition-plan.md`, Status 2026-09-05).
 
 Fünf Aktionskarten (Spende, Stehlen, Heilkräuter, Wut, Heilung) brauchen vor der Auflösung einen
 Zielspieler — `chooseCard(card)` fängt diese Kartennamen ab (`singleTargetActionCards`-Set bzw.
@@ -51,14 +68,16 @@ dispatcht, bevor überhaupt ein Player-Dokument existiert.
 
 ## Rasten-Button als Karten-Badge statt im Fluss (Live-Test-Fix, 2026-09-03)
 
-`.rest-button` (nur Singleplayer, `isSingleplayer()`) sitzt jetzt `position: absolute` oben
-rechts auf dem Kartenbild statt darunter im normalen Dokumentfluss. Vorher trug der Button pro
-Karte zusätzliche Höhe zur `.currentHandStack`-Reihe bei - bei einer auf 7+ Karten gewachsenen
-Hand (Dieb "Stehlen", Kartenstapel-Cycling) wurde die fixe `.card-area`-Leiste am unteren
-Bildschirmrand dadurch so hoch, dass der Button auf kleinen Portrait-Viewports aus dem sichtbaren
-Bereich rutschte. `.hand-card` hat dafür `position: relative` bekommen (Anker fürs Badge) - das
-Fächer-`transform` (Rotation/Hochversatz/Skalierung, siehe unten) bleibt unverändert auf
-`.hand-card` selbst, das Badge dreht/skaliert also mit der Karte mit.
+`.rest-button` (nur Singleplayer, `singleplayer()`-Input) sitzt `position: absolute` oben
+rechts auf dem Kartenbild statt darunter im normalen Dokumentfluss (`hand-cards.component.scss`,
+seit 2026-09-05 dort statt in `player-hand.component.scss`, siehe `hand-cards/`-Abschnitt oben).
+Vorher trug der Button pro Karte zusätzliche Höhe zur `.currentHandStack`-Reihe bei - bei einer
+auf 7+ Karten gewachsenen Hand (Dieb "Stehlen", Kartenstapel-Cycling) wurde die fixe
+`.card-area`-Leiste am unteren Bildschirmrand dadurch so hoch, dass der Button auf kleinen
+Portrait-Viewports aus dem sichtbaren Bereich rutschte. `.hand-card` hat dafür `position:
+relative` bekommen (Anker fürs Badge) - das Fächer-`transform` (Rotation/Hochversatz/
+Skalierung, siehe unten) bleibt unverändert auf `.hand-card` selbst, das Badge dreht/skaliert
+also mit der Karte mit.
 
 ## Kartenbilder der 5 Basissymbole: "Münzen"-Stil (2026-09-03)
 
@@ -68,8 +87,9 @@ geliefertes Artwork im "geprägte Münze auf Holz"-Stil umgestellt (gleiche Bild
 `enemy/CLAUDE.md` Kategorie-Icons und `heropower/CLAUDE.md` Aktivierungs-Icon) — per Pillow auf
 450px Breite (Seitenverhältnis des Quellbilds beibehalten, ~450×650px) reduziert und
 256-Farben quantisiert. Dateinamen unverändert, daher keine Code-Änderung nötig (`currentHand()`
-referenziert Karten weiterhin über den String-Namen, `player-hand.component.html:
-src="./assets/img/cards/{{card}}.png"`).
+referenziert Karten weiterhin über den String-Namen, `hand-cards.component.html:
+src="./assets/img/cards/{{card}}.png"`, seit 2026-09-05 dort statt in
+`player-hand.component.html`).
 
 **Kombi-Karten (2026-09-04):** Die fünf Rot-Mischkarten (`red_red.png`, `red_blue.png`,
 `red_green.png`, `red_purple.png`, `red_yellow.png`) sind ebenfalls auf das neue "Münzen"-
@@ -86,18 +106,19 @@ Diagonal-Schnitt-Stil, bis auch dafür neues Artwork vorliegt.
 ## Swipe-Geste zum Karte-Spielen (Issue #52)
 
 Zusätzlich zu `(click)` auf dem Handkarten-`<img>` (weiterhin die primäre, verlässliche
-Interaktion) gibt es `touchstart`/`touchmove`/`touchend`/`touchcancel`-Handler
-(`onCardTouchStart()`/`onCardTouchMove()`/`onCardTouchEnd()`/`onCardTouchCancel()`), die ein
-Wischen nach oben über `swipeThresholdPx` (70px) wie einen Tap behandeln und `chooseCard()`
-aufrufen. Reiner UI-Zustand über zwei lokale Signale (`draggingIndex`/`dragDeltaY`, kein
-Store-State) — `handCardStyle(index)` mischt diesen Drag-Offset als `--drag-y`-Custom-Property
-in den bestehenden Fächer-Basisstil aus `handCardStyles()` (siehe dort), die eigentliche
-`transform`-Berechnung inkl. `--drag-y` steht in `player-hand.component.scss`. Wird der
-Schwellwert beim Loslassen nicht erreicht, snappt die Karte rein visuell (CSS-Transition, kein
-Dispatch) zurück in ihre Fächer-Position. `event.preventDefault()` in `onCardTouchMove()`/
-`onCardTouchEnd()` verhindert sowohl Seiten-Scroll/Pull-to-Refresh während des Ziehens als auch
-den synthetischen `click`, den mobile Browser nach `touchend` sonst zusätzlich auslösen würden
-(Doppel-Ausspielen der Karte) — bei einem reinen Tap ohne nennenswerte Bewegung feuert
-`touchmove` gar nicht, dort bleibt der normale `click`-Pfad unverändert. `touch-action: pan-x`
-auf dem Bild überlässt vertikales Wischen komplett dieser JS-Logik (keine Konkurrenz mit
-nativem Scroll), horizontales Scrollen der Fächer-Reihe (`.currentHandStack`) bleibt möglich.
+Interaktion) gibt es in `HandCardsComponent` (`hand-cards/`, siehe eigener Abschnitt oben)
+`touchstart`/`touchmove`/`touchend`/`touchcancel`-Handler, die ein Wischen nach oben über
+`swipeThresholdPx` (70px) wie einen Tap behandeln und `cardChosen` emitten (statt vorher direkt
+`chooseCard()` aufzurufen). Reiner UI-Zustand über zwei lokale Signale (`draggingIndex`/
+`dragDeltaY`, kein Store-State) — `handCardStyle(index)` mischt diesen Drag-Offset als
+`--drag-y`-Custom-Property in den bestehenden Fächer-Basisstil aus `handCardStyles()` (siehe
+dort), die eigentliche `transform`-Berechnung inkl. `--drag-y` steht in
+`hand-cards.component.scss`. Wird der Schwellwert beim Loslassen nicht erreicht, snappt die
+Karte rein visuell (CSS-Transition, kein Emit) zurück in ihre Fächer-Position.
+`event.preventDefault()` in `onCardTouchMove()`/`onCardTouchEnd()` verhindert sowohl
+Seiten-Scroll/Pull-to-Refresh während des Ziehens als auch den synthetischen `click`, den mobile
+Browser nach `touchend` sonst zusätzlich auslösen würden (Doppel-Ausspielen der Karte) — bei
+einem reinen Tap ohne nennenswerte Bewegung feuert `touchmove` gar nicht, dort bleibt der
+normale `click`-Pfad unverändert. `touch-action: pan-x` auf dem Bild überlässt vertikales
+Wischen komplett dieser JS-Logik (keine Konkurrenz mit nativem Scroll), horizontales Scrollen
+der Fächer-Reihe (`.currentHandStack`) bleibt möglich.

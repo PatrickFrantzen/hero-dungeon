@@ -17,6 +17,29 @@ beide sind im Plan selbst als optional/nice-to-have markiert, TODO 5 setzt zusä
 `docs/done/hero-data-model-plan.md` auf, das seit dieser Session verfügbar ist, falls eine
 künftige Session das aufgreifen will.
 
+## Status (2026-09-05)
+
+**TODO 4 (Teil 1) umgesetzt**: `HandCardsComponent` (`player-hand/hand-cards/`) übernimmt das
+Fächer-Layout (`handCardStyles()`/`handCardStyle()`) und die Swipe-Geste (`onCardTouch*()`)
+inkl. des zugehörigen Handkarten-Renderings (Bild + Rasten-Button) — reiner Presenter
+(`hand = input.required<string[]>()`, `singleplayer = input.required<boolean>()`,
+`cardChosen`/`cardRested` als `output<string>()`), kein Store-/Firestore-Zugriff.
+`PlayerHandComponent` bleibt für `vibrate()`/`reportWriteFailure()`/`chooseCard()`/`restCard()`
+zuständig und reicht `currentHand()`/`isSingleplayer()` nur noch als Inputs durch. Damit auf
+~320 Zeilen reduziert (vorher 444). `CardStackComponent`/`PlayerHandCardsComponent` für den
+verbleibenden Rest des Templates (Kartenstapel-Zähler, Event-Button, Fehleranzeige) bewusst
+nicht mit ausgelagert — dieser Rest ist bereits ohne eigene Business-Logik und eng an
+`PlayerHandComponent`s eigene Signale gekoppelt, eine weitere Aufspaltung hätte hier keine echte
+Vertiefung gebracht, nur zusätzliche Indirektion.
+
+`ng build`/`ng test --watch=false --browsers=ChromeHeadlessCI` grün (175/175) nach dem Schritt.
+**Kein manueller Multiplayer-Smoke-Test durchgeführt** (weiterhin kein Firebase-Emulator-/
+Zwei-Browser-Setup in dieser Session verfügbar) — vor dem Merge nachholen (Karte per Tap **und**
+Swipe spielen, Rasten-Button im Singleplayer, Fächer-Layout bei 6+ Handkarten).
+
+TODO 5 (Heropower-Strategy-Pattern) bleibt offen, als nächster Kandidat vorgesehen — Diagnose/
+Vorgehen dafür siehe TODO 5 unten, unverändert gültig.
+
 `ng build`/`ng test --watch=false --browsers=ChromeHeadlessCI` grün nach jedem Schritt.
 **Kein manueller Multiplayer-Smoke-Test durchgeführt** (kein laufendes Firebase-
 Emulator-/Zwei-Browser-Setup in dieser Session verfügbar) — der Plan verlangt diesen
@@ -146,12 +169,15 @@ konzentrieren).
   - Verifikation: `ng build`, `ng test`, manueller Test „Karte spielen (Einzel- und
     Doppelkarte), Gegner besiegen, nächster Gegner/Boss lädt" — der Kernspielloop.
 
-- [ ] **TODO 4 — Sub-Komponenten fürs Template (optional, nach TODO 1-3)**
-  - `player-hand.component.html` in `CardStackComponent`/`PlayerHandCardsComponent`
+- [x] **TODO 4 — Sub-Komponenten fürs Template (optional, nach TODO 1-3)** — Fächer-/Swipe-Teil
+  am 2026-09-05 als `HandCardsComponent` umgesetzt, siehe Status-Abschnitt oben. Der
+  ursprünglich vorgeschlagene `CardStackComponent`-Schnitt (Kartenstapel-Zähler) wurde bewusst
+  nicht umgesetzt, siehe Begründung dort.
+  - ~~`player-hand.component.html` in `CardStackComponent`/`PlayerHandCardsComponent`
     aufteilen, analog zum bestehenden `EnemyContainerComponent`/`HeropowerContainerComponent`-
     Muster. Erst sinnvoll, wenn TODO 1-3 die Komponente bereits auf reine Orchestrierung
-    reduziert haben.
-  - Verifikation: `ng build`, `ng test`.
+    reduziert haben.~~
+  - Verifikation: `ng build`, `ng test` — grün, siehe Status-Abschnitt oben.
 
 - [ ] **TODO 5 — Stretch-Goal: Heropower-Strategy-Pattern in `heropower.component.ts`**
   - Nur nach TODO 2 sinnvoll (setzt den neuen `HeropowerService` voraus). Ein
