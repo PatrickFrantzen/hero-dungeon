@@ -1,27 +1,40 @@
 <h1 mat-dialog-title>Spielstand auswählen</h1>
-<div mat-dialog-content class="tw-flex tw-min-w-[280px] tw-flex-col tw-gap-2">
+<div mat-dialog-content class="tw-flex tw-w-[320px] tw-max-w-full tw-flex-col tw-gap-2 sm:tw-w-[380px]">
   @if (entries().length === 0) {
-    <p>Keine Spielstände vorhanden.</p>
+    <p class="tw-py-4 tw-text-center tw-text-sm tw-opacity-70">Keine Spielstände vorhanden.</p>
   }
   @for (entry of entries(); track entry.id) {
-    <div class="tw-flex tw-items-center tw-gap-1">
+    <div class="tw-flex tw-items-stretch tw-gap-2 tw-rounded-lg tw-border tw-border-black/10 tw-transition-colors hover:tw-bg-black/5">
       <button
         mat-button
-        class="tw-flex tw-flex-1 tw-flex-col tw-items-start tw-gap-0.5 tw-text-left tw-normal-case"
+        class="tw-flex tw-flex-1 tw-flex-col tw-items-start tw-gap-1 tw-px-3 tw-py-2 tw-text-left tw-normal-case tw-leading-tight"
         (click)="select(entry)"
       >
         <span class="tw-flex tw-w-full tw-items-center tw-gap-2">
-          <span>{{ entry.label }}</span>
-          <span class="tw-rounded tw-bg-black/10 tw-px-2 tw-py-0.5 tw-text-xs">{{ modeLabel(entry.mode) }}</span>
+          <span class="tw-truncate tw-font-medium">{{ entry.label }}</span>
+          <span
+            class="tw-shrink-0 tw-rounded-full tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium"
+            [class.tw-bg-purple-700]="entry.mode === 'singleplayer'"
+            [class.tw-text-white]="entry.mode === 'singleplayer'"
+            [class.tw-bg-green-600]="entry.mode === 'multiplayer'"
+            [class.tw-text-white]="entry.mode === 'multiplayer'"
+          >{{ modeLabel(entry.mode) }}</span>
         </span>
-        <span class="tw-text-xs tw-opacity-70">Zuletzt gespielt: {{ formatLastPlayed(entry.lastPlayedAt) }}</span>
+        <span class="tw-text-xs tw-opacity-60">Zuletzt gespielt: {{ formatLastPlayed(entry.lastPlayedAt) }}</span>
       </button>
       @if (entry.mode === 'singleplayer') {
-        <button mat-icon-button aria-label="Spielstand löschen" (click)="delete(entry)">✕</button>
+        <div class="tw-flex tw-items-center tw-border-l tw-border-black/10 tw-pl-1">
+          <button
+            mat-icon-button
+            aria-label="Spielstand löschen"
+            class="tw-text-red-600 hover:tw-bg-red-600/10"
+            (click)="delete(entry)"
+          >✕</button>
+        </div>
       }
     </div>
   }
 </div>
-<div mat-dialog-actions class="tw-w-full tw-justify-end">
+<div mat-dialog-actions class="tw-w-full tw-justify-end tw-border-t tw-border-black/10 tw-pt-2">
   <button mat-button (click)="onCancel()">Abbrechen</button>
 </div>

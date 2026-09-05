@@ -178,3 +178,12 @@ Eintrag aus der eigenen Kopie der Liste, ohne den Dialog zu schließen). Der Auf
 Dialog etwas gelöscht wurde. `GameMenuComponent` übergibt wegen des bereits bestehenden
 `isSingleplayer()`-Gates in seinem `effect()` nie beide Modi gleichzeitig (nur Startscreen zeigt
 Singleplayer- und Multiplayer-Einträge gemischt in einer Liste).
+
+**Restyling (2026-09-05)** — die ursprüngliche Version wirkte auf schmalen (Mobile-)Viewports
+unstrukturiert (Label/Badge/Datum/Löschen-Button liefen optisch ineinander, kein visueller
+Abstand zwischen Einträgen). Jetzt: jeder Eintrag ist eine eigene Karte (`tw-rounded-lg
+tw-border`, Hover-Tint), Modus-Badge ist statt grauem Chip jetzt farbcodiert passend zu den
+Akzentfarben aus `startscreen/` (Lila für Singleplayer, Grün für Multiplayer), der
+Löschen-Button ist per `tw-border-l` optisch vom Auswahl-Button abgetrennt und rot eingefärbt
+(klar als destruktiv erkennbar), der Dialog ist breiter (`tw-w-[320px]`/`sm:tw-w-[380px]` statt
+`tw-min-w-[280px]`) und die Actions-Zeile hat eine Trennlinie zum Listenbereich.
