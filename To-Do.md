@@ -36,6 +36,37 @@
    das Projekt `hero-dungeon` eingerichtet werden (oder per `gcloud firestore fields ttls
    update`), damit die 7-Tage-Ablauf-Löschung tatsächlich greift. Noch nicht konfiguriert.
 
+## Findings aus Portfolio-/Code-Review (2026-09-05, Recruiter-Perspektive)
+
+Kein aktiver Umsetzungsplan im Sinne von `docs/CLAUDE.md` — Backlog-Übersicht aus einer
+externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patrick abstimmen
+(betrifft Kernregeln) und in kleinen Schritten vorgehen (Referenz:
+`docs/done/onpush-refactor-plan.md`).
+
+6. **`card-play.service.ts` refactorn** (859 Zeilen, größte Datei im Repo) — God-Service mit
+   ~40 privaten Hilfsmethoden für die Kartenregeln, Auswahl der Karten-Logik läuft über lange
+   `if (card === 'x')`-Ketten statt über ein Strategy-Pattern oder eine Lookup-Table.
+   - Kartenwirkungen in einzelne Strategie-Klassen/Funktionen auslagern, eine pro Kartentyp
+     (z.B. `spende.strategy.ts`, `stehlen.strategy.ts`, `rest.strategy.ts`), mit gemeinsamem
+     Interface (`CardEffect { apply(context): GameStateDelta }` o.ä.)
+   - Card-Typ → Strategie-Zuordnung über eine Lookup-Map statt `if`/`switch`-Ketten auflösen
+   - Die drei separaten `bumpStat`-Implementierungen (`card-play.service.ts`,
+     `heropower.service.ts`, `dieb.service.ts`) im Zuge dessen neu bewerten — aktuell laut
+     `src/app/services/CLAUDE.md` bewusst getrennt gehalten
+   - Bestehende Tests aus `card-play.service.spec.ts` (15 Fälle inkl. Bug-/TODO-Referenzen)
+     unverändert grün halten — reine Struktur-, keine Verhaltensänderung
+   - Nach Aufteilung `src/app/services/CLAUDE.md` aktualisieren (God-Service-Hinweis entfernen)
+7. **`inject()` statt Constructor-DI konsequent durchziehen** (Issue #94) — betroffen u.a.
+   `player-hand.component.ts` und `game.component.ts`, die trotz Root-CLAUDE.md-Vorgabe noch
+   Constructor-DI nutzen.
+8. **Firestore-Direktzugriffe aus `game.component.ts`** (`checkIfPlayerIsAlreadyPartOfGame`,
+   `drawInitialHand`) in einen Service auslagern, statt sie direkt in der Komponente zu halten
+   (passend zur etablierten Repository-/Business-Logik-Trennung).
+9. **README für externe Betrachter** — ~~von Angular-CLI-Boilerplate auf echtes Projekt-README
+   umgestellt (Beschreibung, Live-Demo-Link, Tech-Stack, Architektur-Highlights, Setup)~~
+   erledigt 2026-09-05. Noch offen: Screenshot(s)/GIF vom Spielbrett und von der
+   Handkarten-Ansicht ins README einfügen (Platzhalter-Kommentar ist gesetzt).
+
 ## Erledigt (2026-09-05)
 
 Alle bei der ersten Prüfung offenen manuellen Smoke-Tests sind durchgeführt und bestätigt, die
