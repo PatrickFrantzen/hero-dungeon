@@ -326,7 +326,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
           this.currentGameId(),
           this.currentPlayerId(),
           reportWriteFailure,
-          (enemy) => this.cardPlayService.checkForNextEnemy(this.currentGameId(), enemy, reportWriteFailure)
+          (enemy) => this.reportWriteFailure(this.cardPlayService.checkForNextEnemy(this.currentGameId(), enemy))
         );
         break;
       case 'jaegerin':
@@ -356,9 +356,7 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
-      this.reportWriteFailure(write)
-    );
+    this.reportWriteFailure(this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card));
   }
 
   /** Öffnet den Zielspieler-Dialog für Spende/Stehlen/Heilkräuter/Heilung (je ein Zielspieler)
@@ -372,20 +370,19 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (!result) return;
       const targetPlayerId = result.data.playerId;
-      const reportWriteFailure = (write: Promise<void>) => this.reportWriteFailure(write);
 
       switch (card) {
         case 'spende':
-          this.cardPlayService.resolveSpende(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveSpende(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
         case 'stehlen':
-          this.cardPlayService.resolveStehlen(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveStehlen(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
         case 'heilkräuter':
-          this.cardPlayService.resolveHeilkraeuter(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveHeilkraeuter(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
         case 'heile':
-          this.cardPlayService.resolveHeilung(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId, reportWriteFailure);
+          this.reportWriteFailure(this.cardPlayService.resolveHeilung(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
           break;
       }
     });
@@ -409,28 +406,19 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
       dialogRefTwo.afterClosed().subscribe((resultTwo) => {
         if (!resultTwo) return;
-        this.cardPlayService.resolveWut(
-          this.currentGameId(),
-          this.currentPlayerId(),
-          'wut',
-          resultOne.data.playerId,
-          resultTwo.data.playerId,
-          (write) => this.reportWriteFailure(write)
+        this.reportWriteFailure(
+          this.cardPlayService.resolveWut(this.currentGameId(), this.currentPlayerId(), 'wut', resultOne.data.playerId, resultTwo.data.playerId)
         );
       });
     });
   }
 
   restCard(card: string) {
-    this.cardPlayService.restCard(this.currentGameId(), this.currentPlayerId(), card, (write) =>
-      this.reportWriteFailure(write)
-    );
+    this.reportWriteFailure(this.cardPlayService.restCard(this.currentGameId(), this.currentPlayerId(), card));
   }
 
   resolveEvent() {
-    this.cardPlayService.resolveEvent(this.currentGameId(), this.currentPlayerId(), (write) =>
-      this.reportWriteFailure(write)
-    );
+    this.reportWriteFailure(this.cardPlayService.resolveEvent(this.currentGameId(), this.currentPlayerId()));
   }
 
   isEventActive(): boolean {

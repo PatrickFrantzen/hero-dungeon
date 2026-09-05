@@ -252,18 +252,18 @@ export class GameComponent implements OnInit, OnDestroy {
    * nächsten Dungeon starten - mischt alle Heldendecks frisch (siehe CardPlayService). */
   continueToNextDungeon(): void {
     this.timeoutReported = false;
-    this.cardPlayService.continueToNextDungeon(this.currentGameId(), this.currentUserId(), (write) =>
-      write.catch(() => this.loadError.set('Der nächste Dungeon konnte nicht gestartet werden. Bitte erneut versuchen.'))
-    );
+    this.cardPlayService
+      .continueToNextDungeon(this.currentGameId(), this.currentUserId())
+      .catch(() => this.loadError.set('Der nächste Dungeon konnte nicht gestartet werden. Bitte erneut versuchen.'));
   }
 
   /** Bestätigung nach verlorenem Dungeon (gameStatus 'lost'): zurück zu Boss #1 mit frisch
    * gemischten Heldendecks für alle Spieler (Anleitung S. 7). */
   retryCampaign(): void {
     this.timeoutReported = false;
-    this.cardPlayService.restartCampaign(this.currentGameId(), this.currentUserId(), (write) =>
-      write.catch(() => this.loadError.set('Der Dungeon konnte nicht neu gestartet werden. Bitte erneut versuchen.'))
-    );
+    this.cardPlayService
+      .restartCampaign(this.currentGameId(), this.currentUserId())
+      .catch(() => this.loadError.set('Der Dungeon konnte nicht neu gestartet werden. Bitte erneut versuchen.'));
   }
 
   backToStartscreen(): void {

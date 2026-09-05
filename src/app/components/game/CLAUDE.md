@@ -155,8 +155,9 @@ pro Dungeon.
   `services/CLAUDE.md`) — zählt bei jedem Aufruf hoch, unabhängig vom Timer-Start-Guard.
 - **`cardsCycled`** — zwei Zählstellen: `CardPlayService.drawCards()` zählt, sobald der
   Ablagestapel gemischt zum Nachziehstapel wird (Stapel leer, Ablage nicht), die Anzahl der so
-  wieder verfügbaren Karten (zentral in dieser privaten Methode, alle 6 Aufrufer reichen dafür
-  `gameId`/`reportWriteFailure` durch); zusätzlich zählt `CardPlayService.restCard()`
+  wieder verfügbaren Karten (zentral in dieser privaten Methode, alle 6 Aufrufer reichen dafür nur
+  noch `gameId` durch und übernehmen die dabei entstehende Write-Promise aus dem zurückgegebenen
+  `WithWrites`-Objekt, siehe `services/CLAUDE.md`); zusätzlich zählt `CardPlayService.restCard()`
   ("Rasten", Singleplayer-Deadlock-Schutz) das eigentliche Rasten-Ereignis selbst um 1 hoch,
   unabhängig davon, ob dabei ein Reshuffle nötig war — vorher war das die einzige Lücke: der
   Reshuffle-Zweig in `drawCards()` griff beim Rasten praktisch nie, weil der Nachziehstapel dabei
