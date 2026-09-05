@@ -1,0 +1,27 @@
+<h1 mat-dialog-title>Spielstand auswählen</h1>
+<div mat-dialog-content class="tw-flex tw-min-w-[280px] tw-flex-col tw-gap-2">
+  @if (entries().length === 0) {
+    <p>Keine Spielstände vorhanden.</p>
+  }
+  @for (entry of entries(); track entry.id) {
+    <div class="tw-flex tw-items-center tw-gap-1">
+      <button
+        mat-button
+        class="tw-flex tw-flex-1 tw-flex-col tw-items-start tw-gap-0.5 tw-text-left tw-normal-case"
+        (click)="select(entry)"
+      >
+        <span class="tw-flex tw-w-full tw-items-center tw-gap-2">
+          <span>{{ entry.label }}</span>
+          <span class="tw-rounded tw-bg-black/10 tw-px-2 tw-py-0.5 tw-text-xs">{{ modeLabel(entry.mode) }}</span>
+        </span>
+        <span class="tw-text-xs tw-opacity-70">Zuletzt gespielt: {{ formatLastPlayed(entry.lastPlayedAt) }}</span>
+      </button>
+      @if (entry.mode === 'singleplayer') {
+        <button mat-icon-button aria-label="Spielstand löschen" (click)="delete(entry)">✕</button>
+      }
+    </div>
+  }
+</div>
+<div mat-dialog-actions class="tw-w-full tw-justify-end">
+  <button mat-button (click)="onCancel()">Abbrechen</button>
+</div>

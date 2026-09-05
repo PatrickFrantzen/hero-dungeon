@@ -6,9 +6,10 @@ import { Store } from '@ngxs/store';
 import { CurrentGameAction } from 'src/app/actions/currentGame-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
-import { UserRepositoryService } from 'src/app/services/user-repository.service';
+import { JoinedGame, UserRepositoryService } from 'src/app/services/user-repository.service';
 import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
 import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
+import { DialogSelectSaveComponent, DialogSelectSaveData, DialogSelectSaveResult, SaveListEntry } from '../dialog-select-save/dialog-select-save.component';
 
 /**
  * In-Game-Menü (Issue #74, PR 2 aus docs/planned/login-multiplayer-onboarding-plan.md) -
@@ -42,7 +43,7 @@ export class GameMenuComponent {
   /** "Meine Spiele" (Issue #78) - Multiplayer-Historie aus `users/{uid}.games`, analog zu
    * StartscreenComponent. Nur relevant, solange das Menü im Multiplayer-Modus ist - lädt
    * trotzdem unabhängig von isOpen(), damit die Liste beim ersten Öffnen bereits da ist. */
-  myGames = signal<string[]>([]);
+  myGames = signal<JoinedGame[]>([]);
   private currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
 
   constructor(
@@ -61,7 +62,7 @@ export class GameMenuComponent {
       if (!userId) {
         return;
       }
-      this.userRepo.getUser(userId).then((data) => this.myGames.set((data?.['games'] as string[]) ?? []));
+      this.userRepo.getJoinedGames(userId).then((games) => this.myGames.set(games));
     });
   }
 
@@ -81,18 +82,32 @@ export class GameMenuComponent {
     return this.localSaves.listSaves();
   }
 
-  /** "Spielstände laden": GameComponent/PlayerHandComponent laden den Rest beim Betreten der
-   * Route selbst (loadLocalGameOnce()), analog zu StartscreenComponent.resumeLocalSave(). */
-  resumeSave(saveId: string): void {
-    this.store.dispatch(new CurrentGameAction(saveId));
-    this.router.navigate(['/local-game/' + saveId]);
+  hasSaves(): boolean {
+    return this.isSingleplayer() ? this.listSaves().length > 0 : this.myGames().length > 0;
   }
 
-  /** "Meine Spiele" (Issue #78) - analog zu resumeSave() oben, aber für Multiplayer-gameIds
-   * (Route game/:id statt local-game/:id). */
-  resumeMultiplayerGame(gameId: string): void {
-    this.store.dispatch(new CurrentGameAction(gameId));
-    this.router.navigate(['/game/' + gameId]);
+  /** "Spielstände laden" (Singleplayer) bzw. "Meine Spiele" (Multiplayer) - ersetzt die
+   * bisherigen inline gerenderten Listen durch denselben Auswahldialog wie
+   * StartscreenComponent.openSaveDialog(). `isSingleplayer()` entscheidet bereits, welche der
+   * beiden Listen überhaupt geladen wird (siehe effect() oben), daher enthält `entries` hier nie
+   * beide Modi gleichzeitig. */
+  openSaveDialog(): void {
+    const entries: SaveListEntry[] = this.isSingleplayer()
+      ? this.listSaves().map((save): SaveListEntry => ({ id: save.saveId, label: this.saveLabel(save), mode: 'singleplayer', lastPlayedAt: save.updatedAt }))
+      : this.myGames().map((game): SaveListEntry => ({ id: game.gameId, label: game.gameId, mode: 'multiplayer', lastPlayedAt: game.lastPlayedAt || null }));
+
+    this.dialog
+      .open<DialogSelectSaveComponent, DialogSelectSaveData, { data: DialogSelectSaveResult }>(DialogSelectSaveComponent, {
+        data: { entries },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (!result?.data) {
+          return;
+        }
+        this.store.dispatch(new CurrentGameAction(result.data.selectedId));
+        this.router.navigate([(result.data.mode === 'singleplayer' ? '/local-game/' : '/game/') + result.data.selectedId]);
+      });
   }
 
   /** "Account verknüpfen" (Issue #78) - nur sinnvoll für einen anonym eingeloggten Multiplayer-
