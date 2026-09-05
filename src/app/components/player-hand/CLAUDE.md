@@ -71,17 +71,20 @@ geliefertes Artwork im "geprägte Münze auf Holz"-Stil umgestellt (gleiche Bild
 referenziert Karten weiterhin über den String-Namen, `player-hand.component.html:
 src="./assets/img/cards/{{card}}.png"`).
 
-**Kombi-Karten (2026-09-04):** Die fünf Rot-Mischkarten (`red_red.png`, `red_blue.png`,
-`red_green.png`, `red_purple.png`, `red_yellow.png`) sind ebenfalls auf das neue "Münzen"-
-Artwork umgestellt (gleiches Verfahren: 450px Breite, 256-Farben quantisiert). Bei `red_yellow`
-sind die Eck-Badges des Schild-Symbols blau statt gelb eingefärbt (stilistische Entscheidung im
-Artwork, keine falsche Zuordnung — mit Patrick abgeglichen) — die Karte zeigt Schwert (rot) +
-Schild (gelb/Verteidigung).
+**Kombi-Karten (2026-09-04, Artwork ersetzt 2026-09-05):** Die fünf Rot-Mischkarten
+(`red_red.png`, `red_blue.png`, `red_green.png`, `red_purple.png`, `red_yellow.png`) sind auf
+das "Münzen"-Artwork umgestellt (gleiches Verfahren: 450px Breite, 256-Farben quantisiert).
+`red_blue`/`red_green`/`red_purple`/`red_yellow` haben am 2026-09-05 nochmal neues Artwork von
+Patrick bekommen (Eck-Badges jetzt durchgängig korrekt farbig: rotes Schwert-Icon + Icon der
+zweiten Farbe) — die zuvor dokumentierte Abweichung bei `red_yellow` (blau statt gelb
+eingefärbte Schild-Badges im alten Artwork) betrifft die aktuelle Version nicht mehr.
 
-**Bewusste Inkonsistenz (weiterhin offen):** Die vier reinen Doppel-Karten (`yellow_yellow.png`,
-`purple_purple.png`, `blue_blue.png`, `green_green.png`) sind eigenständige Bilddateien, keine
-programmatisch aus den Einzelsymbolen zusammengesetzten Grafiken — sie bleiben im alten
-Diagonal-Schnitt-Stil, bis auch dafür neues Artwork vorliegt.
+**Inkonsistenz behoben (2026-09-05):** Die vier reinen Doppel-Karten (`yellow_yellow.png`,
+`purple_purple.png`, `blue_blue.png`, `green_green.png`) sowie `red_red.png` haben jetzt
+ebenfalls von Patrick geliefertes Artwork im "Münzen"-Stil (gleiches Verfahren: Pillow, 450px
+Breite, 256-Farben quantisiert) statt des alten Diagonal-Schnitt-Stils — bleiben weiterhin
+eigenständige Bilddateien, keine programmatisch aus den Einzelsymbolen zusammengesetzten
+Grafiken. Dateinamen unverändert, keine Code-Änderung nötig.
 
 ## Swipe-Geste zum Karte-Spielen (Issue #52)
 
