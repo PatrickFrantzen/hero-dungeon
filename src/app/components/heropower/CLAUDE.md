@@ -19,8 +19,7 @@
   Bottom-Sheet ein-/ausblendet. `heropowerActivated()` (Store-State) steuert weiterhin
   `color-effect` auf der Karte selbst und zusätzlich einen gelben Ring auf dem FAB
   (`.heropower-fab--active`), damit eine aktive Fähigkeit auch bei geschlossenem Sheet sichtbar
-  bleibt. Reine UI-Präsentation — `activateHeroPower()`/`deactivateHeroPower()`/die zehn
-  `heroPower*()`-Methoden sind unverändert.
+  bleibt. Reine UI-Präsentation.
 
 ## Aktivierungs-Icon + vereinheitlichter Klick-Handler (Issue #93, 2026-09-04)
 
@@ -37,19 +36,37 @@ Client-Side-Routing löst der Browser das relativ zur aktuellen URL-Route auf, n
 `index.html`, was unter GitHub Pages (Unterordner-Deployment, siehe Root-`CLAUDE.md`) zu einem
 404 führte. Jetzt: **ein einziges** `<img src="./assets/img/icons/heldenfaehigkeit_icon.png">`
 (Pfad-Muster analog zu `player-hand/`/`enemy/`, die bereits `./assets/img/...` nutzen und
-nachweislich funktionieren) mit einem gemeinsamen `(click)="onActivateHeropower()"`. Der
-Handler (`heropower.component.ts`) schlägt `heroName()` in einer `Record<string, () => void>`-
-Lookup-Tabelle nach und delegiert an die passende, inhaltlich unveränderte `heroPower*()`-
-Methode; ein unbekannter/leerer Heldenname ist ein No-op (optional Chaining), kein Fehler. Die
-zehn `heroPower*()`-Methoden selbst (welcher Encounter-Typ die Fähigkeit freischaltet) sind
-unangetastet - nur der Template-Dispatch wurde entduplziert. `heropower.component.scss` setzt
-weiterhin `img { width/height: clamp(...) }` auf `.heropower-sheet` für die 160px-Icon-Größe.
-Ein neuer Held braucht nur einen neuen Eintrag in der Lookup-Tabelle, keinen eigenen
-Template-Zweig und keinen eigenen Icon-Pfad.
+nachweislich funktionieren) mit einem gemeinsamen `(click)="onActivateHeropower()"`.
+`heropower.component.scss` setzt weiterhin `img { width/height: clamp(...) }` auf
+`.heropower-sheet` für die 160px-Icon-Größe.
 
-Neue Heldenfähigkeit hinzufügen: Prüf-Logik (das "ob überhaupt auflösen") gehört primär in
-`HeropowerService` (`services/CLAUDE.md`, dort auch der Hinweis auf die bewusst nicht
-vereinheitlichten Sonderfälle), das "wann im Container reagieren" folgt dem bestehenden
-`switch (heroname)`-Muster im Container. Ein reiner Signal-/Array-Typ-Held reiht sich in den
-`'array'`-Zweig ein; ein Held mit eigenem Auflösungsweg (wie Dieb/Jägerin/Walküre) braucht
-einen eigenen `case` dort **und** einen Eintrag in `heroPowerHandlers` hier.
+## Aktivierungs-/Auflösungsregeln datengetrieben statt zwei duplizierten Switches (TODO 5, 2026-09-05)
+
+`onActivateHeropower()` schlug bis dahin `heroName()` in einer `heroPowerHandlers`-Lookup-Tabelle
+nach und delegierte an eine von zehn strukturell identischen `heroPower<Name>()`-Methoden, die
+sich nur im geprüften `currentEnemy().type`-Wert unterschieden. Parallel dazu hatte
+`HeropowerContainerComponent`s `effect()` einen zweiten `switch (heroname)`, der entschied,
+**welches** Auflösungs-Ereignis ein Held auslöst — dieselbe Art Duplikation auf einer anderen
+Achse. Beide Switches sind jetzt durch zwei Datenfelder auf `HeroDefinition`
+(`src/models/helden/hero-definitions.ts`, siehe `src/models/CLAUDE.md`) ersetzt, statt einer
+neuen `HeropowerStrategy`-Klassenhierarchie einzuführen (Rückschritt gegen das dort bereits
+etablierte konfigurationsbasierte Heldenmodell):
+
+```ts
+activatesOn: 'Person' | 'Monster' | 'Hindernis' | 'always';
+resolutionKind: 'array' | 'magier' | 'jaegerin' | 'walkuere' | 'dieb';
+```
+
+`onActivateHeropower()` schlägt `HERO_DEFINITIONS` per `heroName()` nach und toggelt
+`activateHeroPower()`/`deactivateHeroPower()` anhand von `activatesOn` (`'always'` = wie die
+vorherigen Magier/Jägerin/Dieb/Walküre-Methoden ohne Typ-Check) — die zehn `heroPower*()`-
+Methoden und die Lookup-Tabelle sind komplett entfallen. `HeropowerContainerComponent`s
+`effect()` schlägt denselben `HERO_DEFINITIONS`-Eintrag nach `resolutionKind` nach;
+`resolutionKind === 'dieb'` bleibt der einzige Sonderfall (`DiebService.heropower(...)` statt
+`heropowerResolved.emit(...)`, da Dieb nie über dieses Output läuft).
+
+Neue Heldenfähigkeit hinzufügen: **kein** neuer Code mehr in `heropower.component.ts`/
+`heropower-container.component.ts` nötig — nur `activatesOn`/`resolutionKind` (plus die
+übrigen Felder) auf dem neuen `HeroDefinition`-Eintrag setzen. Ein Held mit eigenem
+Auflösungsweg wie Dieb bräuchte weiterhin einen eigenen Sonderfall im Container, falls er wie
+Dieb nicht über `heropowerResolved` laufen soll.

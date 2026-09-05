@@ -7,6 +7,7 @@ import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { DiebService } from 'src/app/services/dieb.service';
 import { Mob } from 'src/models/monster/monster.class';
+import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
 import { HeropowerComponent } from '../heropower.component';
 
 @Component({
@@ -51,34 +52,28 @@ export class HeropowerContainerComponent {
 
   constructor() {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
+    // Welches Ereignis ein Held auslöst, steht als resolutionKind auf seiner HeroDefinition
+    // (TODO 5 aus docs/planned/player-hand-decomposition-plan.md, ersetzt den vorherigen
+    // switch(heroname)) — Dieb bleibt Sonderfall, da er nie über heropowerResolved läuft,
+    // sondern DiebService direkt aufruft.
     effect(() => {
       const enemy = this.enemy();
       const heropowerArray = this.heropowerArray();
       const heroname = this.currentUserHeroData().choosenHero;
 
-      if (this.heropowerActivated() && heropowerArray.length == 3) {
-        switch (heroname) {
-          case 'Gladiator':
-          case 'Barbar':
-          case 'Zauberin':
-          case 'Waldläufer':
-          case 'Ninja':
-          case 'Paladin':
-            this.heropowerResolved.emit('array');
-            break;
-          case 'Magier':
-            this.heropowerResolved.emit('magier');
-            break;
-          case 'Jägerin':
-            this.heropowerResolved.emit('jaegerin');
-            break;
-          case 'Dieb':
-            this.diebService.heropower(heropowerArray)
-            break;
-          case 'Walküre':
-            this.heropowerResolved.emit('walkuere');
-            break;
-        }
+      if (!this.heropowerActivated() || heropowerArray.length !== 3) {
+        return;
+      }
+
+      const definition = HERO_DEFINITIONS.find((def) => def.heroName === heroname);
+      if (!definition) {
+        return;
+      }
+
+      if (definition.resolutionKind === 'dieb') {
+        this.diebService.heropower(heropowerArray);
+      } else {
+        this.heropowerResolved.emit(definition.resolutionKind);
       }
     });
   }

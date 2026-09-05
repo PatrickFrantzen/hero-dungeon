@@ -37,10 +37,17 @@ Vertiefung gebracht, nur zusätzliche Indirektion.
 Zwei-Browser-Setup in dieser Session verfügbar) — vor dem Merge nachholen (Karte per Tap **und**
 Swipe spielen, Rasten-Button im Singleplayer, Fächer-Layout bei 6+ Handkarten).
 
-TODO 5 bleibt offen, als nächster Kandidat vorgesehen — Diagnose/Vorgehen unten am selben Tag
-überarbeitet (Datenfelder auf `HeroDefinition` statt einer neuen `HeropowerStrategy`-
-Klassenhierarchie, deckt zusätzlich ein zweites, bisher nicht im Plan erfasstes Duplikat in
-`HeropowerContainerComponent` mit ab), noch nicht implementiert.
+**TODO 5 umgesetzt (2026-09-05, direkt im Anschluss an die Planüberarbeitung)**: `activatesOn`/
+`resolutionKind` auf `HeroDefinition` (`src/models/helden/hero-definitions.ts`) ersetzen sowohl
+die zehn `heroPower<Name>()`-Methoden in `heropower.component.ts` als auch den `switch
+(heroname)` in `HeropowerContainerComponent` — Details siehe
+`src/app/components/heropower/CLAUDE.md`. `ng build`/`ng test --watch=false
+--browsers=ChromeHeadlessCI` grün (176/176, 3 der bisherigen Tests durch verhaltensbasierte
+Tests ersetzt, die tatsächlich prüfen ob `heropowerActivated()` je Held/Gegnertyp korrekt
+kippt, statt auf entfernte Methoden zu spyen). Damit sind alle 5 TODOs aus diesem Plan
+abgearbeitet — Verschiebung nach `docs/done/` steht noch aus (siehe `docs/CLAUDE.md`-Konvention),
+da der ausstehende manuelle Multiplayer-Smoke-Test (siehe Verifikation unten) in dieser Session
+weiterhin nicht durchführbar war.
 
 `ng build`/`ng test --watch=false --browsers=ChromeHeadlessCI` grün nach jedem Schritt.
 **Kein manueller Multiplayer-Smoke-Test durchgeführt** (kein laufendes Firebase-
@@ -181,7 +188,7 @@ konzentrieren).
     reduziert haben.~~
   - Verifikation: `ng build`, `ng test` — grün, siehe Status-Abschnitt oben.
 
-- [ ] **TODO 5 — Heropower-Aktivierungs-/Auflösungsregeln datengetrieben statt zwei
+- [x] **TODO 5 — Heropower-Aktivierungs-/Auflösungsregeln datengetrieben statt zwei
   duplizierten `switch`/Methoden-Sets** (überarbeitete Diagnose 2026-09-05, ersetzt die
   ursprüngliche "Strategy-Pattern"-Idee unten)
   - **Befund**: zwei separate, aber strukturell gleiche Duplikate über je 10 Helden:

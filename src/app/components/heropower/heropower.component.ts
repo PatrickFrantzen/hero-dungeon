@@ -4,6 +4,7 @@ import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
+import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
 import { MatCard } from '@angular/material/card';
 import { NgClass } from '@angular/common';
 
@@ -36,24 +37,21 @@ export class HeropowerComponent {
     this.sheetOpen.update((open) => !open);
   }
 
-  /** Issue #93: ersetzt die zehn strukturell identischen `@if (heroName() == '...')`-Blöcke im
-   * Template (ein Block pro Held, alle mit demselben Icon) durch einen einzigen Klick-Handler,
-   * der per Lookup an die passende, unveränderte `heroPower*()`-Methode delegiert. */
-  private readonly heroPowerHandlers: Record<string, () => void> = {
-    Gladiator: () => this.heroPowerGladiator(),
-    Barbar: () => this.heroPowerBarbar(),
-    Zauberin: () => this.heroPowerZauberin(),
-    Magier: () => this.heroPowerMagier(),
-    Jägerin: () => this.heroPowerJaegerin(),
-    Waldläufer: () => this.heroPowerWaldlaeufer(),
-    Dieb: () => this.heroPowerDieb(),
-    Ninja: () => this.heroPowerNinja(),
-    Paladin: () => this.heroPowerPaladin(),
-    Walküre: () => this.heroPowerWalkuere(),
-  };
-
+  /** Issue #93 + TODO 5 aus docs/planned/player-hand-decomposition-plan.md: ersetzt die
+   * ursprünglich zehn strukturell identischen `heroPower<Name>()`-Methoden (unterschieden sich
+   * nur im geprüften `currentEnemy().type`) durch einen Lookup auf `HeroDefinition.activatesOn`
+   * — ein unbekannter/leerer Heldenname ist weiterhin ein No-op. */
   onActivateHeropower(): void {
-    this.heroPowerHandlers[this.heroName()]?.();
+    const definition = HERO_DEFINITIONS.find((def) => def.heroName === this.heroName());
+    if (!definition) {
+      return;
+    }
+    const enemyMatches = definition.activatesOn === 'always' || definition.activatesOn === this.currentEnemy().type;
+    if (enemyMatches && !this.heropowerActivated()) {
+      this.activateHeroPower();
+    } else {
+      this.deactivateHeroPower();
+    }
   }
 
   constructor(
@@ -72,66 +70,5 @@ export class HeropowerComponent {
 
     this.store.dispatch(new UpdateHeropowerActivated(false))
     this.store.dispatch(new UpdateHeropowerArray([]))
-  }
-
-  heroPowerGladiator() {
-    if (this.currentEnemy().type === 'Person' && !this.heropowerActivated()) {
-      this.activateHeroPower();
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerBarbar() {
-    if (this.currentEnemy().type === 'Monster' && !this.heropowerActivated()) {
-      this.activateHeroPower();
-    } else this.deactivateHeroPower();
-
-  }
-
-  heroPowerZauberin() {
-    if (this.currentEnemy().type === 'Hindernis' && !this.heropowerActivated()) {
-      this.activateHeroPower();
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerMagier() {
-    if (!this.heropowerActivated()) {
-      this.activateHeroPower();
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerJaegerin() {
-    if (!this.heropowerActivated()) {
-      this.activateHeroPower()
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerWaldlaeufer() {
-    if (this.currentEnemy().type === 'Person' && !this.heropowerActivated()) {
-      this.activateHeroPower();
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerDieb() {
-    if (!this.heropowerActivated()) {
-      this.activateHeroPower()
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerNinja() {
-    if (this.currentEnemy().type === 'Hindernis' && !this.heropowerActivated()) {
-      this.activateHeroPower();
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerPaladin() {
-    if (this.currentEnemy().type === 'Monster' && !this.heropowerActivated()) {
-      this.activateHeroPower();
-    } else this.deactivateHeroPower();
-  }
-
-  heroPowerWalkuere() {
-    if (!this.heropowerActivated()) {
-      this.activateHeroPower()
-    } else this.deactivateHeroPower();
   }
 }

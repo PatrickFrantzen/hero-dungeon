@@ -9,7 +9,11 @@ läuft über `ToJSONService` (`src/app/services/CLAUDE.md`).
 
 - **`hero-definitions.ts`** — `HeroId`-Union (`'barbar' | 'dieb' | ...`) + `HeroDefinition[]`
   (Name, Heropower, Beschreibung, `cardCounts: Map<string, number>` pro Held). Neuer Held oder
-  geänderte Kartenverteilung: hier eintragen, keine neue Klasse anlegen.
+  geänderte Kartenverteilung: hier eintragen, keine neue Klasse anlegen. Seit 2026-09-05
+  zusätzlich `activatesOn`/`resolutionKind` (welcher Encounter-Typ die Heldenfähigkeit
+  freischaltet bzw. welches Auflösungs-Ereignis sie auslöst) — ersetzt zwei vormals duplizierte
+  `switch`/Methoden-Sets in `HeropowerComponent`/`HeropowerContainerComponent`, siehe
+  `components/heropower/CLAUDE.md`.
 - **`hero.class.ts`** — eine `Hero`-Klasse für alle Helden. `buildCardstack(cardCounts)` mischt
   die Kartenverteilung einer `HeroDefinition` zu einem Stapel (`shuffle.util.ts`).
   `createHero(id: HeroId, useExtraDeck = false)` ist die Factory: sucht die `HeroDefinition` zur
