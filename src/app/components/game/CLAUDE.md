@@ -106,15 +106,23 @@ bei Ablauf verliert. Beim Anfassen dieses Features müssen mehrere Stellen konsi
   dispatcht bei jedem Firestore-Snapshot des Spieldokuments `SetGameTimerPauseState` mit den
   aktuellen `timerPausedAt`/`timerPausedSecondsTotal`-Werten aus Firestore, damit die Pause
   (ausgelöst von einem beliebigen Client) bei allen Mitspielern ankommt.
-- **Diese Komponente (`game.component.ts`)** — einziger Ort, der die Zeit tatsächlich
-  herunterzählt: `now` (Signal, per `setInterval` im Sekundentakt aktualisiert) plus
-  `remainingSeconds`/`formattedRemainingTime` (`computed()` aus `timerStartedAt`/
-  `timerDurationSeconds`/`timerPausedAt`/`timerPausedSecondsTotal`/`now` — während einer Pause
-  bleibt `remainingSeconds` beim `timerPausedAt`-Zeitpunkt stehen statt mit `now()`
-  weiterzulaufen). `isTimerPaused` (`computed()`) steuert die `game-timer--paused`-CSS-Klasse
-  und den Pause-Hinweistext im Template. `markGameLostWhenTimerRunsOut()` dispatcht
-  `UpdateGameStatus('lost')` und schreibt es nach Firestore, sobald die Zeit abläuft — mit
-  `timeoutReported`-Flag gegen mehrfaches Auslösen. `ngOnDestroy()` räumt das Interval auf.
+- **`src/app/services/game-timer.service.ts`** (T4, Component-Refactoring-Audit, 2026-09-06,
+  aus `game.component.ts` extrahiert) — einziger Ort, der die Zeit tatsächlich herunterzählt:
+  `now` (Signal, per `setInterval` im Sekundentakt aktualisiert) plus `remainingSeconds`/
+  `formattedRemainingTime` (`computed()` aus `timerStartedAt`/`timerDurationSeconds`/
+  `timerPausedAt`/`timerPausedSecondsTotal`/`now` — während einer Pause bleibt
+  `remainingSeconds` beim `timerPausedAt`-Zeitpunkt stehen statt mit `now()` weiterzulaufen).
+  `isTimerPaused`/`hasStarted` (`computed()`) steuern die `game-timer--paused`/
+  `game-timer--running`-CSS-Klassen und den Pause-/Start-Hinweistext im Template (per
+  `GameComponent.gameTimer`, `[class...]="gameTimer.xyz()"`). `start(gameId, onTimeoutWriteFailed)`
+  (aufgerufen aus `GameComponent.ngOnInit()`) dispatcht `UpdateGameStatus('lost')` und schreibt
+  es nach Firestore, sobald die Zeit abläuft — mit `timeoutReported`-Flag gegen mehrfaches
+  Auslösen, zurückgesetzt über `resetTimeoutReported()` (siehe Bestätigungs-Flow unten).
+  Component-scoped (`providers: [GameTimerService]` in `@Component`, nicht `providedIn:
+  'root'`) — `now`/`timerInterval`/`timeoutReported` gelten pro Spiel-Instanz; Cleanup über
+  `inject(DestroyRef).onDestroy()` im eigenen Constructor. Start/Pause/Reset des Timer-*Zustands*
+  selbst bleiben unverändert in `CardPlayService`/`HeropowerService` (siehe oben) — dieser
+  Service liest nur, was dort geschrieben wird.
 
 Der Timer-Zustand selbst ist reiner Store-State (kein eigener `TimerState`) — bewusst in
 `CurrentGameState` untergebracht, weil er zum Spiel-Lebenszyklus gehört, nicht zu Encounter/
@@ -194,10 +202,10 @@ ausgeblendet (`@if (currentGameStatus() === 'playing' || ... === 'won')` in
   Buttons: `retryCampaign()` (ruft `CardPlayService.restartCampaign(gameId, playerId, ...)` auf,
   baut den Dungeon zurück auf Boss #1 — Anleitung S. 7: "versucht euer Glück von neuem mit dem
   Baby-Barbar") oder `backToStartscreen()`.
-- Beide `continueToNextDungeon()`/`retryCampaign()` setzen zusätzlich `this.timeoutReported =
-  false` zurück — ohne das würde `markGameLostWhenTimerRunsOut()` nach dem ersten Timeout in
-  diesem Client nie wieder auslösen, weil das Flag nur beim Neuladen der Seite zurückgesetzt
-  würde.
+- Beide `continueToNextDungeon()`/`retryCampaign()` rufen zusätzlich
+  `gameTimer.resetTimeoutReported()` auf — ohne das würde `GameTimerService`s interner
+  `timeoutReported`-Guard nach dem ersten Timeout in diesem Client nie wieder auslösen, weil das
+  Flag sonst nur beim Neuladen der Seite zurückgesetzt würde.
 - `CardPlayService.continueToNextDungeon()`/`restartCampaign()` mischen als Teil des Neustarts
   über `reshuffleAllPlayersForNewDungeon()` auch das Heldendeck jedes Spielers frisch (Details:
   `src/app/services/CLAUDE.md`) — nicht nur den Dungeon-Kartenstapel.

@@ -24,6 +24,7 @@ import { GameRepositoryService } from 'src/app/services/game-repository.service'
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { CurrentUserAction } from 'src/app/actions/currentUser-action';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
+import { GameTimerService } from 'src/app/services/game-timer.service';
 
 import { GameComponent } from './game.component';
 
@@ -63,7 +64,7 @@ describe('GameComponent', () => {
   });
 
   it('shows the full five-minute countdown before the first card is played', () => {
-    expect(component.formattedRemainingTime()).toBe('05:00');
+    expect(component.gameTimer.formattedRemainingTime()).toBe('05:00');
   });
 
   it('formats the remaining countdown from the stored timer start', () => {
@@ -77,9 +78,9 @@ describe('GameComponent', () => {
         timerDurationSeconds: 300,
       },
     });
-    component.now.set(now);
+    fixture.debugElement.injector.get(GameTimerService)['now'].set(now);
 
-    expect(component.formattedRemainingTime()).toBe('02:55');
+    expect(component.gameTimer.formattedRemainingTime()).toBe('02:55');
   });
 
   afterEach(() => {
