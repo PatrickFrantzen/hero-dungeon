@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,6 +25,13 @@ import { SaveListEntry, openSaveSelector } from '../dialog-select-save/dialog-se
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameMenuComponent {
+  private localSaves = inject(LocalSingleplayerSaveService);
+  private store = inject(Store);
+  private router = inject(Router);
+  private userRepo = inject(UserRepositoryService);
+  private auth = inject(Auth);
+  private dialog = inject(MatDialog);
+
   isSingleplayer = input.required<boolean>();
   gameId = input.required<string>();
   leave = output<void>();
@@ -46,14 +53,7 @@ export class GameMenuComponent {
   myGames = signal<JoinedGame[]>([]);
   private currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
 
-  constructor(
-    private localSaves: LocalSingleplayerSaveService,
-    private store: Store,
-    private router: Router,
-    private userRepo: UserRepositoryService,
-    private auth: Auth,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     effect(() => {
       if (this.isSingleplayer()) {
         return;

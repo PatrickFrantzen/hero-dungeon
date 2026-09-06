@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
@@ -41,16 +41,12 @@ export interface LinkAccountDialogResult {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogLinkAccountComponent extends BaseDialogComponent<LinkAccountDialogResult> implements OnInit {
+  private fb = inject(FormBuilder);
+  private authForm = inject(AuthFormService);
+
   form!: FormGroup;
   errorMessage: string | null = null;
   isSubmitting = false;
-
-  constructor(
-    private fb: FormBuilder,
-    private authForm: AuthFormService
-  ) {
-    super();
-  }
 
   ngOnInit(): void {
     this.form = this.fb.group({

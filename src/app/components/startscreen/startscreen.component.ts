@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogGameSettingsComponent } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
@@ -29,6 +29,18 @@ import { SaveListEntry, openSaveSelector } from '../dialog-select-save/dialog-se
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StartscreenComponent implements OnInit {
+  public dialog = inject(MatDialog);
+  public auth = inject(Auth);
+  private route = inject(Router);
+  private userService = inject(CurrentUserService);
+  private store = inject(Store);
+  private JSON = inject(ToJSONService);
+  private gameFactory = inject(GameFactoryService);
+  private gameRepo = inject(GameRepositoryService);
+  private localSaveService = inject(LocalSingleplayerSaveService);
+  private authForm = inject(AuthFormService);
+  private userRepo = inject(UserRepositoryService);
+
   currentGameId: string = '';
   joinGameId: string = '';
   startscreenError: string | null = null;
@@ -49,19 +61,7 @@ export class StartscreenComponent implements OnInit {
    * signInAnonymously() aus newGame()/joinGame()). */
   myGames = signal<JoinedGame[]>([]);
 
-  constructor(
-    public dialog:MatDialog,
-    public auth: Auth,
-    private route: Router,
-    private userService: CurrentUserService,
-    private store: Store,
-    private JSON: ToJSONService,
-    private gameFactory: GameFactoryService,
-    private gameRepo: GameRepositoryService,
-    private localSaveService: LocalSingleplayerSaveService,
-    private authForm: AuthFormService,
-    private userRepo: UserRepositoryService
-  ) {
+  constructor() {
     effect(() => {
       const userId = this.currentUserId();
       if (!userId) {

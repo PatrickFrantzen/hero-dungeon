@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Auth } from '@angular/fire/auth';
 import { MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
@@ -40,18 +40,14 @@ export interface AccountOfferDialogResult {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogAccountOfferComponent extends BaseDialogComponent<AccountOfferDialogResult> implements OnInit {
+  private fb = inject(FormBuilder);
+  private authForm = inject(AuthFormService);
+  private auth = inject(Auth);
+  private migration = inject(LocalSaveMigrationService);
+
   form!: FormGroup;
   errorMessage: string | null = null;
   isSubmitting = false;
-
-  constructor(
-    private fb: FormBuilder,
-    private authForm: AuthFormService,
-    private auth: Auth,
-    private migration: LocalSaveMigrationService
-  ) {
-    super();
-  }
 
   ngOnInit(): void {
     this.form = this.fb.group({

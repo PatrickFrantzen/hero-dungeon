@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
@@ -43,6 +43,12 @@ interface ChoosenPlayer {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GameComponent implements OnInit, OnDestroy {
+  public dialog = inject(MatDialog);
+  private store = inject(Store);
+  private router = inject(Router);
+  private gameRepo = inject(GameRepositoryService);
+  private playerRepo = inject(PlayerRepositoryService);
+  private cardPlayService = inject(CardPlayService);
 
   currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
   currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
@@ -86,14 +92,7 @@ export class GameComponent implements OnInit, OnDestroy {
    * Signal, da wir hier keine reaktive Anzeige brauchen, nur den letzten Wert zum Vergleichen. */
   private lastGameStatus: string | null = null;
 
-  constructor(
-    public dialog: MatDialog,
-    private store: Store,
-    private router: Router,
-    private gameRepo: GameRepositoryService,
-    private playerRepo: PlayerRepositoryService,
-    private cardPlayService: CardPlayService,
-  ) {
+  constructor() {
     effect(() => this.offerAccountCreationOnGameEnd());
   }
 
