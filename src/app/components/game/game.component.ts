@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
@@ -19,12 +19,12 @@ import { CardPlayService } from 'src/app/services/card-play.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { PlayerRepositoryService } from 'src/app/services/player-repository.service';
 import { ChooseHeroDialogResult } from 'src/app/components/dialog-results';
-import { UpdateGameStatus } from 'src/app/actions/currentGame-action';
 import { startHandSize } from 'src/models/start-hand-size.util';
 import { StartTutorial } from 'src/app/actions/tutorial-action';
 import { TutorialSelectors } from 'src/app/selectors/tutorial-selector';
 import { isLocalGameId } from 'src/app/services/local-game-id.util';
 import { DialogAccountOfferComponent } from 'src/app/components/dialog-account-offer/dialog-account-offer.component';
+import { GameTimerService } from 'src/app/services/game-timer.service';
 
 interface ChoosenPlayer {
   playerName: string;
@@ -40,6 +40,7 @@ interface ChoosenPlayer {
     templateUrl: './game.component.html',
     styleUrls: ['./game.component.scss'],
     imports: [EnemyContainerComponent, PlayerHandComponent, GameMenuComponent],
+    providers: [GameTimerService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GameComponent implements OnInit {
@@ -49,7 +50,7 @@ export class GameComponent implements OnInit {
   private gameRepo = inject(GameRepositoryService);
   private playerRepo = inject(PlayerRepositoryService);
   private cardPlayService = inject(CardPlayService);
-  private destroyRef = inject(DestroyRef);
+  gameTimer = inject(GameTimerService);
 
   currentUserId = select(CurrentUserSelectors.currentUserId);
   currentUserName = select(CurrentUserSelectors.currentUserName);
@@ -57,49 +58,21 @@ export class GameComponent implements OnInit {
   currentNumberOfPlayers = select(CurrentGameSelectors.currentNumberOfPlayers);
   currentGameStatus = select(CurrentGameSelectors.currentGameStatus);
   currentBoss = select(EncounterSelectors.currentBoss);
-  timerStartedAt = select(CurrentGameSelectors.currentTimerStartedAt);
-  timerDurationSeconds = select(CurrentGameSelectors.currentTimerDurationSeconds);
-  timerPausedAt = select(CurrentGameSelectors.currentTimerPausedAt);
-  timerPausedSecondsTotal = select(CurrentGameSelectors.currentTimerPausedSecondsTotal);
   currentUserHeroData = select(CurrentUserSelectors.currentUserHeroData);
   currentStats = select(CurrentGameSelectors.currentStats);
   hasSeenTutorial = select(TutorialSelectors.hasSeenTutorial);
 
   loadError = signal<string | null>(null);
-  now = signal(Date.now());
-  isTimerPaused = computed(() => this.timerPausedAt() !== null);
-  remainingSeconds = computed(() => {
-    const startedAt = this.timerStartedAt();
-    if (startedAt === null) return this.timerDurationSeconds();
-
-    const pausedAt = this.timerPausedAt();
-    const clockAt = pausedAt ?? this.now();
-    const elapsedSeconds = Math.floor((clockAt - startedAt) / 1000) - Math.floor(this.timerPausedSecondsTotal());
-    return Math.max(0, this.timerDurationSeconds() - elapsedSeconds);
-  });
-  formattedRemainingTime = computed(() => {
-    const remaining = this.remainingSeconds();
-    const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
-    const seconds = (remaining % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  });
 
   user = new User();
   currentHero: Object = {};
   players: ChoosenPlayer[] = [];
-  private timerInterval?: ReturnType<typeof setInterval>;
-  private timeoutReported = false;
   /** Für die Transitions-Erkennung in offerAccountCreationOnGameEnd() unten - bewusst kein
    * Signal, da wir hier keine reaktive Anzeige brauchen, nur den letzten Wert zum Vergleichen. */
   private lastGameStatus: string | null = null;
 
   constructor() {
     effect(() => this.offerAccountCreationOnGameEnd());
-    this.destroyRef.onDestroy(() => {
-      if (this.timerInterval) {
-        clearInterval(this.timerInterval);
-      }
-    });
   }
 
   /** Issue #75 (PR 3): bietet bei Singleplayer-Spielende (Übergang nach 'won'/'lost', nicht bei
@@ -125,10 +98,10 @@ export class GameComponent implements OnInit {
   ngOnInit(): void {
     this.checkIfPlayerIsAlreadyPartOfGame();
     this.autoStartTutorialForFirstSingleplayerGame();
-    this.timerInterval = setInterval(() => {
-      this.now.set(Date.now());
-      this.markGameLostWhenTimerRunsOut();
-    }, 1000);
+    this.gameTimer.start(
+      () => this.currentGameId(),
+      () => this.loadError.set('Zeit abgelaufen, aber der Spielstand konnte nicht gespeichert werden.')
+    );
   }
 
   /** Auto-Trigger (Issue #54, PR 5): nur beim ersten Singleplayer-Spiel eines Accounts, kein
@@ -138,23 +111,6 @@ export class GameComponent implements OnInit {
     if (this.currentNumberOfPlayers() === 1 && !this.hasSeenTutorial()) {
       this.store.dispatch(new StartTutorial());
     }
-  }
-
-  private markGameLostWhenTimerRunsOut(): void {
-    if (
-      this.timeoutReported ||
-      this.timerStartedAt() === null ||
-      this.remainingSeconds() > 0 ||
-      this.currentGameStatus() !== 'playing'
-    ) {
-      return;
-    }
-
-    this.timeoutReported = true;
-    this.store.dispatch(new UpdateGameStatus('lost'));
-    this.gameRepo.updateGameStatus(this.currentGameId(), 'lost').catch(() => {
-      this.loadError.set('Zeit abgelaufen, aber der Spielstand konnte nicht gespeichert werden.');
-    });
   }
 
   async checkIfPlayerIsAlreadyPartOfGame() {
@@ -250,7 +206,7 @@ export class GameComponent implements OnInit {
   /** Bestätigung nach besiegtem Boss (gameStatus 'bossDefeated'): jeder Spieler kann den
    * nächsten Dungeon starten - mischt alle Heldendecks frisch (siehe CardPlayService). */
   continueToNextDungeon(): void {
-    this.timeoutReported = false;
+    this.gameTimer.resetTimeoutReported();
     this.cardPlayService
       .continueToNextDungeon(this.currentGameId(), this.currentUserId())
       .catch(() => this.loadError.set('Der nächste Dungeon konnte nicht gestartet werden. Bitte erneut versuchen.'));
@@ -259,7 +215,7 @@ export class GameComponent implements OnInit {
   /** Bestätigung nach verlorenem Dungeon (gameStatus 'lost'): zurück zu Boss #1 mit frisch
    * gemischten Heldendecks für alle Spieler (Anleitung S. 7). */
   retryCampaign(): void {
-    this.timeoutReported = false;
+    this.gameTimer.resetTimeoutReported();
     this.cardPlayService
       .restartCampaign(this.currentGameId(), this.currentUserId())
       .catch(() => this.loadError.set('Der Dungeon konnte nicht neu gestartet werden. Bitte erneut versuchen.'));

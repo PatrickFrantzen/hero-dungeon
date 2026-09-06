@@ -318,6 +318,14 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   Ablagestapel" verlangt) — sie verschwanden dauerhaft aus dem Kartenpool statt beim nächsten
   Reshuffle (`CardPlayService.drawCards()`) wieder verfügbar zu werden; jetzt landen sie über
   `UpdateDeliveryStack`/`playerRepo.updateDeliveryStack()` korrekt auf dem Ablagestapel.
+- **`game-timer.service.ts`** (T4, Component-Refactoring-Audit, 2026-09-06, extrahiert aus
+  `game.component.ts`) — clientseitiges Herunterzählen des Dungeon-Timers
+  (`remainingSeconds`/`formattedRemainingTime`/`isTimerPaused`/`hasStarted`, `start()`/
+  `resetTimeoutReported()`), liest nur den Store-State, den `CardPlayService`/
+  `HeropowerService` schreiben (siehe `card-play.service.ts` unten und
+  `components/game/CLAUDE.md`, Abschnitt "Dungeon-Timer"). Component-scoped
+  (`providers: [GameTimerService]` in `GameComponent`, kein Singleton) — pro Spiel-Instanz ein
+  eigener `now`/`timerInterval`/`timeoutReported`-Zustand.
 - **`game-factory.service.ts`** — baut ein neues `Game`-Objekt (Startscreen: Spiel erstellen).
 - **`auth-form.service.ts`** — Login/Register-Aufrufe + Mapping der Firebase-Error-Codes auf
   deutsche Meldungen; von allen Auth-bezogenen Formularen genutzt statt eigenem Error-Mapping
