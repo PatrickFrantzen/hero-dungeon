@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, input, output, sign
 import { Router } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { MatDialog } from '@angular/material/dialog';
-import { Store } from '@ngxs/store';
+import { select, Store } from '@ngxs/store';
 import { CurrentGameAction } from 'src/app/actions/currentGame-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
@@ -51,7 +51,7 @@ export class GameMenuComponent {
    * StartscreenComponent. Nur relevant, solange das Menü im Multiplayer-Modus ist - lädt
    * trotzdem unabhängig von isOpen(), damit die Liste beim ersten Öffnen bereits da ist. */
   myGames = signal<JoinedGame[]>([]);
-  private currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
+  private currentUserId = select(CurrentUserSelectors.currentUserId);
 
   constructor() {
     effect(() => {

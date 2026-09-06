@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
-import { Store } from '@ngxs/store';
+import { select, Store } from '@ngxs/store';
 import { Observable, Subscription, map } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
@@ -48,21 +48,21 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   private cardPlayService = inject(CardPlayService);
   public dialog = inject(MatDialog);
 
-  currentPlayerId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
-  currentPlayerName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
-  currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
-  currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
+  currentPlayerId = select(CurrentUserSelectors.currentUserId);
+  currentPlayerName = select(CurrentUserSelectors.currentUserName);
+  currentGameId = select(CurrentGameSelectors.currentGame);
+  currentNumberOfPlayers = select(CurrentGameSelectors.currentNumberOfPlayers);
 
-  currentPlayers = this.store.selectSignal(LobbySelectors.currentPlayers);
+  currentPlayers = select(LobbySelectors.currentPlayers);
 
-  currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
+  currentHand = select(CurrentHandSelector.currentHand);
 
-  currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
+  currentCardStack = select(CurrentCardStackSelector.currentCardStack);
 
-  currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
+  currentDeliveryStack = select(CurrentDeliveryStackSelector.currentDeliveryStack);
 
-  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
-  heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
+  currentUserHeroData = select(CurrentUserSelectors.currentUserHeroData);
+  heropowerActivated = select(HeropowerSelectors.currentHeropowerActivated);
 
   /** Aktionskarten, die vor der Auflösung einen Zielspieler brauchen (Anleitung S. 9) - werden
    * in chooseCard() abgefangen statt an CardPlayService.chooseCard() weitergereicht, das diese

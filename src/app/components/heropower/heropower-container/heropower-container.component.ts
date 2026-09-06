@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, output } from '@angular/core';
-import { Store } from '@ngxs/store';
+import { select, Store } from '@ngxs/store';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
@@ -28,13 +28,13 @@ export class HeropowerContainerComponent {
   private store = inject(Store);
   private diebService = inject(DiebService);
 
-  gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
-  currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
-  user = this.store.selectSignal(CurrentUserSelectors.currentUser);
-  deliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
-  heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
-  heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
-  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
+  gameId = select(CurrentGameSelectors.currentGame);
+  currentEnemy = select(EncounterSelectors.currentEnemy);
+  user = select(CurrentUserSelectors.currentUser);
+  deliveryStack = select(CurrentDeliveryStackSelector.currentDeliveryStack);
+  heropowerArray = select(HeropowerSelectors.currentHeropowerArray);
+  heropowerActivated = select(HeropowerSelectors.currentHeropowerActivated);
+  currentUserHeroData = select(CurrentUserSelectors.currentUserHeroData);
 
   public emptyMob: Mob = {
     name: '',
