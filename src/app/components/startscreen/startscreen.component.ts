@@ -4,7 +4,7 @@ import { DialogGameSettingsComponent } from '../dialog-game-settings/dialog-game
 import { Auth, signOut } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Store } from '@ngxs/store';
+import { select, Store } from '@ngxs/store';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { CurrentUserService } from 'src/app/services/current-user.service';
 import { CurrentGameAction, CurrentGameData } from 'src/app/actions/currentGame-action';
@@ -45,8 +45,8 @@ export class StartscreenComponent implements OnInit {
   joinGameId: string = '';
   startscreenError: string | null = null;
 
-  currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
-  currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
+  currentUserId = select(CurrentUserSelectors.currentUserId);
+  currentUserName = select(CurrentUserSelectors.currentUserName);
 
   /** "Meine Spielstände" (Issue #73) - lokale Singleplayer-Saves, die ohne Anmeldung fortgesetzt
    * werden können. Einmal beim Betreten des Startscreens geladen; ein neu erstelltes Spiel legt

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { Store } from '@ngxs/store';
+import { select, Store } from '@ngxs/store';
 import {
   CompleteTutorial,
   NextTutorialStep,
@@ -35,8 +35,8 @@ export class TutorialOverlayContainerComponent {
   readonly steps = tutorialSteps;
   readonly totalSteps = this.steps.length;
 
-  readonly active = this.store.selectSignal(TutorialSelectors.isTutorialActive);
-  readonly stepIndex = this.store.selectSignal(TutorialSelectors.currentStepIndex);
+  readonly active = select(TutorialSelectors.isTutorialActive);
+  readonly stepIndex = select(TutorialSelectors.currentStepIndex);
 
   readonly currentStep = computed(() => this.steps[this.stepIndex()] ?? null);
   readonly stepNumber = computed(() => this.stepIndex() + 1);

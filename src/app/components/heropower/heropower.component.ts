@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { Store} from '@ngxs/store';
+import { select, Store } from '@ngxs/store';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
@@ -23,8 +23,8 @@ export class HeropowerComponent {
   readonly currentEnemy = input<Mob>({ name: '', token: [], type: '' });
   readonly currentDeliveryStack = input<string[]>([]);
 
-  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
-  heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
+  currentUserHeroData = select(CurrentUserSelectors.currentUserHeroData);
+  heropowerActivated = select(HeropowerSelectors.currentHeropowerActivated);
 
   heroName = computed(() => this.currentUserHeroData()?.choosenHero ?? '');
   heropower = computed(() => this.currentUserHeroData()?.heroPower ?? '');

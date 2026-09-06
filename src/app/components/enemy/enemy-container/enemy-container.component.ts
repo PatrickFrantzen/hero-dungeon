@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject } from '@angular/core';
-import { Store } from '@ngxs/store';
+import { select, Store } from '@ngxs/store';
 import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
@@ -29,9 +29,9 @@ export class EnemyContainerComponent implements OnInit {
   private store = inject(Store);
   private gameRepo = inject(GameRepositoryService);
 
-  gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
-  encounterEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
-  currentQuestStatus = this.store.selectSignal(CurrentGameSelectors.currentQuestCardStatus);
+  gameId = select(CurrentGameSelectors.currentGame);
+  encounterEnemy = select(EncounterSelectors.currentEnemy);
+  currentQuestStatus = select(CurrentGameSelectors.currentQuestCardStatus);
 
   public emptyMob: Mob = {
     name: '',
