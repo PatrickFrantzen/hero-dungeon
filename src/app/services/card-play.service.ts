@@ -710,8 +710,14 @@ export class CardPlayService {
 
       this.store.dispatch(new UpdateMonsterTokenArray(secCurrEne));
       writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
-      writes.push(this.checkForNextEnemy(gameId, this.currentEnemy()));
     }
+
+    // Issue #88: bei einer gleichfarbigen Doppelkarte (z.B. "purple_purple") gegen den letzten
+    // verbliebenen Token dieser Farbe ist cardOne === cardTwo - nach dem obigen splice() ist
+    // currEne dann bereits leer und currEne.includes(cardTwo) oben false, obwohl der Gegner
+    // gerade besiegt wurde. checkForNextEnemy() ist idempotent (prüft selbst token.length),
+    // daher unbedingt statt nur im if-Zweig aufrufen.
+    writes.push(this.checkForNextEnemy(gameId, this.currentEnemy()));
 
     return Promise.all(writes).then(() => undefined);
   }

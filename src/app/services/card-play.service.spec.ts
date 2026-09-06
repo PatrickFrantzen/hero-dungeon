@@ -237,6 +237,28 @@ describe('CardPlayService', () => {
     expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['red']);
   });
 
+  it('chooseCard loads the next enemy when a same-color double card clears the last remaining token (Issue #88)', () => {
+    seedGameState({
+      hand: ['purple_purple'],
+      cardStack: ['blue'],
+      enemy: { name: 'Der Rattenkönig', type: 'Mini-Boss', token: ['purple'] },
+      mob: [{ name: 'Next', type: 'Monster', token: ['red'] }],
+    });
+
+    const gameRepo = TestBed.inject(GameRepositoryService);
+    const playerRepo = TestBed.inject(PlayerRepositoryService);
+    spyOn(gameRepo, 'updateTimerStartedAt').and.resolveTo();
+    spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    spyOn(gameRepo, 'updateNewMob').and.resolveTo();
+    spyOn(gameRepo, 'updateStats').and.resolveTo();
+    spyOn(playerRepo, 'updateHandstack').and.resolveTo();
+    spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
+
+    service.chooseCard('game-1', 'player-1', 'purple_purple');
+
+    expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
+  });
+
   it('chooseCard marks the game as won when Baby-Barbar is defeated after the mob stack is empty', () => {
     seedGameState({ hand: ['red'], enemy: { name: 'Baby-Barbar', type: 'Boss', token: ['red'] }, mob: [] });
 

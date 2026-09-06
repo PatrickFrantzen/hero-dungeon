@@ -251,6 +251,16 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   eigene öffentliche `resolve*()`-Methoden, die **nicht** über `chooseCard()` laufen, sondern
   direkt von `PlayerHandComponent` aufgerufen werden, nachdem dort ein Zielspieler-Dialog
   geschlossen wurde (`chooseCard()` selbst würde diese Kartennamen nicht erkennen).
+  **Bugfix Issue #88 (2026-09-06):** `playAsTwoCards()` (gleichfarbige Doppelkarten wie
+  `purple_purple`/`red_red`, siehe `hero-definitions.ts`) rief `checkForNextEnemy()` bisher nur
+  auf, wenn nach dem ersten Splice noch ein zweiter passender Token übrig war. War genau ein
+  Token dieser Farbe der letzte verbliebene, ist `cardOne === cardTwo` — beide `includes()`-
+  Prüfungen beim Aufrufer trafen also denselben einen Token, `playAsTwoCards()` (statt
+  `playAsOneCard()`) wurde genommen, entfernte ihn, `currEne` war danach leer und der
+  `checkForNextEnemy()`-Aufruf im (dann nie erreichten) zweiten Zweig blieb aus — sichtbar als
+  "nach besiegtem Gegner erscheint kein neuer Gegner", Encounter-Header blieb stehen. Jetzt
+  ruft `playAsTwoCards()` `checkForNextEnemy()` unbedingt am Ende auf (Methode ist idempotent,
+  prüft selbst `token.length`). Regressionstest in `card-play.service.spec.ts`.
   `checkForNextEnemy()` setzt bei besiegtem Boss **nicht automatisch** den nächsten Dungeon auf,
   sondern `gameStatus: 'bossDefeated'` (sofern `EncounterSelectors.currentAllBosses()` — die
   Warteschlange der noch ausstehenden Bosse #2-#5 — nicht leer ist, sonst direkt `'won'`) — die
