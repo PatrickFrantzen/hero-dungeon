@@ -206,12 +206,10 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   Hilfsmethoden (`ensureGameTimerStarted`/`resumeGameTimerIfPaused`/`saveHand`/
   `checkForNextEnemy`/Store-Dispatch) in ein schmales `CardEffectContext`-Interface (
   `card-effects/card-effect.types.ts`) — keine Duplikation, die Strategie kennt weder Store noch
-  Repository-Services. Umgesetzt: `magischeBombe`, `joker`, `heiligeHandgranate`
-  (`card-effects/*.effect.ts` + je eigenes Spec, unabhängig von TestBed/NGXS-Store testbar).
-  Noch offen: `göttlicherSchild`/`heiltrank` brauchen dafür zusätzliche Context-Methoden
-  (`freezeGameTimer`/`drawCardsIgnoringHandsize`/`drawCardsForOtherPlayers` bzw.
-  `reclaimCardsFromDeliveryStack`/`reclaimCardsFromDeliveryStackForOtherPlayers`) und folgen als
-  eigener Schritt. Die
+  Repository-Services. **Alle fünf Sonderkarten ohne Zielspieler-Auswahl sind extrahiert**
+  (`magischeBombe`, `joker`, `heiligeHandgranate`, `göttlicherSchild`, `heiltrank` —
+  `card-effects/*.effect.ts` + je eigenes Spec, unabhängig von TestBed/NGXS-Store testbar,
+  188 Tests gesamt), `chooseCard()` hat dafür keine `if (card === 'x')`-Zweige mehr. Die
   fünf Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung) bleiben bewusst
   eigenständige öffentliche `resolve*()`-Methoden (andere Aufrufkonvention — direkt von
   `PlayerHandComponent` nach Dialog-Auswahl, nicht über `chooseCard()`/die Lookup-Map).
@@ -245,9 +243,10 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   Startet außerdem per `ensureGameTimerStarted()` den Dungeon-Timer bei der ersten wirksam
   gespielten Karte und beendet per `resumeGameTimerIfPaused()` eine laufende Magier-/
   Göttlicher-Schild-Pause, sobald eine Karte in die Tischmitte gespielt wird;
-  `resolveGoettlicherSchild()`, `resolveHeiligeHandgranate()` und `resolveHeiltrank()` behandeln
-  die gleichnamigen Karten als Sonderfall (keine passen zu Dungeon-Symbolen, sind aber jederzeit
-  spielbar) — Details zum Gesamt-Feature in `src/app/components/game/CLAUDE.md`. Fünf weitere
+  `GoettlicherSchildEffect`, `HeiligeHandgranateEffect` und `HeiltrankEffect`
+  (`card-effects/`, siehe Strategy-Extraktion oben) behandeln die gleichnamigen Karten als
+  Sonderfall (keine passen zu Dungeon-Symbolen, sind aber jederzeit spielbar) — Details zum
+  Gesamt-Feature in `src/app/components/game/CLAUDE.md`. Fünf weitere
   Aktionskarten mit Zielspieler-Auswahl (Spende, Stehlen, Heilkräuter, Wut, Heilung) haben
   eigene öffentliche `resolve*()`-Methoden, die **nicht** über `chooseCard()` laufen, sondern
   direkt von `PlayerHandComponent` aufgerufen werden, nachdem dort ein Zielspieler-Dialog
@@ -265,8 +264,9 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   zurückgemappt (Player-Dokumente speichern aktuell keine `HeroId`, nur den Anzeigenamen).
   `restartCampaign(gameId, playerId, ...)` (nach verlorenem Dungeon) macht dasselbe, aber zurück
   auf Boss #1 (`GameFactoryService.buildNewGame()`), analog zu Anleitung S. 7 ("versucht euer
-  Glück von neuem mit dem Baby-Barbar"). `resolveJoker()`/`resolveMagischeBombe()` behandeln die
-  Jägerin/Waldläufer- bzw. Magier/Zauberin-Karten `joker`/`magischeBombe` als weiteren Sonderfall
+  Glück von neuem mit dem Baby-Barbar"). `JokerEffect`/`MagischeBombeEffect` (`card-effects/`)
+  behandeln die Jägerin/Waldläufer- bzw. Magier/Zauberin-Karten `joker`/`magischeBombe` als
+  weiteren Sonderfall
   (matchen kein festes Dungeon-Symbol): Joker verbraucht ein beliebiges (erstes) Token der
   aktuellen Bedrohung, Magische Bombe je ein Vorkommen jeder der 5 Symbolfarben — beide wirken
   nicht gegen Ereigniskarten. Da es keine Auswahl-UI für "welches Symbol nutzen" gibt, ist die

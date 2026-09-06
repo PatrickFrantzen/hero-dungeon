@@ -9,7 +9,12 @@ export interface CardEffectContext {
   checkForNextEnemy(mob: Mob): Promise<void>;
   ensureGameTimerStarted(): Promise<void>;
   resumeGameTimerIfPaused(): Promise<void>;
+  freezeGameTimer(): Promise<void>;
   saveHand(card: string, currHand: string[]): Promise<void>;
+  drawCardsIgnoringHandsize(count: number): Promise<void>;
+  drawCardsForOtherPlayers(count: number): Promise<void>;
+  reclaimCardsFromDeliveryStack(count: number): Promise<void>;
+  reclaimCardsFromDeliveryStackForOtherPlayers(count: number): Promise<void>;
 }
 
 /** Eine Kartenwirkung, die ohne weitere Nutzereingabe auflöst (Gegenstück zu den fünf

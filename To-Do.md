@@ -43,22 +43,25 @@ externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patri
 (betrifft Kernregeln) und in kleinen Schritten vorgehen (Referenz:
 `docs/done/onpush-refactor-plan.md`).
 
-6. **`card-play.service.ts` refactorn** (859 Zeilen, größte Datei im Repo) — God-Service mit
-   ~40 privaten Hilfsmethoden für die Kartenregeln, Auswahl der Karten-Logik läuft über lange
+6. **`card-play.service.ts` refactorn** (war 859 Zeilen, größte Datei im Repo) — God-Service mit
+   ~40 privaten Hilfsmethoden für die Kartenregeln, Auswahl der Karten-Logik lief über lange
    `if (card === 'x')`-Ketten statt über ein Strategy-Pattern oder eine Lookup-Table.
-   **In Arbeit (TDD, 2026-09-05/06):** Seams abgestimmt — `CardEffect { apply(ctx, playerId,
-   card, currHand) }` mit schmalem `CardEffectContext`-Interface (`card-effects/
-   card-effect.types.ts`), Lookup-Map `cardEffects` in `CardPlayService` statt weiterer
-   `if`-Zweige. Drei Karten extrahiert (`magischeBombe`, `joker`, `heiligeHandgranate`) + je
-   eigenes, TestBed-unabhängiges Spec grün, bestehende `card-play.service.spec.ts` (15 Fälle)
-   unverändert grün (184 Tests gesamt). Details: `src/app/services/CLAUDE.md`.
-   - [x] Kartenwirkungen in einzelne Strategie-Klassen auslagern — `magischeBombe`/`joker`/
-     `heiligeHandgranate` erledigt
-   - [ ] `göttlicherSchild`/`heiltrank` extrahieren — brauchen zusätzliche Context-Methoden
-     (`freezeGameTimer`/`drawCardsIgnoringHandsize`/`drawCardsForOtherPlayers` bzw.
-     `reclaimCardsFromDeliveryStack`/`reclaimCardsFromDeliveryStackForOtherPlayers`)
-   - [x] Card-Typ → Strategie-Zuordnung über eine Lookup-Map statt `if`/`switch`-Ketten auflösen
-     (für die bereits extrahierten Karten; die zwei verbleibenden `if`-Zweige folgen)
+   **Erster Teil erledigt (TDD, 2026-09-05/06):** alle fünf Sonderkarten ohne Zielspieler-Auswahl
+   (`magischeBombe`, `joker`, `heiligeHandgranate`, `göttlicherSchild`, `heiltrank`) sind als
+   eigene, unabhängig testbare `CardEffect`-Klassen unter `src/app/services/card-effects/`
+   extrahiert (`CardEffect { apply(ctx, playerId, card, currHand) }` mit schmalem
+   `CardEffectContext`-Interface), aufgelöst über eine `cardEffects`-Lookup-Map statt der
+   bisherigen `if`-Zweige — `chooseCard()` hat für diese fünf Karten keine `if (card === 'x')`-
+   Zweige mehr. Bestehende `card-play.service.spec.ts` (15 Fälle) unverändert grün, volle Suite
+   jetzt 188 Tests. Details: `src/app/services/CLAUDE.md`.
+   - [x] Fünf Kartenwirkungen ohne Zielspieler-Auswahl in Strategie-Klassen ausgelagert
+   - [x] Card-Typ → Strategie-Zuordnung über eine Lookup-Map statt `if`/`switch`-Ketten aufgelöst
+   - [ ] **Noch offen:** die fünf Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung)
+     bleiben laut Abstimmung mit Patrick bewusst eigenständige öffentliche `resolve*()`-Methoden
+     (andere Aufrufkonvention — direkt von `PlayerHandComponent` nach Dialog-Auswahl). Die drei
+     separaten `bumpStat`-Implementierungen (`card-play.service.ts`/`heropower.service.ts`/
+     `dieb.service.ts`) wurden im Zuge dieses Refactorings nicht angefasst — laut CLAUDE.md
+     bewusst getrennt gehalten, siehe dortige Begründung, kein akuter Handlungsbedarf
    - Die drei separaten `bumpStat`-Implementierungen (`card-play.service.ts`,
      `heropower.service.ts`, `dieb.service.ts`) im Zuge dessen neu bewerten — aktuell laut
      `src/app/services/CLAUDE.md` bewusst getrennt gehalten

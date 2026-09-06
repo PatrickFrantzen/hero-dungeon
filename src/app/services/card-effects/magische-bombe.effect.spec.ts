@@ -14,7 +14,12 @@ describe('MagischeBombeEffect', () => {
       'checkForNextEnemy',
       'ensureGameTimerStarted',
       'resumeGameTimerIfPaused',
+      'freezeGameTimer',
       'saveHand',
+      'drawCardsIgnoringHandsize',
+      'drawCardsForOtherPlayers',
+      'reclaimCardsFromDeliveryStack',
+      'reclaimCardsFromDeliveryStackForOtherPlayers',
     ]);
     ctx.ensureGameTimerStarted.and.resolveTo();
     ctx.resumeGameTimerIfPaused.and.resolveTo();

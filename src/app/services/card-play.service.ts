@@ -28,6 +28,8 @@ import { CardEffect, CardEffectContext } from './card-effects/card-effect.types'
 import { MagischeBombeEffect } from './card-effects/magische-bombe.effect';
 import { JokerEffect } from './card-effects/joker.effect';
 import { HeiligeHandgranateEffect } from './card-effects/heilige-handgranate.effect';
+import { GoettlicherSchildEffect } from './card-effects/goettlicher-schild.effect';
+import { HeiltrankEffect } from './card-effects/heiltrank.effect';
 
 // Feste Gegnertypen (monster-collection.data.ts) - Ereigniskarten tragen im `type`-Feld
 // stattdessen ihren Fließtext-Effekt (z.B. "Jeder gibt seine Handkarten..."), damit lassen sie
@@ -92,6 +94,8 @@ export class CardPlayService {
     magischeBombe: new MagischeBombeEffect(),
     joker: new JokerEffect(),
     heiligeHandgranate: new HeiligeHandgranateEffect(),
+    göttlicherSchild: new GoettlicherSchildEffect(),
+    heiltrank: new HeiltrankEffect(),
   };
 
   constructor(
@@ -128,14 +132,6 @@ export class CardPlayService {
     const effect = this.cardEffects[card];
     if (effect) {
       return effect.apply(this.buildCardEffectContext(gameId, playerId), playerId, card, currHand);
-    }
-
-    if (card === 'göttlicherSchild') {
-      return this.resolveGoettlicherSchild(gameId, playerId, card, currHand);
-    }
-
-    if (card === 'heiltrank') {
-      return this.resolveHeiltrank(gameId, playerId, card, currHand);
     }
 
     const writes: Promise<void>[] = [];
@@ -343,20 +339,6 @@ export class CardPlayService {
     return this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal());
   }
 
-  /** Walküre/Paladin "Göttlicher Schild": friert die Zeit ein und lässt jeden Spieler 1 Karte
-   * vom eigenen Nachziehstapel ziehen - unabhängig von der sonst geltenden Handgrößen-Obergrenze
-   * (Anleitung S. 6, Anmerkung Punkt 4: aufgeforderte Zuggaben zählen immer). */
-  private resolveGoettlicherSchild(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const writes = [
-      this.ensureGameTimerStarted(gameId),
-      this.freezeGameTimer(gameId),
-      this.saveHand(gameId, playerId, card, currHand),
-      this.drawCardsIgnoringHandsize(gameId, playerId, 1),
-      this.drawCardsForOtherPlayers(gameId, playerId, 1),
-    ];
-    return Promise.all(writes).then(() => undefined);
-  }
-
   private drawCardsIgnoringHandsize(gameId: string, playerId: string, count: number): Promise<void> {
     const drawResult = this.drawCards([...this.currentHand()], [...this.currentCardStack()], [...this.currentDeliveryStack()], count, gameId);
     const writes = [
@@ -388,19 +370,6 @@ export class CardPlayService {
       this.playerRepo.updateHandstack(gameId, userId, drawResult.value.hand),
       this.playerRepo.updateCardstack(gameId, userId, drawResult.value.cardStack),
       this.playerRepo.updateDeliveryStack(gameId, userId, drawResult.value.deliveryStack),
-    ];
-    return Promise.all(writes).then(() => undefined);
-  }
-
-  /** Paladin/Walküre "Heiltrank": alle Spieler (inkl. dir selbst) nehmen 3 Karten von ihrem
-   * eigenen Ablagestapel (deliveryStack) zurück auf die Hand. */
-  private resolveHeiltrank(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const writes = [
-      this.ensureGameTimerStarted(gameId),
-      this.resumeGameTimerIfPaused(gameId),
-      this.saveHand(gameId, playerId, card, currHand),
-      this.reclaimCardsFromDeliveryStack(gameId, playerId, 3),
-      this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, 3),
     ];
     return Promise.all(writes).then(() => undefined);
   }
@@ -565,7 +534,13 @@ export class CardPlayService {
       checkForNextEnemy: (mob) => this.checkForNextEnemy(gameId, mob),
       ensureGameTimerStarted: () => this.ensureGameTimerStarted(gameId),
       resumeGameTimerIfPaused: () => this.resumeGameTimerIfPaused(gameId),
+      freezeGameTimer: () => this.freezeGameTimer(gameId),
       saveHand: (card, currHand) => this.saveHand(gameId, playerId, card, currHand),
+      drawCardsIgnoringHandsize: (count) => this.drawCardsIgnoringHandsize(gameId, playerId, count),
+      drawCardsForOtherPlayers: (count) => this.drawCardsForOtherPlayers(gameId, playerId, count),
+      reclaimCardsFromDeliveryStack: (count) => this.reclaimCardsFromDeliveryStack(gameId, playerId, count),
+      reclaimCardsFromDeliveryStackForOtherPlayers: (count) =>
+        this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, count),
     };
   }
 
