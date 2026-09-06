@@ -24,6 +24,12 @@ import { GameFactoryService } from './game-factory.service';
 import { startHandSize } from 'src/models/start-hand-size.util';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
+import { CardEffect, CardEffectContext } from './card-effects/card-effect.types';
+import { MagischeBombeEffect } from './card-effects/magische-bombe.effect';
+import { JokerEffect } from './card-effects/joker.effect';
+import { HeiligeHandgranateEffect } from './card-effects/heilige-handgranate.effect';
+import { GoettlicherSchildEffect } from './card-effects/goettlicher-schild.effect';
+import { HeiltrankEffect } from './card-effects/heiltrank.effect';
 
 // Feste Gegnertypen (monster-collection.data.ts) - Ereigniskarten tragen im `type`-Feld
 // stattdessen ihren Fließtext-Effekt (z.B. "Jeder gibt seine Handkarten..."), damit lassen sie
@@ -78,6 +84,20 @@ export class CardPlayService {
   private currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
   private currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
 
+  /** Kartenwirkungen ohne Zielspieler-Auswahl, die sich als eigenständige, unabhängig
+   * testbare CardEffect-Strategie ausdrücken lassen - Lookup statt weiterer `if (card === 'x')`-
+   * Zweige in chooseCard(). Wird schrittweise um die übrigen Sonderkarten ergänzt
+   * (göttlicherSchild/heiligeHandgranate/heiltrank/joker), siehe To-Do.md. Die fünf
+   * Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung) bleiben bewusst außen vor -
+   * andere Aufrufkonvention (direkt von PlayerHandComponent nach Dialog-Auswahl). */
+  private readonly cardEffects: Record<string, CardEffect> = {
+    magischeBombe: new MagischeBombeEffect(),
+    joker: new JokerEffect(),
+    heiligeHandgranate: new HeiligeHandgranateEffect(),
+    göttlicherSchild: new GoettlicherSchildEffect(),
+    heiltrank: new HeiltrankEffect(),
+  };
+
   constructor(
     private store: Store,
     private gameRepo: GameRepositoryService,
@@ -109,24 +129,9 @@ export class CardPlayService {
 
     this.store.dispatch(new UpdateHeropowerArray([]));
 
-    if (card === 'göttlicherSchild') {
-      return this.resolveGoettlicherSchild(gameId, playerId, card, currHand);
-    }
-
-    if (card === 'heiligeHandgranate') {
-      return this.resolveHeiligeHandgranate(gameId, playerId, card, currHand);
-    }
-
-    if (card === 'heiltrank') {
-      return this.resolveHeiltrank(gameId, playerId, card, currHand);
-    }
-
-    if (card === 'joker') {
-      return this.resolveJoker(gameId, playerId, card, currHand);
-    }
-
-    if (card === 'magischeBombe') {
-      return this.resolveMagischeBombe(gameId, playerId, card, currHand);
+    const effect = this.cardEffects[card];
+    if (effect) {
+      return effect.apply(this.buildCardEffectContext(gameId, playerId), playerId, card, currHand);
     }
 
     const writes: Promise<void>[] = [];
@@ -334,20 +339,6 @@ export class CardPlayService {
     return this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal());
   }
 
-  /** Walküre/Paladin "Göttlicher Schild": friert die Zeit ein und lässt jeden Spieler 1 Karte
-   * vom eigenen Nachziehstapel ziehen - unabhängig von der sonst geltenden Handgrößen-Obergrenze
-   * (Anleitung S. 6, Anmerkung Punkt 4: aufgeforderte Zuggaben zählen immer). */
-  private resolveGoettlicherSchild(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const writes = [
-      this.ensureGameTimerStarted(gameId),
-      this.freezeGameTimer(gameId),
-      this.saveHand(gameId, playerId, card, currHand),
-      this.drawCardsIgnoringHandsize(gameId, playerId, 1),
-      this.drawCardsForOtherPlayers(gameId, playerId, 1),
-    ];
-    return Promise.all(writes).then(() => undefined);
-  }
-
   private drawCardsIgnoringHandsize(gameId: string, playerId: string, count: number): Promise<void> {
     const drawResult = this.drawCards([...this.currentHand()], [...this.currentCardStack()], [...this.currentDeliveryStack()], count, gameId);
     const writes = [
@@ -379,36 +370,6 @@ export class CardPlayService {
       this.playerRepo.updateHandstack(gameId, userId, drawResult.value.hand),
       this.playerRepo.updateCardstack(gameId, userId, drawResult.value.cardStack),
       this.playerRepo.updateDeliveryStack(gameId, userId, drawResult.value.deliveryStack),
-    ];
-    return Promise.all(writes).then(() => undefined);
-  }
-
-  /** Paladin/Walküre "Heilige Handgranate": besiegt sofort die aktuelle Bedrohung - die einzige
-   * Karte im Spiel, die auch einen Mini-Boss oder Boss direkt besiegen kann (Anleitung S. 9).
-   * Bis Mini-Bosse umgesetzt sind (TODO 9 im Plan) betrifft das faktisch nur normale
-   * Dungeon-Karten und Bosse. */
-  private resolveHeiligeHandgranate(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId)];
-
-    const clearedEnemy: Mob = { ...this.currentEnemy(), token: [] };
-    this.store.dispatch(new UpdateMonsterTokenArray(clearedEnemy.token));
-    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, clearedEnemy));
-    writes.push(this.checkForNextEnemy(gameId, clearedEnemy));
-
-    writes.push(this.saveHand(gameId, playerId, card, currHand));
-
-    return Promise.all(writes).then(() => undefined);
-  }
-
-  /** Paladin/Walküre "Heiltrank": alle Spieler (inkl. dir selbst) nehmen 3 Karten von ihrem
-   * eigenen Ablagestapel (deliveryStack) zurück auf die Hand. */
-  private resolveHeiltrank(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const writes = [
-      this.ensureGameTimerStarted(gameId),
-      this.resumeGameTimerIfPaused(gameId),
-      this.saveHand(gameId, playerId, card, currHand),
-      this.reclaimCardsFromDeliveryStack(gameId, playerId, 3),
-      this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, 3),
     ];
     return Promise.all(writes).then(() => undefined);
   }
@@ -562,48 +523,25 @@ export class CardPlayService {
     await Promise.all(writes);
   }
 
-  /** Jägerin/Waldläufer "Joker": zählt als ein beliebiges Symbol (Anleitung S. 8) - da es keine
-   * Auswahl-UI für "welches Symbol" gibt, wird einfach das erste Token der aktuellen Bedrohung
-   * verbraucht (deterministisch, aber ohne Spielereinfluss auf die Wahl - eine Vereinfachung
-   * analog zu den bereits automatisch aufgelösten Doppelsymbol-Karten). Wirkt nicht gegen
-   * Ereigniskarten (dort gibt es keine Symbole zu ersetzen). */
-  private resolveJoker(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const currEne = [...this.currentEnemy().token];
-    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return Promise.resolve();
-
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId)];
-
-    currEne.shift();
-    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
-    writes.push(this.checkForNextEnemy(gameId, this.currentEnemy()));
-
-    writes.push(this.saveHand(gameId, playerId, card, currHand));
-
-    return Promise.all(writes).then(() => undefined);
-  }
-
-  /** Magier/Zauberin "Magische Bombe": bringt alle 5 Symbole auf einmal, muss aber nicht alle
-   * nutzen (Anleitung S. 8) - entfernt von der aktuellen Bedrohung je ein Vorkommen jeder der 5
-   * Symbolfarben, falls vorhanden. Wirkt nicht gegen Ereigniskarten. */
-  private resolveMagischeBombe(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const currEne = [...this.currentEnemy().token];
-    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return Promise.resolve();
-
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId)];
-
-    ['red', 'yellow', 'green', 'blue', 'purple'].forEach((symbol) => {
-      const index = currEne.indexOf(symbol);
-      if (index !== -1) currEne.splice(index, 1);
-    });
-
-    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
-    writes.push(this.checkForNextEnemy(gameId, this.currentEnemy()));
-
-    writes.push(this.saveHand(gameId, playerId, card, currHand));
-
-    return Promise.all(writes).then(() => undefined);
+  /** Baut die CardEffectContext-Adapter-Schicht für eine gegebene gameId - bindet die
+   * bestehenden privaten Hilfsmethoden (keine Duplikation), damit eine CardEffect-Strategie sie
+   * ohne Kenntnis von Store/gameId/Repository-Services aufrufen kann. */
+  private buildCardEffectContext(gameId: string, playerId: string): CardEffectContext {
+    return {
+      currentEnemy: () => this.currentEnemy(),
+      dispatchMonsterTokenUpdate: (tokens) => this.store.dispatch(new UpdateMonsterTokenArray(tokens)),
+      updateCurrentEnemyToken: (mob) => this.gameRepo.updateCurrentEnemyToken(gameId, mob),
+      checkForNextEnemy: (mob) => this.checkForNextEnemy(gameId, mob),
+      ensureGameTimerStarted: () => this.ensureGameTimerStarted(gameId),
+      resumeGameTimerIfPaused: () => this.resumeGameTimerIfPaused(gameId),
+      freezeGameTimer: () => this.freezeGameTimer(gameId),
+      saveHand: (card, currHand) => this.saveHand(gameId, playerId, card, currHand),
+      drawCardsIgnoringHandsize: (count) => this.drawCardsIgnoringHandsize(gameId, playerId, count),
+      drawCardsForOtherPlayers: (count) => this.drawCardsForOtherPlayers(gameId, playerId, count),
+      reclaimCardsFromDeliveryStack: (count) => this.reclaimCardsFromDeliveryStack(gameId, playerId, count),
+      reclaimCardsFromDeliveryStackForOtherPlayers: (count) =>
+        this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, count),
+    };
   }
 
   private checkHandsize(gameId: string, playerId: string, handsize: string[], discardedCards: string[]): WithWrites<string[]> {

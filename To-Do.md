@@ -36,6 +36,49 @@
    das Projekt `hero-dungeon` eingerichtet werden (oder per `gcloud firestore fields ttls
    update`), damit die 7-Tage-Ablauf-Löschung tatsächlich greift. Noch nicht konfiguriert.
 
+## Findings aus Portfolio-/Code-Review (2026-09-05, Recruiter-Perspektive)
+
+Kein aktiver Umsetzungsplan im Sinne von `docs/CLAUDE.md` — Backlog-Übersicht aus einer
+externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patrick abstimmen
+(betrifft Kernregeln) und in kleinen Schritten vorgehen (Referenz:
+`docs/done/onpush-refactor-plan.md`).
+
+6. **`card-play.service.ts` refactorn** (war 859 Zeilen, größte Datei im Repo) — God-Service mit
+   ~40 privaten Hilfsmethoden für die Kartenregeln, Auswahl der Karten-Logik lief über lange
+   `if (card === 'x')`-Ketten statt über ein Strategy-Pattern oder eine Lookup-Table.
+   **Erster Teil erledigt (TDD, 2026-09-05/06):** alle fünf Sonderkarten ohne Zielspieler-Auswahl
+   (`magischeBombe`, `joker`, `heiligeHandgranate`, `göttlicherSchild`, `heiltrank`) sind als
+   eigene, unabhängig testbare `CardEffect`-Klassen unter `src/app/services/card-effects/`
+   extrahiert (`CardEffect { apply(ctx, playerId, card, currHand) }` mit schmalem
+   `CardEffectContext`-Interface), aufgelöst über eine `cardEffects`-Lookup-Map statt der
+   bisherigen `if`-Zweige — `chooseCard()` hat für diese fünf Karten keine `if (card === 'x')`-
+   Zweige mehr. Bestehende `card-play.service.spec.ts` (15 Fälle) unverändert grün, volle Suite
+   jetzt 188 Tests. Details: `src/app/services/CLAUDE.md`.
+   - [x] Fünf Kartenwirkungen ohne Zielspieler-Auswahl in Strategie-Klassen ausgelagert
+   - [x] Card-Typ → Strategie-Zuordnung über eine Lookup-Map statt `if`/`switch`-Ketten aufgelöst
+   - [ ] **Noch offen:** die fünf Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung)
+     bleiben laut Abstimmung mit Patrick bewusst eigenständige öffentliche `resolve*()`-Methoden
+     (andere Aufrufkonvention — direkt von `PlayerHandComponent` nach Dialog-Auswahl). Die drei
+     separaten `bumpStat`-Implementierungen (`card-play.service.ts`/`heropower.service.ts`/
+     `dieb.service.ts`) wurden im Zuge dieses Refactorings nicht angefasst — laut CLAUDE.md
+     bewusst getrennt gehalten, siehe dortige Begründung, kein akuter Handlungsbedarf
+   - Die drei separaten `bumpStat`-Implementierungen (`card-play.service.ts`,
+     `heropower.service.ts`, `dieb.service.ts`) im Zuge dessen neu bewerten — aktuell laut
+     `src/app/services/CLAUDE.md` bewusst getrennt gehalten
+   - Bestehende Tests aus `card-play.service.spec.ts` (15 Fälle inkl. Bug-/TODO-Referenzen)
+     unverändert grün halten — reine Struktur-, keine Verhaltensänderung
+   - Nach Aufteilung `src/app/services/CLAUDE.md` aktualisieren (God-Service-Hinweis entfernen)
+7. **`inject()` statt Constructor-DI konsequent durchziehen** (Issue #94) — betroffen u.a.
+   `player-hand.component.ts` und `game.component.ts`, die trotz Root-CLAUDE.md-Vorgabe noch
+   Constructor-DI nutzen.
+8. **Firestore-Direktzugriffe aus `game.component.ts`** (`checkIfPlayerIsAlreadyPartOfGame`,
+   `drawInitialHand`) in einen Service auslagern, statt sie direkt in der Komponente zu halten
+   (passend zur etablierten Repository-/Business-Logik-Trennung).
+9. **README für externe Betrachter** — ~~von Angular-CLI-Boilerplate auf echtes Projekt-README
+   umgestellt (Beschreibung, Live-Demo-Link, Tech-Stack, Architektur-Highlights, Setup)~~
+   erledigt 2026-09-05. Noch offen: Screenshot(s)/GIF vom Spielbrett und von der
+   Handkarten-Ansicht ins README einfügen (Platzhalter-Kommentar ist gesetzt).
+
 ## Erledigt (2026-09-05)
 
 Alle bei der ersten Prüfung offenen manuellen Smoke-Tests sind durchgeführt und bestätigt, die
