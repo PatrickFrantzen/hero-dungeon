@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { TutorialOverlayContainerComponent } from './components/tutorial/tutorial-overlay/tutorial-overlay-container/tutorial-overlay-container.component';
 
@@ -12,9 +12,7 @@ import { TutorialOverlayContainerComponent } from './components/tutorial/tutoria
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
-  title = 'hero-dungeon';
+  public router = inject(Router);
 
-  constructor(
-    public router: Router,
-  ) {}
+  title = 'hero-dungeon';
 }

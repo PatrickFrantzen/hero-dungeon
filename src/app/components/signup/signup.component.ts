@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthFormService } from 'src/app/services/auth-form.service';
@@ -16,15 +16,13 @@ import { MatButton } from '@angular/material/button';
 })
 export class SignupComponent implements OnInit {
 
+  private authForm = inject(AuthFormService);
+  private fb = inject(FormBuilder);
+  private route = inject(Router);
+
   public signUpForm!: FormGroup;
   public errorMessage: string | null = null;
   public isSubmitting = false;
-
-  constructor(
-    private authForm: AuthFormService,
-    private fb: FormBuilder,
-    private route: Router,
-  ) { }
 
   ngOnInit(): void {
     this.signUpForm = this.fb.group({

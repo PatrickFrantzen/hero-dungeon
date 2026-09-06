@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Store} from '@ngxs/store';
 import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
@@ -16,6 +16,8 @@ import { NgClass } from '@angular/common';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeropowerComponent {
+  private store = inject(Store);
+
   readonly currentGameId = input<string>('');
   readonly currentPlayerId = input<string>('');
   readonly currentEnemy = input<Mob>({ name: '', token: [], type: '' });
@@ -53,10 +55,6 @@ export class HeropowerComponent {
       this.deactivateHeroPower();
     }
   }
-
-  constructor(
-    private store: Store
-  ) {}
 
   activateHeroPower() {
     // iOS Safari kennt navigator.vibrate nicht (dort undefined) - der Optional-Call

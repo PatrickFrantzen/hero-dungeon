@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
@@ -40,6 +40,14 @@ import { HandCardsComponent } from './hand-cards/hand-cards.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerHandComponent implements OnInit, OnDestroy {
+  private store = inject(Store);
+  private gameRepo = inject(GameRepositoryService);
+  private playerRepo = inject(PlayerRepositoryService);
+  private firestoreSync = inject(FirestoreSyncService);
+  private heropowerService = inject(HeropowerService);
+  private cardPlayService = inject(CardPlayService);
+  public dialog = inject(MatDialog);
+
   currentPlayerId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
   currentPlayerName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
@@ -65,16 +73,6 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
   gameSubscr?: Subscription;
   playerSubsc?: Subscription;
-
-  constructor(
-    private store: Store,
-    private gameRepo: GameRepositoryService,
-    private playerRepo: PlayerRepositoryService,
-    private firestoreSync: FirestoreSyncService,
-    private heropowerService: HeropowerService,
-    private cardPlayService: CardPlayService,
-    public dialog: MatDialog
-  ) {}
 
   ngOnInit(): void {
     // Lokale Singleplayer-Spielstände (Issue #73) brauchen kein Firestore-Live-Sync: es gibt

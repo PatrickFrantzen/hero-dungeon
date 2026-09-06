@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthFormService } from 'src/app/services/auth-form.service';
@@ -17,16 +17,14 @@ import { MatButton } from '@angular/material/button';
 })
 export class SigninComponent implements OnInit{
 
+  private authForm = inject(AuthFormService);
+  private fb = inject(FormBuilder);
+  private route = inject(Router);
+  public currentUserService = inject(CurrentUserService);
+
   public logInForm!: FormGroup;
   public errorMessage: string | null = null;
   public isSubmitting = false;
-
-  constructor(
-    private authForm: AuthFormService,
-    private fb: FormBuilder,
-    private route: Router,
-    public currentUserService: CurrentUserService,
-  ) {}
 
   ngOnInit(): void {
     this.logInForm = this.fb.group({
