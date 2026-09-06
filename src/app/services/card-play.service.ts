@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { DocumentData, where } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
@@ -64,6 +64,12 @@ interface WithWrites<T> {
   providedIn: 'root',
 })
 export class CardPlayService {
+  private store = inject(Store);
+  private gameRepo = inject(GameRepositoryService);
+  private playerRepo = inject(PlayerRepositoryService);
+  private repo = inject(FirestoreRepositoryService);
+  private dungeonProgression = inject(DungeonProgressionService);
+
   private currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
   private currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
   private currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
@@ -92,14 +98,6 @@ export class CardPlayService {
     göttlicherSchild: new GoettlicherSchildEffect(),
     heiltrank: new HeiltrankEffect(),
   };
-
-  constructor(
-    private store: Store,
-    private gameRepo: GameRepositoryService,
-    private playerRepo: PlayerRepositoryService,
-    private repo: FirestoreRepositoryService,
-    private dungeonProgression: DungeonProgressionService
-  ) {}
 
   chooseCard(gameId: string, playerId: string, card: string): Promise<void> {
     const doubleCard = card.split('_');
