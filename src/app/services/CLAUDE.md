@@ -255,16 +255,14 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   sondern `gameStatus: 'bossDefeated'` (sofern `EncounterSelectors.currentAllBosses()` — die
   Warteschlange der noch ausstehenden Bosse #2-#5 — nicht leer ist, sonst direkt `'won'`) — die
   Gruppe wird erst gefragt, ob sie weitermacht (`GameComponent`, siehe
-  `src/app/components/game/CLAUDE.md`). `continueToNextDungeon(gameId, playerId, ...)` (öffentlich,
-  von `GameComponent` nach Bestätigung aufgerufen) baut per `new Monster().createMob(...)` den
-  Dungeon-Kartenstapel für den nächsten Boss, setzt den Timer per `ResetGameTimer` zurück und
-  mischt über `reshuffleAllPlayersForNewDungeon()` jedes Spielers Heldendeck frisch (Anleitung
-  S. 6: "Mischt die 40 Karten eines jeden Helden-Decks... und legt das Deck... auf das Feld
-  Nachziehstapel") — dafür wird der Heldenname aus dem Spieler-Dokument gegen `HERO_DEFINITIONS`
-  zurückgemappt (Player-Dokumente speichern aktuell keine `HeroId`, nur den Anzeigenamen).
-  `restartCampaign(gameId, playerId, ...)` (nach verlorenem Dungeon) macht dasselbe, aber zurück
-  auf Boss #1 (`GameFactoryService.buildNewGame()`), analog zu Anleitung S. 7 ("versucht euer
-  Glück von neuem mit dem Baby-Barbar"). `JokerEffect`/`MagischeBombeEffect` (`card-effects/`)
+  `src/app/components/game/CLAUDE.md`); ist innerhalb des laufenden Dungeons noch ein Encounter
+  fällig, delegiert `checkForNextEnemy()` an `DungeonProgressionService.getNextEnemy()`/
+  `getNextBoss()` (siehe oben). **`continueToNextDungeon(gameId, playerId)`/
+  `restartCampaign(gameId, playerId)` sind seit T5 (2026-09-06) dünne Delegations-Methoden** an
+  `DungeonProgressionService` (siehe oben) — die eigentliche Logik (Dungeon-Kartenstapel bauen,
+  Timer zurücksetzen, `reshuffleAllPlayersForNewDungeon()`/`HERO_DEFINITIONS`-Lookup, Boss #1
+  via `GameFactoryService.buildNewGame()`) lebt dort, nicht mehr hier; die öffentliche
+  Aufrufkonvention für `GameComponent` bleibt unverändert. `JokerEffect`/`MagischeBombeEffect` (`card-effects/`)
   behandeln die Jägerin/Waldläufer- bzw. Magier/Zauberin-Karten `joker`/`magischeBombe` als
   weiteren Sonderfall
   (matchen kein festes Dungeon-Symbol): Joker verbraucht ein beliebiges (erstes) Token der
@@ -326,6 +324,16 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   `components/game/CLAUDE.md`, Abschnitt "Dungeon-Timer"). Component-scoped
   (`providers: [GameTimerService]` in `GameComponent`, kein Singleton) — pro Spiel-Instanz ein
   eigener `now`/`timerInterval`/`timeoutReported`-Zustand.
+- **`dungeon-progression.service.ts`** (T5, Component-Refactoring-Audit, 2026-09-06, TDD,
+  extrahiert aus `card-play.service.ts`, siehe dortige Anmerkung) — "nächster Boss/Dungeon-
+  Übergang": `continueToNextDungeon()`/`restartCampaign()` (von `GameComponent` nach
+  Bestätigung aufgerufen) inkl. dem dabei fälligen `reshuffleAllPlayersForNewDungeon()`, sowie
+  `getNextEnemy()`/`getNextBoss()` (public, von `CardPlayService.checkForNextEnemy()`
+  aufgerufen, sobald innerhalb eines laufenden Dungeons der nächste Encounter ansteht).
+  `CardPlayService.continueToNextDungeon()`/`restartCampaign()` bleiben als dünne, gleichnamige
+  Delegations-Methoden bestehen — kein Breaking Change für `GameComponent`. Singleton
+  (`providedIn: 'root'`, wie `CardPlayService` selbst) — kein per-Instanz-Zustand, im
+  Unterschied zu `GameTimerService` oben.
 - **`game-factory.service.ts`** — baut ein neues `Game`-Objekt (Startscreen: Spiel erstellen).
 - **`auth-form.service.ts`** — Login/Register-Aufrufe + Mapping der Firebase-Error-Codes auf
   deutsche Meldungen; von allen Auth-bezogenen Formularen genutzt statt eigenem Error-Mapping

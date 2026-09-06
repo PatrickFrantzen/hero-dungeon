@@ -54,20 +54,35 @@ externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patri
    bisherigen `if`-Zweige — `chooseCard()` hat für diese fünf Karten keine `if (card === 'x')`-
    Zweige mehr. Bestehende `card-play.service.spec.ts` (15 Fälle) unverändert grün, volle Suite
    jetzt 188 Tests. Details: `src/app/services/CLAUDE.md`.
+   **Zweiter Teil erledigt (TDD, 2026-09-06, Component-Refactoring-Audit T5):**
+   `continueToNextDungeon()`/`restartCampaign()`/`reshuffleAllPlayersForNewDungeon()`/
+   `reshufflePlayerHeroDeck()`/`getNextEnemy()`/`getNextBoss()` (~130 Zeilen) in einen neuen
+   `DungeonProgressionService` extrahiert (eigene Tests zuerst geschrieben, dann Implementierung,
+   dann `CardPlayService` auf dünne Delegations-Methoden umgestellt) — 797 → 696 Zeilen. Volle
+   Suite jetzt 195 Tests. Details: `src/app/services/CLAUDE.md`.
    - [x] Fünf Kartenwirkungen ohne Zielspieler-Auswahl in Strategie-Klassen ausgelagert
    - [x] Card-Typ → Strategie-Zuordnung über eine Lookup-Map statt `if`/`switch`-Ketten aufgelöst
+   - [x] Boss-/Dungeon-Übergang (`continueToNextDungeon`/`restartCampaign`/`getNextEnemy`/
+     `getNextBoss`) in `DungeonProgressionService` extrahiert
    - [ ] **Noch offen:** die fünf Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung)
      bleiben laut Abstimmung mit Patrick bewusst eigenständige öffentliche `resolve*()`-Methoden
      (andere Aufrufkonvention — direkt von `PlayerHandComponent` nach Dialog-Auswahl). Die drei
      separaten `bumpStat`-Implementierungen (`card-play.service.ts`/`heropower.service.ts`/
      `dieb.service.ts`) wurden im Zuge dieses Refactorings nicht angefasst — laut CLAUDE.md
      bewusst getrennt gehalten, siehe dortige Begründung, kein akuter Handlungsbedarf
+   - [ ] **Noch offen:** `card-play.service.ts` ist mit 696 Zeilen weiterhin über der
+     400-Zeilen-Richtlinie — verbleibender Cluster (`drawCards`/`checkHandsize`/
+     `persistPlayerStacks`/`checkHandDeadlockLoss` + die 8 "andere Spieler ziehen/zurückholen"-
+     Methoden, ~150 Zeilen) ist deutlich enger mit dem Rest der Datei verwoben (auch von den
+     Zielspieler-`resolve*()`-Methoden genutzt) — bei Aufgriff wieder zuerst mit Patrick
+     abstimmen, siehe Begründung in der Session vom 2026-09-06
    - Die drei separaten `bumpStat`-Implementierungen (`card-play.service.ts`,
      `heropower.service.ts`, `dieb.service.ts`) im Zuge dessen neu bewerten — aktuell laut
      `src/app/services/CLAUDE.md` bewusst getrennt gehalten
    - Bestehende Tests aus `card-play.service.spec.ts` (15 Fälle inkl. Bug-/TODO-Referenzen)
      unverändert grün halten — reine Struktur-, keine Verhaltensänderung
-   - Nach Aufteilung `src/app/services/CLAUDE.md` aktualisieren (God-Service-Hinweis entfernen)
+   - Nach vollständiger Aufteilung `src/app/services/CLAUDE.md` aktualisieren (God-Service-
+     Hinweis entfernen)
 7. **`inject()` statt Constructor-DI konsequent durchziehen** (Issue #94) — betroffen u.a.
    `player-hand.component.ts` und `game.component.ts`, die trotz Root-CLAUDE.md-Vorgabe noch
    Constructor-DI nutzen.
