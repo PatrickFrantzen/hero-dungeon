@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
@@ -42,13 +42,14 @@ interface ChoosenPlayer {
     imports: [EnemyContainerComponent, PlayerHandComponent, GameMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GameComponent implements OnInit, OnDestroy {
+export class GameComponent implements OnInit {
   public dialog = inject(MatDialog);
   private store = inject(Store);
   private router = inject(Router);
   private gameRepo = inject(GameRepositoryService);
   private playerRepo = inject(PlayerRepositoryService);
   private cardPlayService = inject(CardPlayService);
+  private destroyRef = inject(DestroyRef);
 
   currentUserId = select(CurrentUserSelectors.currentUserId);
   currentUserName = select(CurrentUserSelectors.currentUserName);
@@ -94,6 +95,11 @@ export class GameComponent implements OnInit, OnDestroy {
 
   constructor() {
     effect(() => this.offerAccountCreationOnGameEnd());
+    this.destroyRef.onDestroy(() => {
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+      }
+    });
   }
 
   /** Issue #75 (PR 3): bietet bei Singleplayer-Spielende (Übergang nach 'won'/'lost', nicht bei
@@ -131,12 +137,6 @@ export class GameComponent implements OnInit, OnDestroy {
   private autoStartTutorialForFirstSingleplayerGame(): void {
     if (this.currentNumberOfPlayers() === 1 && !this.hasSeenTutorial()) {
       this.store.dispatch(new StartTutorial());
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
     }
   }
 
