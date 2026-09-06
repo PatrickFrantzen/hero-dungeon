@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { select, Store } from '@ngxs/store';
@@ -39,7 +39,7 @@ import { HandCardsComponent } from './hand-cards/hand-cards.component';
     imports: [HeropowerContainerComponent, HandCardsComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PlayerHandComponent implements OnInit, OnDestroy {
+export class PlayerHandComponent implements OnInit {
   private store = inject(Store);
   private gameRepo = inject(GameRepositoryService);
   private playerRepo = inject(PlayerRepositoryService);
@@ -47,6 +47,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   private heropowerService = inject(HeropowerService);
   private cardPlayService = inject(CardPlayService);
   public dialog = inject(MatDialog);
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      this.gameSubscr?.unsubscribe();
+      this.playerSubsc?.unsubscribe();
+    });
+  }
 
   currentPlayerId = select(CurrentUserSelectors.currentUserId);
   currentPlayerName = select(CurrentUserSelectors.currentUserName);
@@ -315,10 +322,5 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
         this.heropowerService.resolveJaegerinHeropowerForPlayer(this.currentGameId(), this.currentPlayerId(), result.playerId)
       );
     });
-  }
-
-  ngOnDestroy(): void {
-    this.gameSubscr?.unsubscribe();
-    this.playerSubsc?.unsubscribe();
   }
 }
