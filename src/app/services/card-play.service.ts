@@ -26,6 +26,8 @@ import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
 import { CardEffect, CardEffectContext } from './card-effects/card-effect.types';
 import { MagischeBombeEffect } from './card-effects/magische-bombe.effect';
+import { JokerEffect } from './card-effects/joker.effect';
+import { HeiligeHandgranateEffect } from './card-effects/heilige-handgranate.effect';
 
 // Feste Gegnertypen (monster-collection.data.ts) - Ereigniskarten tragen im `type`-Feld
 // stattdessen ihren Fließtext-Effekt (z.B. "Jeder gibt seine Handkarten..."), damit lassen sie
@@ -88,6 +90,8 @@ export class CardPlayService {
    * andere Aufrufkonvention (direkt von PlayerHandComponent nach Dialog-Auswahl). */
   private readonly cardEffects: Record<string, CardEffect> = {
     magischeBombe: new MagischeBombeEffect(),
+    joker: new JokerEffect(),
+    heiligeHandgranate: new HeiligeHandgranateEffect(),
   };
 
   constructor(
@@ -130,16 +134,8 @@ export class CardPlayService {
       return this.resolveGoettlicherSchild(gameId, playerId, card, currHand);
     }
 
-    if (card === 'heiligeHandgranate') {
-      return this.resolveHeiligeHandgranate(gameId, playerId, card, currHand);
-    }
-
     if (card === 'heiltrank') {
       return this.resolveHeiltrank(gameId, playerId, card, currHand);
-    }
-
-    if (card === 'joker') {
-      return this.resolveJoker(gameId, playerId, card, currHand);
     }
 
     const writes: Promise<void>[] = [];
@@ -396,23 +392,6 @@ export class CardPlayService {
     return Promise.all(writes).then(() => undefined);
   }
 
-  /** Paladin/Walküre "Heilige Handgranate": besiegt sofort die aktuelle Bedrohung - die einzige
-   * Karte im Spiel, die auch einen Mini-Boss oder Boss direkt besiegen kann (Anleitung S. 9).
-   * Bis Mini-Bosse umgesetzt sind (TODO 9 im Plan) betrifft das faktisch nur normale
-   * Dungeon-Karten und Bosse. */
-  private resolveHeiligeHandgranate(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId)];
-
-    const clearedEnemy: Mob = { ...this.currentEnemy(), token: [] };
-    this.store.dispatch(new UpdateMonsterTokenArray(clearedEnemy.token));
-    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, clearedEnemy));
-    writes.push(this.checkForNextEnemy(gameId, clearedEnemy));
-
-    writes.push(this.saveHand(gameId, playerId, card, currHand));
-
-    return Promise.all(writes).then(() => undefined);
-  }
-
   /** Paladin/Walküre "Heiltrank": alle Spieler (inkl. dir selbst) nehmen 3 Karten von ihrem
    * eigenen Ablagestapel (deliveryStack) zurück auf die Hand. */
   private resolveHeiltrank(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
@@ -573,27 +552,6 @@ export class CardPlayService {
     writes.push(this.playerRepo.updateDeliveryStack(gameId, targetPlayerId, []));
 
     await Promise.all(writes);
-  }
-
-  /** Jägerin/Waldläufer "Joker": zählt als ein beliebiges Symbol (Anleitung S. 8) - da es keine
-   * Auswahl-UI für "welches Symbol" gibt, wird einfach das erste Token der aktuellen Bedrohung
-   * verbraucht (deterministisch, aber ohne Spielereinfluss auf die Wahl - eine Vereinfachung
-   * analog zu den bereits automatisch aufgelösten Doppelsymbol-Karten). Wirkt nicht gegen
-   * Ereigniskarten (dort gibt es keine Symbole zu ersetzen). */
-  private resolveJoker(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const currEne = [...this.currentEnemy().token];
-    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return Promise.resolve();
-
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId)];
-
-    currEne.shift();
-    this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
-    writes.push(this.checkForNextEnemy(gameId, this.currentEnemy()));
-
-    writes.push(this.saveHand(gameId, playerId, card, currHand));
-
-    return Promise.all(writes).then(() => undefined);
   }
 
   /** Baut die CardEffectContext-Adapter-Schicht für eine gegebene gameId - bindet die

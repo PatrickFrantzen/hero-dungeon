@@ -206,9 +206,12 @@ inaktiv ist — siehe `firestore.rules`-Kommentar und `firestore.rules.test.js`,
   Hilfsmethoden (`ensureGameTimerStarted`/`resumeGameTimerIfPaused`/`saveHand`/
   `checkForNextEnemy`/Store-Dispatch) in ein schmales `CardEffectContext`-Interface (
   `card-effects/card-effect.types.ts`) — keine Duplikation, die Strategie kennt weder Store noch
-  Repository-Services. Erste Karte umgesetzt: `magischeBombe` (`card-effects/
-  magische-bombe.effect.ts` + eigenes Spec, unabhängig von TestBed/NGXS-Store testbar). Noch
-  offen: `göttlicherSchild`/`heiligeHandgranate`/`heiltrank`/`joker` folgen im selben Muster. Die
+  Repository-Services. Umgesetzt: `magischeBombe`, `joker`, `heiligeHandgranate`
+  (`card-effects/*.effect.ts` + je eigenes Spec, unabhängig von TestBed/NGXS-Store testbar).
+  Noch offen: `göttlicherSchild`/`heiltrank` brauchen dafür zusätzliche Context-Methoden
+  (`freezeGameTimer`/`drawCardsIgnoringHandsize`/`drawCardsForOtherPlayers` bzw.
+  `reclaimCardsFromDeliveryStack`/`reclaimCardsFromDeliveryStackForOtherPlayers`) und folgen als
+  eigener Schritt. Die
   fünf Zielspieler-Karten (Spende, Stehlen, Heilkräuter, Wut, Heilung) bleiben bewusst
   eigenständige öffentliche `resolve*()`-Methoden (andere Aufrufkonvention — direkt von
   `PlayerHandComponent` nach Dialog-Auswahl, nicht über `chooseCard()`/die Lookup-Map).
