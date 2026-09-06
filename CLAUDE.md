@@ -105,7 +105,7 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
   `@typescript-eslint/no-empty-function` ist für `*.spec.ts` deaktiviert (Jasmine-Testdoubles wie
   `{ close: () => {} }` sind dort idiomatisch leer). **Noch nicht in CI verankert** — `ng lint`
   ist aktuell nicht Teil von `.github/workflows/ci.yml`. **24 verbleibende Lint-Fehler** (nicht
-  automatisch fixbar, siehe `To-Do.md`): `@angular-eslint/prefer-inject` (Issue #94, mehr
+  automatisch fixbar, Tracking-Issue #114, siehe `To-Do.md`): `@angular-eslint/prefer-inject` (Issue #94, mehr
   Fundstellen als bisher dokumentiert), zwei `preserve-caught-error`-Stellen in
   `auth-form.service.ts`, zwei Accessibility-Befunde (`click-events-have-key-events`/
   `interactive-supports-focus`) in `heropower.component.html`/`hand-cards.component.html` — vor

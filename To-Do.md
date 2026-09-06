@@ -88,9 +88,10 @@ externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patri
     davon unberührt bleibt.
 11. ~~**Kein Lint/Format-Setup**~~ — ESLint (`@angular-eslint`) + Prettier eingeführt
     (2026-09-06), siehe unten.
-12. **24 verbleibende `ng lint`-Fehler nach Einführung von ESLint** (2026-09-06) — mechanisch
-    fixbare Fälle (unused vars/imports, leere No-Op-Konstruktoren, Ternary-mit-Seiteneffekt) sind
-    bereits behoben, `--fix` ist ausgereizt. Übrig, nicht automatisch behebbar:
+12. **24 verbleibende `ng lint`-Fehler nach Einführung von ESLint** (2026-09-06) — Tracking-Issue
+    [#114](https://github.com/PatrickFrantzen/hero-dungeon/issues/114). Mechanisch fixbare Fälle
+    (unused vars/imports, leere No-Op-Konstruktoren, Ternary-mit-Seiteneffekt) sind bereits
+    behoben, `--fix` ist ausgereizt. Übrig, nicht automatisch behebbar:
     - `@angular-eslint/prefer-inject` (14×) — Issue #94 ist laut CLAUDE.md-Stand nur für
       `player-hand.component.ts`/`game.component.ts` als offen vermerkt; tatsächlich betroffen
       sind zusätzlich `card-play.service.ts` (5), `heropower.service.ts` (4),
