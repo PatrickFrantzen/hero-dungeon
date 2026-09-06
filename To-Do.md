@@ -79,6 +79,36 @@ externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patri
    erledigt 2026-09-05. Noch offen: Screenshot(s)/GIF vom Spielbrett und von der
    Handkarten-Ansicht ins README einfügen (Platzhalter-Kommentar ist gesetzt).
 
+## Findings aus Recruiter-Review (2026-09-06)
+
+10. **`npm audit`: 32 Vulnerabilities (2 critical, 14 high)** — noch nicht aufgeschlüsselt, ob
+    Prod- oder Dev-Dependencies betroffen sind (Verdacht: größtenteils transitiv über die
+    `devDependency` `firebase-tools`). Vor einer Bewerbung/einem externen Review sollte das
+    mit `npm audit` durchgegangen und zumindest kommentiert werden, ob/warum die Prod-Bundle
+    davon unberührt bleibt.
+11. ~~**Kein Lint/Format-Setup**~~ — ESLint (`@angular-eslint`) + Prettier eingeführt
+    (2026-09-06), siehe unten.
+12. **24 verbleibende `ng lint`-Fehler nach Einführung von ESLint** (2026-09-06) — mechanisch
+    fixbare Fälle (unused vars/imports, leere No-Op-Konstruktoren, Ternary-mit-Seiteneffekt) sind
+    bereits behoben, `--fix` ist ausgereizt. Übrig, nicht automatisch behebbar:
+    - `@angular-eslint/prefer-inject` (14×) — Issue #94 ist laut CLAUDE.md-Stand nur für
+      `player-hand.component.ts`/`game.component.ts` als offen vermerkt; tatsächlich betroffen
+      sind zusätzlich `card-play.service.ts` (5), `heropower.service.ts` (4),
+      `current-user.service.ts` (3), `local-save-migration.service.ts` (3),
+      `user-repository.service.ts` (1) — Issue #94/Root-CLAUDE.md-Eintrag entsprechend erweitern,
+      wenn das angegangen wird.
+    - `preserve-caught-error` (4×, `auth-form.service.ts:63,84,101,129`) — die dortigen
+      `catch`-Blöcke werfen einen neuen, für den Nutzer verständlichen deutschen Fehlertext, ohne
+      den ursprünglichen Firebase-Error als `cause` mitzugeben. Fix ist inhaltlich einfach
+      (`throw new Error(message, { cause: err })`), aber je vier Stellen einzeln anzusehen, ob
+      das Mapping/die Fehlermeldung dabei unverändert bleibt.
+    - `@angular-eslint/template/click-events-have-key-events` +
+      `.../interactive-supports-focus` (je 2×, `heropower.component.html:17`,
+      `hand-cards.component.html:8`) — beide Stellen haben einen `(click)`-Handler auf einem
+      nicht fokussierbaren Element (`<img>`/Karten-Div). Echter A11y-Fix bräuchte
+      `tabindex="0"` + `(keydown.enter)`/`(keydown.space)` oder eine Umstellung auf `<button>` —
+      UX-Entscheidung, nicht blind per Autofix lösen.
+
 ## Erledigt (2026-09-05)
 
 Alle bei der ersten Prüfung offenen manuellen Smoke-Tests sind durchgeführt und bestätigt, die

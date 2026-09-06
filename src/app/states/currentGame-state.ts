@@ -12,7 +12,12 @@ import {
 } from '../actions/currentGame-action';
 import { GameStats, GameStatus } from 'src/models/game';
 
-const DEFAULT_STATS: GameStats = { enemiesDefeated: 0, cardsPlayed: 0, cardsCycled: 0, heropowersUsed: 0 };
+const DEFAULT_STATS: GameStats = {
+  enemiesDefeated: 0,
+  cardsPlayed: 0,
+  cardsCycled: 0,
+  heropowersUsed: 0,
+};
 
 export interface CurrentGameModel {
   items: string;
@@ -82,14 +87,17 @@ export class CurrentGameState {
   @Action(updateQuestCardActivated)
   updateQuestCardActivated(
     ctx: StateContext<CurrentGameModel>,
-    action: updateQuestCardActivated
+    action: updateQuestCardActivated,
   ) {
     const { questCardActivated } = action;
     ctx.patchState({ questCardActivated });
   }
 
   @Action(UpdateGameStatus)
-  updateGameStatus(ctx: StateContext<CurrentGameModel>, action: UpdateGameStatus) {
+  updateGameStatus(
+    ctx: StateContext<CurrentGameModel>,
+    action: UpdateGameStatus,
+  ) {
     const { gameStatus } = action;
     ctx.patchState({ gameStatus, isLost: gameStatus === 'lost' });
   }
@@ -101,7 +109,10 @@ export class CurrentGameState {
   }
 
   @Action(SetGameTimerPauseState)
-  setGameTimerPauseState(ctx: StateContext<CurrentGameModel>, action: SetGameTimerPauseState) {
+  setGameTimerPauseState(
+    ctx: StateContext<CurrentGameModel>,
+    action: SetGameTimerPauseState,
+  ) {
     ctx.patchState({
       timerPausedAt: action.timerPausedAt,
       timerPausedSecondsTotal: action.timerPausedSecondsTotal,

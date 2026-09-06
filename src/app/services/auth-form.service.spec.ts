@@ -25,9 +25,9 @@ describe('AuthFormService', () => {
   });
 
   it('login() maps a wrong-password error to a German login message', async () => {
-    await expectAsync(service.login('user@example.com', 'wrong')).toBeRejectedWithError(
-      /Login fehlgeschlagen/
-    );
+    await expectAsync(
+      service.login('user@example.com', 'wrong'),
+    ).toBeRejectedWithError(/Login fehlgeschlagen/);
   });
 
   describe('ensureAnonymousSession()', () => {
@@ -58,9 +58,9 @@ describe('AuthFormService', () => {
       // Der Test-Auth-Provider (Auth = {}) hat keine echte Firebase-Verbindung - linkWithCredential()
       // schlägt daher fehl (analog zu den ensureAnonymousSession()/login()-Tests oben), beweist
       // aber, dass tatsächlich ein Verknüpfungsversuch unternommen wird.
-      await expectAsync(service.linkAnonymousAccount('alice@example.com', 'secret123', 'Alice')).toBeRejectedWithError(
-        /Verkn/
-      );
+      await expectAsync(
+        service.linkAnonymousAccount('alice@example.com', 'secret123', 'Alice'),
+      ).toBeRejectedWithError(/Verkn/);
 
       // Firebase meldet bei einem fehlgeschlagenen linkWithCredential() den bestehenden
       // anonymen Nutzer nicht ab - dieser Test würde brechen, sollte künftiger Code das doch

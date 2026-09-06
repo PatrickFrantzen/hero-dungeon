@@ -5,17 +5,22 @@
   (click)="toggleSheet()"
   [attr.aria-expanded]="sheetOpen()"
   aria-label="Heldenfähigkeit"
->✦</button>
+>
+  ✦
+</button>
 
 @if (sheetOpen()) {
   <div class="heropower-sheet">
-    <mat-card [ngClass]="{'color-effect': this.heropowerActivated()}">
+    <mat-card [ngClass]="{ 'color-effect': this.heropowerActivated() }">
       <div class="tw-flex tw-flex-col tw-items-center">
         <span class="tw-text-white">{{ this.heropower() }}</span>
-        <img (click)="onActivateHeropower()" src="./assets/img/icons/heldenfaehigkeit_icon.png" alt="Heldenfähigkeit aktivieren">
+        <img
+          (click)="onActivateHeropower()"
+          src="./assets/img/icons/heldenfaehigkeit_icon.png"
+          alt="Heldenfähigkeit aktivieren"
+        />
       </div>
-      <span class="tw-text-white">{{this.description()}}</span>
+      <span class="tw-text-white">{{ this.description() }}</span>
     </mat-card>
   </div>
 }
-

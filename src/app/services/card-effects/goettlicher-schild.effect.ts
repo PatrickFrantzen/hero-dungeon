@@ -4,7 +4,12 @@ import { CardEffect, CardEffectContext } from './card-effect.types';
  * vom eigenen Nachziehstapel ziehen - unabhängig von der sonst geltenden Handgrößen-Obergrenze
  * (Anleitung S. 6, Anmerkung Punkt 4: aufgeforderte Zuggaben zählen immer). */
 export class GoettlicherSchildEffect implements CardEffect {
-  apply(ctx: CardEffectContext, playerId: string, card: string, currHand: string[]): Promise<void> {
+  apply(
+    ctx: CardEffectContext,
+    playerId: string,
+    card: string,
+    currHand: string[],
+  ): Promise<void> {
     const writes = [
       ctx.ensureGameTimerStarted(),
       ctx.freezeGameTimer(),

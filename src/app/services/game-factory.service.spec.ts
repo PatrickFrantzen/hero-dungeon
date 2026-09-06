@@ -40,8 +40,18 @@ describe('GameFactoryService', () => {
     expect(game.currentBoss.name).toBe('Baby-Barbar');
     const NORMAL_ENEMY_TYPES = ['Monster', 'Person', 'Hindernis'];
     expect(preBossEncounters.length).toBe(10);
-    expect(preBossEncounters.filter((entry) => NORMAL_ENEMY_TYPES.includes(entry.type)).length).toBe(8);
-    expect(preBossEncounters.filter((entry) => !NORMAL_ENEMY_TYPES.includes(entry.type)).length).toBe(2);
-    expect(preBossEncounters.some((entry) => entry.name === 'Chaos')).toBeFalse();
+    expect(
+      preBossEncounters.filter((entry) =>
+        NORMAL_ENEMY_TYPES.includes(entry.type),
+      ).length,
+    ).toBe(8);
+    expect(
+      preBossEncounters.filter(
+        (entry) => !NORMAL_ENEMY_TYPES.includes(entry.type),
+      ).length,
+    ).toBe(2);
+    expect(
+      preBossEncounters.some((entry) => entry.name === 'Chaos'),
+    ).toBeFalse();
   });
 });

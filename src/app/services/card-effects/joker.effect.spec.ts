@@ -31,20 +31,30 @@ describe('JokerEffect', () => {
   it('consumes the first token of the current threat and reports the resulting threat', async () => {
     let enemy = { name: 'Goblin', type: 'Monster', token: ['red', 'green'] };
     ctx.currentEnemy.and.callFake(() => enemy);
-    ctx.dispatchMonsterTokenUpdate.and.callFake((tokens: string[]) => (enemy = { ...enemy, token: tokens }));
+    ctx.dispatchMonsterTokenUpdate.and.callFake(
+      (tokens: string[]) => (enemy = { ...enemy, token: tokens }),
+    );
 
     await effect.apply(ctx, 'player-1', 'joker', ['joker']);
 
     expect(ctx.dispatchMonsterTokenUpdate).toHaveBeenCalledWith(['green']);
-    expect(ctx.updateCurrentEnemyToken).toHaveBeenCalledWith(jasmine.objectContaining({ token: ['green'] }));
-    expect(ctx.checkForNextEnemy).toHaveBeenCalledWith(jasmine.objectContaining({ token: ['green'] }));
+    expect(ctx.updateCurrentEnemyToken).toHaveBeenCalledWith(
+      jasmine.objectContaining({ token: ['green'] }),
+    );
+    expect(ctx.checkForNextEnemy).toHaveBeenCalledWith(
+      jasmine.objectContaining({ token: ['green'] }),
+    );
     expect(ctx.saveHand).toHaveBeenCalledWith('joker', ['joker']);
     expect(ctx.ensureGameTimerStarted).toHaveBeenCalled();
     expect(ctx.resumeGameTimerIfPaused).toHaveBeenCalled();
   });
 
   it('does nothing when the current threat has no tokens left', async () => {
-    ctx.currentEnemy.and.returnValue({ name: 'Goblin', type: 'Monster', token: [] });
+    ctx.currentEnemy.and.returnValue({
+      name: 'Goblin',
+      type: 'Monster',
+      token: [],
+    });
 
     await effect.apply(ctx, 'player-1', 'joker', ['joker']);
 

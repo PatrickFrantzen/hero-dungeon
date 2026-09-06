@@ -1,9 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { of } from 'rxjs';
 
-import { DialogSelectSaveComponent, DialogSelectSaveData } from './dialog-select-save.component';
+import {
+  DialogSelectSaveComponent,
+  DialogSelectSaveData,
+} from './dialog-select-save.component';
 import { LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 
 describe('DialogSelectSaveComponent', () => {
@@ -15,16 +22,28 @@ describe('DialogSelectSaveComponent', () => {
 
   const data: DialogSelectSaveData = {
     entries: [
-      { id: 'sp-old', label: 'Barbar', mode: 'singleplayer', lastPlayedAt: 100 },
+      {
+        id: 'sp-old',
+        label: 'Barbar',
+        mode: 'singleplayer',
+        lastPlayedAt: 100,
+      },
       { id: 'mp-new', label: 'game-2', mode: 'multiplayer', lastPlayedAt: 300 },
-      { id: 'mp-legacy', label: 'game-3', mode: 'multiplayer', lastPlayedAt: null },
+      {
+        id: 'mp-legacy',
+        label: 'game-3',
+        mode: 'multiplayer',
+        lastPlayedAt: null,
+      },
     ],
   };
 
   beforeEach(async () => {
     dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
     matDialog = jasmine.createSpyObj('MatDialog', ['open']);
-    localSaves = jasmine.createSpyObj('LocalSingleplayerSaveService', ['deleteSave']);
+    localSaves = jasmine.createSpyObj('LocalSingleplayerSaveService', [
+      'deleteSave',
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [DialogSelectSaveComponent],
@@ -47,13 +66,19 @@ describe('DialogSelectSaveComponent', () => {
   });
 
   it('sorts entries by lastPlayedAt descending, with unknown timestamps last', () => {
-    expect(component.entries().map((e) => e.id)).toEqual(['mp-new', 'sp-old', 'mp-legacy']);
+    expect(component.entries().map((e) => e.id)).toEqual([
+      'mp-new',
+      'sp-old',
+      'mp-legacy',
+    ]);
   });
 
   it('select() closes the dialog with the chosen entry id and mode', () => {
     component.select(data.entries[0]);
 
-    expect(dialogRef.close).toHaveBeenCalledWith({ data: { selectedId: 'sp-old', mode: 'singleplayer' } });
+    expect(dialogRef.close).toHaveBeenCalledWith({
+      data: { selectedId: 'sp-old', mode: 'singleplayer' },
+    });
   });
 
   it('formatLastPlayed() shows "Unbekannt" for a missing timestamp', () => {
@@ -62,7 +87,9 @@ describe('DialogSelectSaveComponent', () => {
   });
 
   it('delete() removes the entry locally after confirmation, without deleting on cancel', () => {
-    const confirmRef = { afterClosed: () => of({ data: { confirmed: false } }) };
+    const confirmRef = {
+      afterClosed: () => of({ data: { confirmed: false } }),
+    };
     matDialog.open.and.returnValue(confirmRef as never);
 
     component.delete(data.entries[0]);

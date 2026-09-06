@@ -27,7 +27,17 @@ export const appConfig: ApplicationConfig = {
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
     provideStore(
-      [cardsInHandState, CardStackState, CurrentGameState, CurrentUserState, DeliveryStackState, heropowerState, LobbyState, EncounterState, TutorialState],
+      [
+        cardsInHandState,
+        CardStackState,
+        CurrentGameState,
+        CurrentUserState,
+        DeliveryStackState,
+        heropowerState,
+        LobbyState,
+        EncounterState,
+        TutorialState,
+      ],
       { developmentMode: !environment.production },
       withNgxsStoragePlugin({ keys: '*' }),
     ),

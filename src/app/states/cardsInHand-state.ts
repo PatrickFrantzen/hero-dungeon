@@ -24,7 +24,7 @@ export class cardsInHandState {
   @Action(CurrentCardsInHand)
   getCardsInHand(
     ctx: StateContext<CardsInHandStateModel>,
-    action: CurrentCardsInHand
+    action: CurrentCardsInHand,
   ) {
     const { cardsInHand } = action;
 
@@ -46,7 +46,7 @@ export class cardsInHandState {
   @Action(UpdateCurrentHandAction)
   updateCardsInHand(
     ctx: StateContext<CardsInHandStateModel>,
-    action: UpdateCurrentHandAction
+    action: UpdateCurrentHandAction,
   ) {
     const { cardsInHand } = action;
     if (!cardsInHand) {
@@ -60,7 +60,7 @@ export class cardsInHandState {
     ctx.setState(
       patch<CardsInHandStateModel>({
         items: HandCards,
-      })
+      }),
     );
   }
 }

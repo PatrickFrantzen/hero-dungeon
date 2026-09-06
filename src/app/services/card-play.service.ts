@@ -4,8 +4,19 @@ import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { ResetGameTimer, SetGameStats, SetGameTimerPauseState, StartGameTimer, UpdateGameStatus } from 'src/app/actions/currentGame-action';
-import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
+import {
+  ResetGameTimer,
+  SetGameStats,
+  SetGameTimerPauseState,
+  StartGameTimer,
+  UpdateGameStatus,
+} from 'src/app/actions/currentGame-action';
+import {
+  SetCurrentBoss,
+  SetNewEnemy,
+  SetRemainingBosses,
+  UpdateMonsterTokenArray,
+} from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { UpdateHeropowerArray } from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
@@ -24,7 +35,10 @@ import { GameFactoryService } from './game-factory.service';
 import { startHandSize } from 'src/models/start-hand-size.util';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
-import { CardEffect, CardEffectContext } from './card-effects/card-effect.types';
+import {
+  CardEffect,
+  CardEffectContext,
+} from './card-effects/card-effect.types';
 import { MagischeBombeEffect } from './card-effects/magische-bombe.effect';
 import { JokerEffect } from './card-effects/joker.effect';
 import { HeiligeHandgranateEffect } from './card-effects/heilige-handgranate.effect';
@@ -67,22 +81,50 @@ interface WithWrites<T> {
   providedIn: 'root',
 })
 export class CardPlayService {
-  private currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
-  private currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
-  private currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
-  private currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
+  private currentHand = this.store.selectSignal(
+    CurrentHandSelector.currentHand,
+  );
+  private currentCardStack = this.store.selectSignal(
+    CurrentCardStackSelector.currentCardStack,
+  );
+  private currentDeliveryStack = this.store.selectSignal(
+    CurrentDeliveryStackSelector.currentDeliveryStack,
+  );
+  private currentEnemy = this.store.selectSignal(
+    EncounterSelectors.currentEnemy,
+  );
   private currentMob = this.store.selectSignal(EncounterSelectors.currentMob);
   private currentBoss = this.store.selectSignal(EncounterSelectors.currentBoss);
-  private currentAllBosses = this.store.selectSignal(EncounterSelectors.currentAllBosses);
-  private currentDifficulty = this.store.selectSignal(CurrentGameSelectors.currentDifficulty);
-  private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
-  private timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
-  private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
-  private currentStats = this.store.selectSignal(CurrentGameSelectors.currentStats);
-  private heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
-  private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
-  private currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
-  private currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
+  private currentAllBosses = this.store.selectSignal(
+    EncounterSelectors.currentAllBosses,
+  );
+  private currentDifficulty = this.store.selectSignal(
+    CurrentGameSelectors.currentDifficulty,
+  );
+  private timerStartedAt = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerStartedAt,
+  );
+  private timerPausedAt = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerPausedAt,
+  );
+  private timerPausedSecondsTotal = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerPausedSecondsTotal,
+  );
+  private currentStats = this.store.selectSignal(
+    CurrentGameSelectors.currentStats,
+  );
+  private heropowerActivated = this.store.selectSignal(
+    HeropowerSelectors.currentHeropowerActivated,
+  );
+  private heropowerArray = this.store.selectSignal(
+    HeropowerSelectors.currentHeropowerArray,
+  );
+  private currentNumberOfPlayers = this.store.selectSignal(
+    CurrentGameSelectors.currentNumberOfPlayers,
+  );
+  private currentGameStatus = this.store.selectSignal(
+    CurrentGameSelectors.currentGameStatus,
+  );
 
   /** Kartenwirkungen ohne Zielspieler-Auswahl, die sich als eigenständige, unabhängig
    * testbare CardEffect-Strategie ausdrücken lassen - Lookup statt weiterer `if (card === 'x')`-
@@ -103,7 +145,7 @@ export class CardPlayService {
     private gameRepo: GameRepositoryService,
     private playerRepo: PlayerRepositoryService,
     private repo: FirestoreRepositoryService,
-    private gameFactory: GameFactoryService
+    private gameFactory: GameFactoryService,
   ) {}
 
   chooseCard(gameId: string, playerId: string, card: string): Promise<void> {
@@ -120,7 +162,7 @@ export class CardPlayService {
 
     if (this.heropowerActivated()) {
       if (this.heropowerArray().length < 3) {
-        let hpArr = [...this.heropowerArray()];
+        const hpArr = [...this.heropowerArray()];
         hpArr.push(card);
         this.store.dispatch(new UpdateHeropowerArray(hpArr));
       }
@@ -131,7 +173,12 @@ export class CardPlayService {
 
     const effect = this.cardEffects[card];
     if (effect) {
-      return effect.apply(this.buildCardEffectContext(gameId, playerId), playerId, card, currHand);
+      return effect.apply(
+        this.buildCardEffectContext(gameId, playerId),
+        playerId,
+        card,
+        currHand,
+      );
     }
 
     const writes: Promise<void>[] = [];
@@ -140,26 +187,38 @@ export class CardPlayService {
       // Nur die Magier-Karte "Verhinderung" darf eine Ereigniskarte stoppen (Anleitung S. 9) -
       // vorher löste jede beliebige Doppelkarte ein Event auf, weil nur der Bedrohungstyp
       // ("ist es überhaupt ein Event") geprüft wurde, nicht welche Karte gespielt wurde.
-      const isVerhinderungAgainstEvent = card === 'verhinderung_event' && currMob.token[0].toLocaleLowerCase().includes('event');
-      const isMatchingType = currMob.type.toLocaleLowerCase().includes(doubleCard[1]);
+      const isVerhinderungAgainstEvent =
+        card === 'verhinderung_event' &&
+        currMob.token[0].toLocaleLowerCase().includes('event');
+      const isMatchingType = currMob.type
+        .toLocaleLowerCase()
+        .includes(doubleCard[1]);
 
       if (isVerhinderungAgainstEvent || isMatchingType) {
         writes.push(this.ensureGameTimerStarted(gameId));
         writes.push(this.resumeGameTimerIfPaused(gameId));
         currEne.length = 0;
         this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-        writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
+        writes.push(
+          this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()),
+        );
         writes.push(this.checkForNextEnemy(gameId, this.currentEnemy()));
         writes.push(this.saveHand(gameId, playerId, card, currHand));
       }
       if (
         card.includes('_') &&
-        (this.currentEnemy().token.includes(doubleCard[0]) || this.currentEnemy().token.includes(doubleCard[1]))
+        (this.currentEnemy().token.includes(doubleCard[0]) ||
+          this.currentEnemy().token.includes(doubleCard[1]))
       ) {
         writes.push(this.ensureGameTimerStarted(gameId));
         writes.push(this.resumeGameTimerIfPaused(gameId));
-        if (this.currentEnemy().token.includes(doubleCard[0]) && this.currentEnemy().token.includes(doubleCard[1])) {
-          writes.push(this.playAsTwoCards(gameId, doubleCard[0], doubleCard[1], currEne));
+        if (
+          this.currentEnemy().token.includes(doubleCard[0]) &&
+          this.currentEnemy().token.includes(doubleCard[1])
+        ) {
+          writes.push(
+            this.playAsTwoCards(gameId, doubleCard[0], doubleCard[1], currEne),
+          );
         } else if (this.currentEnemy().token.includes(doubleCard[0])) {
           writes.push(this.playAsOneCard(gameId, doubleCard[0], currEne));
         } else if (this.currentEnemy().token.includes(doubleCard[1])) {
@@ -172,7 +231,9 @@ export class CardPlayService {
     if (this.currentEnemy().token.includes(card)) {
       writes.push(this.ensureGameTimerStarted(gameId));
       writes.push(this.resumeGameTimerIfPaused(gameId));
-      writes.push(this.playCardfromHandAndUpdateEnemyToken(gameId, playerId, card));
+      writes.push(
+        this.playCardfromHandAndUpdateEnemyToken(gameId, playerId, card),
+      );
     }
 
     return Promise.all(writes).then(() => undefined);
@@ -186,7 +247,13 @@ export class CardPlayService {
 
     currHand.splice(cardIndex, 1);
     const deliveryStack = [...this.currentDeliveryStack(), card];
-    const drawResult = this.drawCards(currHand, [...this.currentCardStack()], deliveryStack, 1, gameId);
+    const drawResult = this.drawCards(
+      currHand,
+      [...this.currentCardStack()],
+      deliveryStack,
+      1,
+      gameId,
+    );
 
     // Das eigentliche Rasten-Ereignis selbst zählt als "gecyclete Karte" - unabhängig davon, ob
     // drawCards() dabei zusätzlich den Ablagestapel neu mischen musste (das interne Reshuffle
@@ -195,7 +262,13 @@ export class CardPlayService {
     const writes = [
       ...drawResult.writes,
       this.bumpStat(gameId, 'cardsCycled', 1),
-      this.persistPlayerStacks(gameId, playerId, drawResult.value.hand, drawResult.value.cardStack, drawResult.value.deliveryStack),
+      this.persistPlayerStacks(
+        gameId,
+        playerId,
+        drawResult.value.hand,
+        drawResult.value.cardStack,
+        drawResult.value.deliveryStack,
+      ),
     ];
     return Promise.all(writes).then(() => undefined);
   }
@@ -210,7 +283,10 @@ export class CardPlayService {
     const event = this.currentEnemy();
     if (!event.token.includes('event')) return Promise.resolve();
 
-    const writes = [this.applyEventToSelf(gameId, playerId, event.name), this.applyEventToOtherPlayers(gameId, playerId, event.name)];
+    const writes = [
+      this.applyEventToSelf(gameId, playerId, event.name),
+      this.applyEventToOtherPlayers(gameId, playerId, event.name),
+    ];
 
     const clearedEvent: Mob = { ...event, token: [] };
     this.store.dispatch(new SetNewEnemy(clearedEvent));
@@ -232,39 +308,92 @@ export class CardPlayService {
     }
   }
 
-  private applyEventToSelf(gameId: string, playerId: string, eventName: string): Promise<void> {
+  private applyEventToSelf(
+    gameId: string,
+    playerId: string,
+    eventName: string,
+  ): Promise<void> {
     const currHand = [...this.currentHand()];
-    const discardedCards = currHand.splice(0, this.eventDiscardCount(eventName, currHand.length));
-    const result = this.checkHandsize(gameId, playerId, currHand, discardedCards);
+    const discardedCards = currHand.splice(
+      0,
+      this.eventDiscardCount(eventName, currHand.length),
+    );
+    const result = this.checkHandsize(
+      gameId,
+      playerId,
+      currHand,
+      discardedCards,
+    );
     return Promise.all(result.writes).then(() => undefined);
   }
 
-  private async applyEventToOtherPlayers(gameId: string, playerId: string, eventName: string): Promise<void> {
+  private async applyEventToOtherPlayers(
+    gameId: string,
+    playerId: string,
+    eventName: string,
+  ): Promise<void> {
     const otherPlayers = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
-      [where('gameId', '==', gameId), where('userId', '!=', playerId)]
+      [where('gameId', '==', gameId), where('userId', '!=', playerId)],
     );
-    await Promise.all(otherPlayers.map((data) => this.applyEventToPlayerData(gameId, data, eventName)));
+    await Promise.all(
+      otherPlayers.map((data) =>
+        this.applyEventToPlayerData(gameId, data, eventName),
+      ),
+    );
   }
 
-  private applyEventToPlayerData(gameId: string, data: DocumentData, eventName: string): Promise<void> {
+  private applyEventToPlayerData(
+    gameId: string,
+    data: DocumentData,
+    eventName: string,
+  ): Promise<void> {
     const userId = data['userId'];
     const hand: string[] = [...(data['handstack'] ?? [])];
-    const discardedCards = hand.splice(0, this.eventDiscardCount(eventName, hand.length));
-    const drawCount = Math.max(0, startHandSize(this.currentNumberOfPlayers()) - hand.length);
-    const drawResult = this.drawCards(hand, [...(data['cardstack'] ?? [])], [...(data['deliveryStack'] ?? []), ...discardedCards], drawCount, gameId);
+    const discardedCards = hand.splice(
+      0,
+      this.eventDiscardCount(eventName, hand.length),
+    );
+    const drawCount = Math.max(
+      0,
+      startHandSize(this.currentNumberOfPlayers()) - hand.length,
+    );
+    const drawResult = this.drawCards(
+      hand,
+      [...(data['cardstack'] ?? [])],
+      [...(data['deliveryStack'] ?? []), ...discardedCards],
+      drawCount,
+      gameId,
+    );
 
     const writes = [
       ...drawResult.writes,
       this.playerRepo.updateHandstack(gameId, userId, drawResult.value.hand),
-      this.playerRepo.updateCardstack(gameId, userId, drawResult.value.cardStack),
-      this.playerRepo.updateDeliveryStack(gameId, userId, drawResult.value.deliveryStack),
-      this.checkHandDeadlockLoss(gameId, drawResult.value.hand, drawResult.value.cardStack, drawResult.value.deliveryStack),
+      this.playerRepo.updateCardstack(
+        gameId,
+        userId,
+        drawResult.value.cardStack,
+      ),
+      this.playerRepo.updateDeliveryStack(
+        gameId,
+        userId,
+        drawResult.value.deliveryStack,
+      ),
+      this.checkHandDeadlockLoss(
+        gameId,
+        drawResult.value.hand,
+        drawResult.value.cardStack,
+        drawResult.value.deliveryStack,
+      ),
     ];
     return Promise.all(writes).then(() => undefined);
   }
 
-  private playCardfromHandAndUpdateEnemyToken(gameId: string, playerId: string, card: string): Promise<void> {
+  private playCardfromHandAndUpdateEnemyToken(
+    gameId: string,
+    playerId: string,
+    card: string,
+  ): Promise<void> {
     const currHand = [...this.currentHand()];
     const currEne = [...this.currentEnemy().token];
     const currName = this.currentEnemy().name;
@@ -297,9 +426,16 @@ export class CardPlayService {
   /** Statistik-Zähler (besiegte Gegner/gespielte Karten/gecyclete Karten/genutzte
    * Heldenfähigkeiten, `src/models/game.ts` GameStats) - schreibt den neuen absoluten Wert
    * lokal + nach Firestore, analog zu den Timer-Feldern (siehe game/CLAUDE.md). */
-  private bumpStat(gameId: string, key: keyof GameStats, amount: number): Promise<void> {
+  private bumpStat(
+    gameId: string,
+    key: keyof GameStats,
+    amount: number,
+  ): Promise<void> {
     if (amount <= 0) return Promise.resolve();
-    const stats = { ...this.currentStats(), [key]: this.currentStats()[key] + amount };
+    const stats = {
+      ...this.currentStats(),
+      [key]: this.currentStats()[key] + amount,
+    };
     this.store.dispatch(new SetGameStats(stats));
     return this.gameRepo.updateStats(gameId, stats);
   }
@@ -327,57 +463,122 @@ export class CardPlayService {
   private resumeGameTimerIfPaused(gameId: string): Promise<void> {
     const pausedAt = this.timerPausedAt();
     if (pausedAt === null) return Promise.resolve();
-    const pausedSecondsTotal = this.timerPausedSecondsTotal() + Math.max(0, (Date.now() - pausedAt) / 1000);
+    const pausedSecondsTotal =
+      this.timerPausedSecondsTotal() +
+      Math.max(0, (Date.now() - pausedAt) / 1000);
     this.store.dispatch(new SetGameTimerPauseState(null, pausedSecondsTotal));
-    return this.gameRepo.updateTimerPauseState(gameId, null, pausedSecondsTotal);
+    return this.gameRepo.updateTimerPauseState(
+      gameId,
+      null,
+      pausedSecondsTotal,
+    );
   }
 
   private freezeGameTimer(gameId: string): Promise<void> {
     if (this.timerPausedAt() !== null) return Promise.resolve();
     const pausedAt = Date.now();
-    this.store.dispatch(new SetGameTimerPauseState(pausedAt, this.timerPausedSecondsTotal()));
-    return this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal());
+    this.store.dispatch(
+      new SetGameTimerPauseState(pausedAt, this.timerPausedSecondsTotal()),
+    );
+    return this.gameRepo.updateTimerPauseState(
+      gameId,
+      pausedAt,
+      this.timerPausedSecondsTotal(),
+    );
   }
 
-  private drawCardsIgnoringHandsize(gameId: string, playerId: string, count: number): Promise<void> {
-    const drawResult = this.drawCards([...this.currentHand()], [...this.currentCardStack()], [...this.currentDeliveryStack()], count, gameId);
+  private drawCardsIgnoringHandsize(
+    gameId: string,
+    playerId: string,
+    count: number,
+  ): Promise<void> {
+    const drawResult = this.drawCards(
+      [...this.currentHand()],
+      [...this.currentCardStack()],
+      [...this.currentDeliveryStack()],
+      count,
+      gameId,
+    );
     const writes = [
       ...drawResult.writes,
-      this.persistPlayerStacks(gameId, playerId, drawResult.value.hand, drawResult.value.cardStack, drawResult.value.deliveryStack),
+      this.persistPlayerStacks(
+        gameId,
+        playerId,
+        drawResult.value.hand,
+        drawResult.value.cardStack,
+        drawResult.value.deliveryStack,
+      ),
     ];
     return Promise.all(writes).then(() => undefined);
   }
 
-  private async drawCardsForOtherPlayers(gameId: string, playerId: string, count: number): Promise<void> {
+  private async drawCardsForOtherPlayers(
+    gameId: string,
+    playerId: string,
+    count: number,
+  ): Promise<void> {
     const otherPlayers = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
-      [where('gameId', '==', gameId), where('userId', '!=', playerId)]
+      [where('gameId', '==', gameId), where('userId', '!=', playerId)],
     );
-    await Promise.all(otherPlayers.map((data) => this.drawCardsForPlayerData(gameId, data, count)));
+    await Promise.all(
+      otherPlayers.map((data) =>
+        this.drawCardsForPlayerData(gameId, data, count),
+      ),
+    );
   }
 
-  private async drawCardsForTarget(gameId: string, targetPlayerId: string, count: number): Promise<void> {
+  private async drawCardsForTarget(
+    gameId: string,
+    targetPlayerId: string,
+    count: number,
+  ): Promise<void> {
     const data = await this.playerRepo.getPlayer(gameId, targetPlayerId);
     if (!data) return;
     await this.drawCardsForPlayerData(gameId, data, count);
   }
 
-  private drawCardsForPlayerData(gameId: string, data: DocumentData, count: number): Promise<void> {
+  private drawCardsForPlayerData(
+    gameId: string,
+    data: DocumentData,
+    count: number,
+  ): Promise<void> {
     const userId = data['userId'];
-    const drawResult = this.drawCards([...(data['handstack'] ?? [])], [...(data['cardstack'] ?? [])], [...(data['deliveryStack'] ?? [])], count, gameId);
+    const drawResult = this.drawCards(
+      [...(data['handstack'] ?? [])],
+      [...(data['cardstack'] ?? [])],
+      [...(data['deliveryStack'] ?? [])],
+      count,
+      gameId,
+    );
     const writes = [
       ...drawResult.writes,
       this.playerRepo.updateHandstack(gameId, userId, drawResult.value.hand),
-      this.playerRepo.updateCardstack(gameId, userId, drawResult.value.cardStack),
-      this.playerRepo.updateDeliveryStack(gameId, userId, drawResult.value.deliveryStack),
+      this.playerRepo.updateCardstack(
+        gameId,
+        userId,
+        drawResult.value.cardStack,
+      ),
+      this.playerRepo.updateDeliveryStack(
+        gameId,
+        userId,
+        drawResult.value.deliveryStack,
+      ),
     ];
     return Promise.all(writes).then(() => undefined);
   }
 
-  private reclaimCardsFromDeliveryStack(gameId: string, playerId: string, count: number): Promise<void> {
+  private reclaimCardsFromDeliveryStack(
+    gameId: string,
+    playerId: string,
+    count: number,
+  ): Promise<void> {
     const hand = [...this.currentHand()];
     const deliveryStack = [...this.currentDeliveryStack()];
-    const reclaimed = deliveryStack.splice(0, Math.min(count, deliveryStack.length));
+    const reclaimed = deliveryStack.splice(
+      0,
+      Math.min(count, deliveryStack.length),
+    );
     if (reclaimed.length === 0) return Promise.resolve();
 
     hand.push(...reclaimed);
@@ -389,25 +590,44 @@ export class CardPlayService {
     ]).then(() => undefined);
   }
 
-  private async reclaimCardsFromDeliveryStackForOtherPlayers(gameId: string, playerId: string, count: number): Promise<void> {
+  private async reclaimCardsFromDeliveryStackForOtherPlayers(
+    gameId: string,
+    playerId: string,
+    count: number,
+  ): Promise<void> {
     const otherPlayers = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
-      [where('gameId', '==', gameId), where('userId', '!=', playerId)]
+      [where('gameId', '==', gameId), where('userId', '!=', playerId)],
     );
-    await Promise.all(otherPlayers.map((data) => this.reclaimCardsFromDeliveryStackForPlayerData(gameId, data, count)));
+    await Promise.all(
+      otherPlayers.map((data) =>
+        this.reclaimCardsFromDeliveryStackForPlayerData(gameId, data, count),
+      ),
+    );
   }
 
-  private async reclaimCardsFromDeliveryStackForTarget(gameId: string, targetPlayerId: string, count: number): Promise<void> {
+  private async reclaimCardsFromDeliveryStackForTarget(
+    gameId: string,
+    targetPlayerId: string,
+    count: number,
+  ): Promise<void> {
     const data = await this.playerRepo.getPlayer(gameId, targetPlayerId);
     if (!data) return;
     await this.reclaimCardsFromDeliveryStackForPlayerData(gameId, data, count);
   }
 
-  private reclaimCardsFromDeliveryStackForPlayerData(gameId: string, data: DocumentData, count: number): Promise<void> {
+  private reclaimCardsFromDeliveryStackForPlayerData(
+    gameId: string,
+    data: DocumentData,
+    count: number,
+  ): Promise<void> {
     const userId = data['userId'];
     const hand: string[] = [...(data['handstack'] ?? [])];
     const deliveryStack: string[] = [...(data['deliveryStack'] ?? [])];
-    const reclaimed = deliveryStack.splice(0, Math.min(count, deliveryStack.length));
+    const reclaimed = deliveryStack.splice(
+      0,
+      Math.min(count, deliveryStack.length),
+    );
     if (reclaimed.length === 0) return Promise.resolve();
 
     hand.push(...reclaimed);
@@ -420,20 +640,44 @@ export class CardPlayService {
   /** Dieb/Ninja "Spende": gibst deine komplette (restliche) Hand einem gewählten Mitspieler und
    * ziehst dafür so viele Karten auf die Hand wie zu Spielbeginn (Anleitung S. 9). Aufgerufen
    * von PlayerHandComponent, nachdem der Zielspieler-Dialog geschlossen wurde. */
-  async resolveSpende(gameId: string, playerId: string, card: string, targetPlayerId: string): Promise<void> {
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId)];
+  async resolveSpende(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+  ): Promise<void> {
+    const writes = [
+      this.ensureGameTimerStarted(gameId),
+      this.resumeGameTimerIfPaused(gameId),
+    ];
 
     const handToGive = [...this.currentHand()];
     handToGive.splice(handToGive.indexOf(card), 1);
 
     const targetData = await this.playerRepo.getPlayer(gameId, targetPlayerId);
     const targetHand = [...(targetData?.['handstack'] ?? []), ...handToGive];
-    writes.push(this.playerRepo.updateHandstack(gameId, targetPlayerId, targetHand));
+    writes.push(
+      this.playerRepo.updateHandstack(gameId, targetPlayerId, targetHand),
+    );
 
     const deliveryStack = [...this.currentDeliveryStack(), card];
-    const drawResult = this.drawCards([], [...this.currentCardStack()], deliveryStack, startHandSize(this.currentNumberOfPlayers()), gameId);
+    const drawResult = this.drawCards(
+      [],
+      [...this.currentCardStack()],
+      deliveryStack,
+      startHandSize(this.currentNumberOfPlayers()),
+      gameId,
+    );
     writes.push(...drawResult.writes);
-    writes.push(this.persistPlayerStacks(gameId, playerId, drawResult.value.hand, drawResult.value.cardStack, drawResult.value.deliveryStack));
+    writes.push(
+      this.persistPlayerStacks(
+        gameId,
+        playerId,
+        drawResult.value.hand,
+        drawResult.value.cardStack,
+        drawResult.value.deliveryStack,
+      ),
+    );
 
     await Promise.all(writes);
   }
@@ -441,9 +685,18 @@ export class CardPlayService {
   /** Dieb/Ninja "Stehlen": nimmst die komplette Hand eines gewählten Mitspielers zu deiner
    * eigenen dazu (Anleitung S. 9) - der bestohlene Spieler füllt seine Hand erst wieder auf,
    * wenn er selbst das nächste Mal eine Karte spielt oder ablegt. */
-  async resolveStehlen(gameId: string, playerId: string, card: string, targetPlayerId: string): Promise<void> {
+  async resolveStehlen(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+  ): Promise<void> {
     const currHand = [...this.currentHand()];
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId), this.saveHand(gameId, playerId, card, currHand)];
+    const writes = [
+      this.ensureGameTimerStarted(gameId),
+      this.resumeGameTimerIfPaused(gameId),
+      this.saveHand(gameId, playerId, card, currHand),
+    ];
 
     const targetData = await this.playerRepo.getPlayer(gameId, targetPlayerId);
     const stolenCards = [...(targetData?.['handstack'] ?? [])];
@@ -453,7 +706,14 @@ export class CardPlayService {
     }
 
     writes.push(this.playerRepo.updateHandstack(gameId, targetPlayerId, []));
-    writes.push(this.checkHandDeadlockLoss(gameId, [], targetData?.['cardstack'] ?? [], targetData?.['deliveryStack'] ?? []));
+    writes.push(
+      this.checkHandDeadlockLoss(
+        gameId,
+        [],
+        targetData?.['cardstack'] ?? [],
+        targetData?.['deliveryStack'] ?? [],
+      ),
+    );
 
     const newOwnHand = [...this.currentHand(), ...stolenCards];
     this.store.dispatch(new UpdateCurrentHandAction(newOwnHand));
@@ -464,14 +724,25 @@ export class CardPlayService {
 
   /** Jägerin/Waldläufer "Heilkräuter": ein gewählter Spieler (auch du selbst) nimmt 4 Karten
    * von seinem eigenen Ablagestapel zurück auf die Hand (Anleitung S. 9). */
-  resolveHeilkraeuter(gameId: string, playerId: string, card: string, targetPlayerId: string): Promise<void> {
+  resolveHeilkraeuter(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+  ): Promise<void> {
     const currHand = [...this.currentHand()];
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId), this.saveHand(gameId, playerId, card, currHand)];
+    const writes = [
+      this.ensureGameTimerStarted(gameId),
+      this.resumeGameTimerIfPaused(gameId),
+      this.saveHand(gameId, playerId, card, currHand),
+    ];
 
     if (targetPlayerId === playerId) {
       writes.push(this.reclaimCardsFromDeliveryStack(gameId, playerId, 4));
     } else {
-      writes.push(this.reclaimCardsFromDeliveryStackForTarget(gameId, targetPlayerId, 4));
+      writes.push(
+        this.reclaimCardsFromDeliveryStackForTarget(gameId, targetPlayerId, 4),
+      );
     }
 
     return Promise.all(writes).then(() => undefined);
@@ -479,7 +750,13 @@ export class CardPlayService {
 
   /** Barbar/Gladiator "Wut": zwei gewählte Spieler (auch du selbst als einer von beiden) ziehen
    * je 3 Karten von ihrem eigenen Nachziehstapel (Anleitung S. 9). */
-  resolveWut(gameId: string, playerId: string, card: string, targetPlayerIdOne: string, targetPlayerIdTwo: string): Promise<void> {
+  resolveWut(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerIdOne: string,
+    targetPlayerIdTwo: string,
+  ): Promise<void> {
     const currHand = [...this.currentHand()];
     const writes = [
       this.ensureGameTimerStarted(gameId),
@@ -491,7 +768,11 @@ export class CardPlayService {
     return Promise.all(writes).then(() => undefined);
   }
 
-  private drawThreeCardsForChosenPlayer(gameId: string, actingPlayerId: string, targetPlayerId: string): Promise<void> {
+  private drawThreeCardsForChosenPlayer(
+    gameId: string,
+    actingPlayerId: string,
+    targetPlayerId: string,
+  ): Promise<void> {
     if (targetPlayerId === actingPlayerId) {
       return this.drawCardsIgnoringHandsize(gameId, actingPlayerId, 3);
     }
@@ -501,12 +782,24 @@ export class CardPlayService {
   /** Paladin/Walküre "Heilung" (Karte `heile`): ein gewählter Spieler legt seinen kompletten
    * Ablagestapel verdeckt zurück auf seinen Nachziehstapel (Anleitung S. 9) - kann einen
    * Spieler ohne Hand- und Nachziehstapelkarten retten. */
-  async resolveHeilung(gameId: string, playerId: string, card: string, targetPlayerId: string): Promise<void> {
+  async resolveHeilung(
+    gameId: string,
+    playerId: string,
+    card: string,
+    targetPlayerId: string,
+  ): Promise<void> {
     const currHand = [...this.currentHand()];
-    const writes = [this.ensureGameTimerStarted(gameId), this.resumeGameTimerIfPaused(gameId), this.saveHand(gameId, playerId, card, currHand)];
+    const writes = [
+      this.ensureGameTimerStarted(gameId),
+      this.resumeGameTimerIfPaused(gameId),
+      this.saveHand(gameId, playerId, card, currHand),
+    ];
 
     if (targetPlayerId === playerId) {
-      const cardStack = shuffle([...this.currentCardStack(), ...this.currentDeliveryStack()]);
+      const cardStack = shuffle([
+        ...this.currentCardStack(),
+        ...this.currentDeliveryStack(),
+      ]);
       this.store.dispatch(new UpdateCardStackAction(cardStack));
       this.store.dispatch(new UpdateDeliveryStack([]));
       writes.push(this.playerRepo.updateCardstack(gameId, playerId, cardStack));
@@ -516,9 +809,16 @@ export class CardPlayService {
     }
 
     const data = await this.playerRepo.getPlayer(gameId, targetPlayerId);
-    const targetCardStack = shuffle([...(data?.['cardstack'] ?? []), ...(data?.['deliveryStack'] ?? [])]);
-    writes.push(this.playerRepo.updateCardstack(gameId, targetPlayerId, targetCardStack));
-    writes.push(this.playerRepo.updateDeliveryStack(gameId, targetPlayerId, []));
+    const targetCardStack = shuffle([
+      ...(data?.['cardstack'] ?? []),
+      ...(data?.['deliveryStack'] ?? []),
+    ]);
+    writes.push(
+      this.playerRepo.updateCardstack(gameId, targetPlayerId, targetCardStack),
+    );
+    writes.push(
+      this.playerRepo.updateDeliveryStack(gameId, targetPlayerId, []),
+    );
 
     await Promise.all(writes);
   }
@@ -526,36 +826,66 @@ export class CardPlayService {
   /** Baut die CardEffectContext-Adapter-Schicht für eine gegebene gameId - bindet die
    * bestehenden privaten Hilfsmethoden (keine Duplikation), damit eine CardEffect-Strategie sie
    * ohne Kenntnis von Store/gameId/Repository-Services aufrufen kann. */
-  private buildCardEffectContext(gameId: string, playerId: string): CardEffectContext {
+  private buildCardEffectContext(
+    gameId: string,
+    playerId: string,
+  ): CardEffectContext {
     return {
       currentEnemy: () => this.currentEnemy(),
-      dispatchMonsterTokenUpdate: (tokens) => this.store.dispatch(new UpdateMonsterTokenArray(tokens)),
-      updateCurrentEnemyToken: (mob) => this.gameRepo.updateCurrentEnemyToken(gameId, mob),
+      dispatchMonsterTokenUpdate: (tokens) =>
+        this.store.dispatch(new UpdateMonsterTokenArray(tokens)),
+      updateCurrentEnemyToken: (mob) =>
+        this.gameRepo.updateCurrentEnemyToken(gameId, mob),
       checkForNextEnemy: (mob) => this.checkForNextEnemy(gameId, mob),
       ensureGameTimerStarted: () => this.ensureGameTimerStarted(gameId),
       resumeGameTimerIfPaused: () => this.resumeGameTimerIfPaused(gameId),
       freezeGameTimer: () => this.freezeGameTimer(gameId),
-      saveHand: (card, currHand) => this.saveHand(gameId, playerId, card, currHand),
-      drawCardsIgnoringHandsize: (count) => this.drawCardsIgnoringHandsize(gameId, playerId, count),
-      drawCardsForOtherPlayers: (count) => this.drawCardsForOtherPlayers(gameId, playerId, count),
-      reclaimCardsFromDeliveryStack: (count) => this.reclaimCardsFromDeliveryStack(gameId, playerId, count),
+      saveHand: (card, currHand) =>
+        this.saveHand(gameId, playerId, card, currHand),
+      drawCardsIgnoringHandsize: (count) =>
+        this.drawCardsIgnoringHandsize(gameId, playerId, count),
+      drawCardsForOtherPlayers: (count) =>
+        this.drawCardsForOtherPlayers(gameId, playerId, count),
+      reclaimCardsFromDeliveryStack: (count) =>
+        this.reclaimCardsFromDeliveryStack(gameId, playerId, count),
       reclaimCardsFromDeliveryStackForOtherPlayers: (count) =>
-        this.reclaimCardsFromDeliveryStackForOtherPlayers(gameId, playerId, count),
+        this.reclaimCardsFromDeliveryStackForOtherPlayers(
+          gameId,
+          playerId,
+          count,
+        ),
     };
   }
 
-  private checkHandsize(gameId: string, playerId: string, handsize: string[], discardedCards: string[]): WithWrites<string[]> {
-    const drawCount = Math.max(0, startHandSize(this.currentNumberOfPlayers()) - handsize.length);
-    const drawResult = this.drawCards([...handsize], [...this.currentCardStack()], [...this.currentDeliveryStack(), ...discardedCards], drawCount, gameId);
+  private checkHandsize(
+    gameId: string,
+    playerId: string,
+    handsize: string[],
+    discardedCards: string[],
+  ): WithWrites<string[]> {
+    const drawCount = Math.max(
+      0,
+      startHandSize(this.currentNumberOfPlayers()) - handsize.length,
+    );
+    const drawResult = this.drawCards(
+      [...handsize],
+      [...this.currentCardStack()],
+      [...this.currentDeliveryStack(), ...discardedCards],
+      drawCount,
+      gameId,
+    );
 
     const persistWrite = this.persistPlayerStacks(
       gameId,
       playerId,
       drawResult.value.hand,
       drawResult.value.cardStack,
-      drawResult.value.deliveryStack
+      drawResult.value.deliveryStack,
     );
-    return { value: drawResult.value.hand, writes: [...drawResult.writes, persistWrite] };
+    return {
+      value: drawResult.value.hand,
+      writes: [...drawResult.writes, persistWrite],
+    };
   }
 
   /** Public: also used directly by PlayerHandComponent as the "array" heropower group's
@@ -580,7 +910,8 @@ export class CardPlayService {
         // Spiel bereits gewonnen ist - läuft sonst sichtbar weiter, ohne dass noch etwas
         // gespielt werden kann (continueToNextDungeon()/restartCampaign() setzen ihn per
         // ResetGameTimer ohnehin zurück).
-        const status = this.currentAllBosses().length > 0 ? 'bossDefeated' : 'won';
+        const status =
+          this.currentAllBosses().length > 0 ? 'bossDefeated' : 'won';
         writes.push(this.freezeGameTimer(gameId));
         writes.push(this.gameRepo.updateGameStatus(gameId, status));
         this.store.dispatch(new UpdateGameStatus(status));
@@ -605,7 +936,11 @@ export class CardPlayService {
     const nextBoss = remainingBosses.shift();
     if (!nextBoss) return Promise.resolve();
 
-    const newMob = new Monster().createMob(this.currentNumberOfPlayers(), nextBoss.name, this.currentDifficulty());
+    const newMob = new Monster().createMob(
+      this.currentNumberOfPlayers(),
+      nextBoss.name,
+      this.currentDifficulty(),
+    );
     const newCurrentEnemy = newMob.shift()!;
 
     this.store.dispatch(new SetCurrentBoss(nextBoss));
@@ -633,7 +968,11 @@ export class CardPlayService {
    * Baby-Barbar") - baut den Dungeon wieder auf Boss #1 zurück und mischt wie
    * continueToNextDungeon() jedes Heldendeck frisch. */
   restartCampaign(gameId: string, playerId: string): Promise<void> {
-    const freshGame = this.gameFactory.buildNewGame(this.currentNumberOfPlayers(), this.currentDifficulty(), gameId);
+    const freshGame = this.gameFactory.buildNewGame(
+      this.currentNumberOfPlayers(),
+      this.currentDifficulty(),
+      gameId,
+    );
 
     this.store.dispatch(new SetCurrentBoss(freshGame.currentBoss));
     this.store.dispatch(new SetRemainingBosses(freshGame.allBosses));
@@ -655,23 +994,46 @@ export class CardPlayService {
     return Promise.all(writes).then(() => undefined);
   }
 
-  private async reshuffleAllPlayersForNewDungeon(gameId: string, actingPlayerId: string): Promise<void> {
-    const players = await this.repo.queryAll<DocumentData>(['games', gameId, 'player'], [where('gameId', '==', gameId)]);
+  private async reshuffleAllPlayersForNewDungeon(
+    gameId: string,
+    actingPlayerId: string,
+  ): Promise<void> {
+    const players = await this.repo.queryAll<DocumentData>(
+      ['games', gameId, 'player'],
+      [where('gameId', '==', gameId)],
+    );
     const numberOfPlayers = this.currentNumberOfPlayers();
     const useExtraDeck = numberOfPlayers === 1 || numberOfPlayers === 2;
     await Promise.all(
-      players.map((data) => this.reshufflePlayerHeroDeck(gameId, data, data['userId'] === actingPlayerId, useExtraDeck))
+      players.map((data) =>
+        this.reshufflePlayerHeroDeck(
+          gameId,
+          data,
+          data['userId'] === actingPlayerId,
+          useExtraDeck,
+        ),
+      ),
     );
   }
 
-  private reshufflePlayerHeroDeck(gameId: string, data: DocumentData, isActingPlayer: boolean, useExtraDeck: boolean): Promise<void> {
+  private reshufflePlayerHeroDeck(
+    gameId: string,
+    data: DocumentData,
+    isActingPlayer: boolean,
+    useExtraDeck: boolean,
+  ): Promise<void> {
     const userId = data['userId'];
     const heroName = data['choosenHero']?.heroname;
-    const heroDefinition = HERO_DEFINITIONS.find((def) => def.heroName === heroName);
+    const heroDefinition = HERO_DEFINITIONS.find(
+      (def) => def.heroName === heroName,
+    );
     if (!heroDefinition) return Promise.resolve();
 
     const hero = createHero(heroDefinition.id, useExtraDeck);
-    const hand = hero.cardstack.splice(0, startHandSize(this.currentNumberOfPlayers()));
+    const hand = hero.cardstack.splice(
+      0,
+      startHandSize(this.currentNumberOfPlayers()),
+    );
 
     const writes = [
       this.playerRepo.updateHandstack(gameId, userId, hand),
@@ -688,20 +1050,34 @@ export class CardPlayService {
     return Promise.all(writes).then(() => undefined);
   }
 
-  private playAsOneCard(gameId: string, card: string, currEne: string[]): Promise<void> {
+  private playAsOneCard(
+    gameId: string,
+    card: string,
+    currEne: string[],
+  ): Promise<void> {
     const indexOfEnemyToken = currEne.indexOf(card);
     currEne.splice(indexOfEnemyToken, 1);
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    const writes = [this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()), this.checkForNextEnemy(gameId, this.currentEnemy())];
+    const writes = [
+      this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()),
+      this.checkForNextEnemy(gameId, this.currentEnemy()),
+    ];
     return Promise.all(writes).then(() => undefined);
   }
 
-  private playAsTwoCards(gameId: string, cardOne: string, cardTwo: string, currEne: string[]): Promise<void> {
+  private playAsTwoCards(
+    gameId: string,
+    cardOne: string,
+    cardTwo: string,
+    currEne: string[],
+  ): Promise<void> {
     const firstIndexOfEnemyToken = currEne.indexOf(cardOne);
     currEne.splice(firstIndexOfEnemyToken, 1);
 
     this.store.dispatch(new UpdateMonsterTokenArray(currEne));
-    const writes = [this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy())];
+    const writes = [
+      this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()),
+    ];
 
     if (currEne.includes(cardTwo)) {
       const secCurrEne = [...currEne];
@@ -709,7 +1085,9 @@ export class CardPlayService {
       secCurrEne.splice(secondIndexOfEnemyToken, 1);
 
       this.store.dispatch(new UpdateMonsterTokenArray(secCurrEne));
-      writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
+      writes.push(
+        this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()),
+      );
     }
 
     // Issue #88: bei einer gleichfarbigen Doppelkarte (z.B. "purple_purple") gegen den letzten
@@ -725,7 +1103,10 @@ export class CardPlayService {
   private getNextEnemy(gameId: string): Promise<void> {
     const currMob = [...this.currentMob()];
     const newCurrentEnemy: Mob = currMob.shift()!;
-    const writes = [this.gameRepo.updateCurrentEnemyToken(gameId, newCurrentEnemy), this.gameRepo.updateNewMob(gameId, currMob)];
+    const writes = [
+      this.gameRepo.updateCurrentEnemyToken(gameId, newCurrentEnemy),
+      this.gameRepo.updateNewMob(gameId, currMob),
+    ];
     this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
     this.store.dispatch(new UpdateMobAction(currMob));
     return Promise.all(writes).then(() => undefined);
@@ -733,16 +1114,27 @@ export class CardPlayService {
 
   private getNextBoss(gameId: string): Promise<void> {
     const newCurrentEnemy: Mob = this.currentBoss();
-    const write = this.gameRepo.updateCurrentEnemyToken(gameId, newCurrentEnemy);
+    const write = this.gameRepo.updateCurrentEnemyToken(
+      gameId,
+      newCurrentEnemy,
+    );
     this.store.dispatch(new SetNewEnemy(newCurrentEnemy));
     return write;
   }
 
-  private saveHand(gameId: string, playerId: string, card: string, currHand: string[]): Promise<void> {
-    let indexOfHandCard = this.currentHand().indexOf(card);
+  private saveHand(
+    gameId: string,
+    playerId: string,
+    card: string,
+    currHand: string[],
+  ): Promise<void> {
+    const indexOfHandCard = this.currentHand().indexOf(card);
     currHand.splice(indexOfHandCard, 1);
     const result = this.checkHandsize(gameId, playerId, currHand, [card]);
-    const writes = [...result.writes, this.playerRepo.updateHandstack(gameId, playerId, result.value)];
+    const writes = [
+      ...result.writes,
+      this.playerRepo.updateHandstack(gameId, playerId, result.value),
+    ];
     this.store.dispatch(new UpdateCurrentHandAction(result.value));
     this.store.dispatch(new UpdateCardStackAction(this.currentCardStack()));
     return Promise.all(writes).then(() => undefined);
@@ -753,8 +1145,12 @@ export class CardPlayService {
     cardStack: string[],
     deliveryStack: string[],
     drawCount: number,
-    gameId: string
-  ): WithWrites<{ hand: string[]; cardStack: string[]; deliveryStack: string[] }> {
+    gameId: string,
+  ): WithWrites<{
+    hand: string[];
+    cardStack: string[];
+    deliveryStack: string[];
+  }> {
     const writes: Promise<void>[] = [];
 
     for (let i = 0; i < drawCount; i++) {
@@ -776,7 +1172,13 @@ export class CardPlayService {
     return { value: { hand, cardStack, deliveryStack }, writes };
   }
 
-  private persistPlayerStacks(gameId: string, playerId: string, hand: string[], cardStack: string[], deliveryStack: string[]): Promise<void> {
+  private persistPlayerStacks(
+    gameId: string,
+    playerId: string,
+    hand: string[],
+    cardStack: string[],
+    deliveryStack: string[],
+  ): Promise<void> {
     this.store.dispatch(new UpdateCurrentHandAction(hand));
     this.store.dispatch(new UpdateCardStackAction(cardStack));
     this.store.dispatch(new UpdateDeliveryStack(deliveryStack));
@@ -793,8 +1195,14 @@ export class CardPlayService {
    * sowohl Nachzieh- als auch Ablagestapel leer sind, ist das Spiel sofort verloren). Bewusst nur
    * dieser Fall - die zweite, komplexere Verlustbedingung ("Gruppe kann die geforderten Symbole
    * nicht mehr aufbringen") ist laut Plan als eigenes Folge-TODO vorgesehen. */
-  private checkHandDeadlockLoss(gameId: string, hand: string[], cardStack: string[], deliveryStack: string[]): Promise<void> {
-    if (hand.length > 0 || cardStack.length > 0 || deliveryStack.length > 0) return Promise.resolve();
+  private checkHandDeadlockLoss(
+    gameId: string,
+    hand: string[],
+    cardStack: string[],
+    deliveryStack: string[],
+  ): Promise<void> {
+    if (hand.length > 0 || cardStack.length > 0 || deliveryStack.length > 0)
+      return Promise.resolve();
     if (this.currentGameStatus() !== 'playing') return Promise.resolve();
 
     this.store.dispatch(new UpdateGameStatus('lost'));

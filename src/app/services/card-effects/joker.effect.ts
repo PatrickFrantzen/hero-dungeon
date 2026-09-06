@@ -6,11 +6,23 @@ import { CardEffect, CardEffectContext } from './card-effect.types';
  * analog zu den bereits automatisch aufgelösten Doppelsymbol-Karten). Wirkt nicht gegen
  * Ereigniskarten (dort gibt es keine Symbole zu ersetzen). */
 export class JokerEffect implements CardEffect {
-  apply(ctx: CardEffectContext, playerId: string, card: string, currHand: string[]): Promise<void> {
+  apply(
+    ctx: CardEffectContext,
+    playerId: string,
+    card: string,
+    currHand: string[],
+  ): Promise<void> {
     const currEne = [...ctx.currentEnemy().token];
-    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return Promise.resolve();
+    if (
+      currEne.length === 0 ||
+      currEne[0].toLocaleLowerCase().includes('event')
+    )
+      return Promise.resolve();
 
-    const writes = [ctx.ensureGameTimerStarted(), ctx.resumeGameTimerIfPaused()];
+    const writes = [
+      ctx.ensureGameTimerStarted(),
+      ctx.resumeGameTimerIfPaused(),
+    ];
 
     currEne.shift();
     ctx.dispatchMonsterTokenUpdate(currEne);

@@ -25,7 +25,9 @@ describe('User', () => {
 
     // Firestore lehnt ein Feld mit dem Wert `undefined` ab ("Unsupported field value:
     // undefined") - toJSON() darf userEmail für anonyme Nutzer daher nicht mitschreiben.
-    expect(user.toJSON()).not.toEqual(jasmine.objectContaining({ userEmail: jasmine.anything() }));
+    expect(user.toJSON()).not.toEqual(
+      jasmine.objectContaining({ userEmail: jasmine.anything() }),
+    );
     expect('userEmail' in user.toJSON()).toBeFalse();
   });
 
@@ -39,7 +41,9 @@ describe('User', () => {
       deliveryStack: [],
     });
 
-    expect(user.toJSON()).toEqual(jasmine.objectContaining({ userEmail: 'alice@example.com' }));
+    expect(user.toJSON()).toEqual(
+      jasmine.objectContaining({ userEmail: 'alice@example.com' }),
+    );
   });
 
   it('defaults lastActivityAt to null and accepts an explicit value', () => {
@@ -52,8 +56,11 @@ describe('User', () => {
       choosenHero: {},
       handstack: [],
       deliveryStack: [],
-      lastActivityAt: 'server-timestamp-placeholder' as unknown as User['lastActivityAt'],
+      lastActivityAt:
+        'server-timestamp-placeholder' as unknown as User['lastActivityAt'],
     });
-    expect(withActivity.lastActivityAt).toBe('server-timestamp-placeholder' as unknown as User['lastActivityAt']);
+    expect(withActivity.lastActivityAt).toBe(
+      'server-timestamp-placeholder' as unknown as User['lastActivityAt'],
+    );
   });
 });

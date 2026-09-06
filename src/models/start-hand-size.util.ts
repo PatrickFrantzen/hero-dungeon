@@ -4,7 +4,7 @@
  * Originalanleitung, behält aber die bisherige Handgröße von 5 Karten bei.
  */
 export function startHandSize(numberOfPlayers: number): number {
-    if (numberOfPlayers <= 2) return 5;
-    if (numberOfPlayers === 3) return 4;
-    return 3;
+  if (numberOfPlayers <= 2) return 5;
+  if (numberOfPlayers === 3) return 4;
+  return 3;
 }

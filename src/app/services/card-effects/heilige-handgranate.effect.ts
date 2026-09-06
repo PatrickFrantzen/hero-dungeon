@@ -6,8 +6,16 @@ import { CardEffect, CardEffectContext } from './card-effect.types';
  * Bis Mini-Bosse umgesetzt sind (TODO 9 im Plan) betrifft das faktisch nur normale
  * Dungeon-Karten und Bosse. */
 export class HeiligeHandgranateEffect implements CardEffect {
-  apply(ctx: CardEffectContext, playerId: string, card: string, currHand: string[]): Promise<void> {
-    const writes = [ctx.ensureGameTimerStarted(), ctx.resumeGameTimerIfPaused()];
+  apply(
+    ctx: CardEffectContext,
+    playerId: string,
+    card: string,
+    currHand: string[],
+  ): Promise<void> {
+    const writes = [
+      ctx.ensureGameTimerStarted(),
+      ctx.resumeGameTimerIfPaused(),
+    ];
 
     const clearedEnemy: Mob = { ...ctx.currentEnemy(), token: [] };
     ctx.dispatchMonsterTokenUpdate(clearedEnemy.token);

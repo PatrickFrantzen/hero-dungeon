@@ -20,12 +20,12 @@ export class FirestoreOperationError extends Error {
   constructor(
     public readonly operation: string,
     public readonly path: string[],
-    public override readonly cause: unknown
+    public override readonly cause: unknown,
   ) {
     super(
       `Firestore-Operation '${operation}' fehlgeschlagen für Pfad '${path.join('/')}': ${
         cause instanceof Error ? cause.message : String(cause)
-      }`
+      }`,
     );
     this.name = 'FirestoreOperationError';
   }
@@ -82,7 +82,10 @@ export class FirestoreRepositoryService {
    * bislang ungenutzt (`users/{uid}` ist nie ein lokaler Pfad) - fällt hier auf dasselbe
    * Ersetzungsverhalten wie setDoc() zurück, da LocalGameDocumentStoreService kein Merge kennt.
    */
-  async setDocMerge<T extends object>(path: string[], data: Partial<T>): Promise<void> {
+  async setDocMerge<T extends object>(
+    path: string[],
+    data: Partial<T>,
+  ): Promise<void> {
     if (this.isLocalPath(path)) {
       this.localStore.setDoc(path, data);
       return;
@@ -94,13 +97,19 @@ export class FirestoreRepositoryService {
     }
   }
 
-  async updateFields<T extends object>(path: string[], update: Partial<T>): Promise<void> {
+  async updateFields<T extends object>(
+    path: string[],
+    update: Partial<T>,
+  ): Promise<void> {
     if (this.isLocalPath(path)) {
       this.localStore.updateFields(path, update);
       return;
     }
     try {
-      await updateDoc(doc(this.firestore, path.join('/')), update as DocumentData);
+      await updateDoc(
+        doc(this.firestore, path.join('/')),
+        update as DocumentData,
+      );
     } catch (cause) {
       throw new FirestoreOperationError('updateFields', path, cause);
     }
@@ -132,14 +141,17 @@ export class FirestoreRepositoryService {
   async queryLatest<T extends DocumentData>(
     collectionPath: string[],
     field: string,
-    value: unknown
+    value: unknown,
   ): Promise<T | undefined> {
     if (this.isLocalPath(collectionPath)) {
       const results = this.localStore.queryAll<T>(collectionPath);
       return results[results.length - 1];
     }
     try {
-      const q = query(collection(this.firestore, collectionPath.join('/')), where(field, '==', value));
+      const q = query(
+        collection(this.firestore, collectionPath.join('/')),
+        where(field, '==', value),
+      );
       const snap = await getDocs(q);
       return snap.docs[snap.docs.length - 1]?.data() as T | undefined;
     } catch (cause) {
@@ -147,12 +159,18 @@ export class FirestoreRepositoryService {
     }
   }
 
-  async queryAll<T extends DocumentData>(collectionPath: string[], constraints: QueryConstraint[]): Promise<T[]> {
+  async queryAll<T extends DocumentData>(
+    collectionPath: string[],
+    constraints: QueryConstraint[],
+  ): Promise<T[]> {
     if (this.isLocalPath(collectionPath)) {
       return this.localStore.queryAll<T>(collectionPath);
     }
     try {
-      const q = query(collection(this.firestore, collectionPath.join('/')), ...constraints);
+      const q = query(
+        collection(this.firestore, collectionPath.join('/')),
+        ...constraints,
+      );
       const snap = await getDocs(q);
       return snap.docs.map((docSnap) => docSnap.data() as T);
     } catch (cause) {

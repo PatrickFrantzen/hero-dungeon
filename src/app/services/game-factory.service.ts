@@ -10,14 +10,22 @@ import { Mob, Monster } from 'src/models/monster/monster.class';
   providedIn: 'root',
 })
 export class GameFactoryService {
-  buildNewGame(numberOfPlayer: number, difficulty: string, gameId: string): Game {
+  buildNewGame(
+    numberOfPlayer: number,
+    difficulty: string,
+    gameId: string,
+  ): Game {
     // bossCollection[0] ist immer Baby-Barbar (Boss #1) - allBosses ist ab hier die
     // Warteschlange der NACH dem aktuellen Boss noch ausstehenden Bosse (#2-#5), analog zu
     // `Mob` als Warteschlange der noch ausstehenden Dungeon-Karten. CardPlayService.
     // continueToNextDungeon() zieht daraus den jeweils nächsten Boss, sobald der aktuelle besiegt
     // ist (Anleitung S. 6: Kampagne Boss #1 -> #2 -> ... -> #5).
     const [currentBoss, ...allBosses] = new Monster().bossCollection;
-    const mob: Mob[] = new Monster().createMob(numberOfPlayer, currentBoss.name, difficulty);
+    const mob: Mob[] = new Monster().createMob(
+      numberOfPlayer,
+      currentBoss.name,
+      difficulty,
+    );
     const currentEnemy: Mob = mob.shift()!;
 
     return {
@@ -40,7 +48,12 @@ export class GameFactoryService {
       timerDurationSeconds: 300,
       timerPausedAt: null,
       timerPausedSecondsTotal: 0,
-      stats: { enemiesDefeated: 0, cardsPlayed: 0, cardsCycled: 0, heropowersUsed: 0 },
+      stats: {
+        enemiesDefeated: 0,
+        cardsPlayed: 0,
+        cardsCycled: 0,
+        heropowersUsed: 0,
+      },
     };
   }
 }

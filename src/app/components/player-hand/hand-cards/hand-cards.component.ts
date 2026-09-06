@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { NgStyle } from '@angular/common';
 
 // Reiner Presenter (kein Store-/Firestore-Zugriff) - kapselt das Fächer-Layout und die
@@ -60,7 +67,8 @@ export class HandCardsComponent {
         'z-index': `${index}`,
       };
       if (index > 0) {
-        style['margin-left'] = `calc(clamp(70px, 15vw, 150px) * -${overlapFraction.toFixed(2)})`;
+        style['margin-left'] =
+          `calc(clamp(70px, 15vw, 150px) * -${overlapFraction.toFixed(2)})`;
       }
       return style;
     });
@@ -102,7 +110,9 @@ export class HandCardsComponent {
     // Nach unten nur wenig zulassen (Finger leicht verrutscht bleibt ein Tap-Kandidat), nach
     // oben auf das ~1.6-fache des Schwellwerts deckeln, damit die Karte dem Finger nicht
     // beliebig weit folgt.
-    this.dragDeltaY.set(Math.max(-20, Math.min(delta, this.swipeThresholdPx * 1.6)));
+    this.dragDeltaY.set(
+      Math.max(-20, Math.min(delta, this.swipeThresholdPx * 1.6)),
+    );
     if (Math.abs(delta) > 8) {
       // Verhindert Seiten-Scroll/Pull-to-Refresh während des Ziehens UND den synthetischen
       // `click`, den mobile Browser nach touchend sonst zusätzlich zum direkten

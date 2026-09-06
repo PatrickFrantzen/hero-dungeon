@@ -1,6 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { Store} from '@ngxs/store';
-import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { Store } from '@ngxs/store';
+import {
+  UpdateHeropowerActivated,
+  UpdateHeropowerArray,
+} from 'src/app/actions/heropower-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { HeropowerSelectors } from 'src/app/selectors/heropower-selector';
 import { Mob } from 'src/models/monster/monster.class';
@@ -9,11 +19,11 @@ import { MatCard } from '@angular/material/card';
 import { NgClass } from '@angular/common';
 
 @Component({
-    selector: 'app-heropower',
-    templateUrl: './heropower.component.html',
-    styleUrls: ['./heropower.component.scss'],
-    imports: [MatCard, NgClass],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-heropower',
+  templateUrl: './heropower.component.html',
+  styleUrls: ['./heropower.component.scss'],
+  imports: [MatCard, NgClass],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeropowerComponent {
   private store = inject(Store);
@@ -23,8 +33,12 @@ export class HeropowerComponent {
   readonly currentEnemy = input<Mob>({ name: '', token: [], type: '' });
   readonly currentDeliveryStack = input<string[]>([]);
 
-  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
-  heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
+  currentUserHeroData = this.store.selectSignal(
+    CurrentUserSelectors.currentUserHeroData,
+  );
+  heropowerActivated = this.store.selectSignal(
+    HeropowerSelectors.currentHeropowerActivated,
+  );
 
   heroName = computed(() => this.currentUserHeroData()?.choosenHero ?? '');
   heropower = computed(() => this.currentUserHeroData()?.heroPower ?? '');
@@ -44,11 +58,15 @@ export class HeropowerComponent {
    * nur im geprüften `currentEnemy().type`) durch einen Lookup auf `HeroDefinition.activatesOn`
    * — ein unbekannter/leerer Heldenname ist weiterhin ein No-op. */
   onActivateHeropower(): void {
-    const definition = HERO_DEFINITIONS.find((def) => def.heroName === this.heroName());
+    const definition = HERO_DEFINITIONS.find(
+      (def) => def.heroName === this.heroName(),
+    );
     if (!definition) {
       return;
     }
-    const enemyMatches = definition.activatesOn === 'always' || definition.activatesOn === this.currentEnemy().type;
+    const enemyMatches =
+      definition.activatesOn === 'always' ||
+      definition.activatesOn === this.currentEnemy().type;
     if (enemyMatches && !this.heropowerActivated()) {
       this.activateHeroPower();
     } else {
@@ -60,13 +78,12 @@ export class HeropowerComponent {
     // iOS Safari kennt navigator.vibrate nicht (dort undefined) - der Optional-Call
     // degradiert dann automatisch ohne Fehler, kein Feature-Check nötig (Issue #51).
     navigator.vibrate?.(15);
-    this.store.dispatch(new UpdateHeropowerActivated(true))
-    this.store.dispatch(new UpdateHeropowerArray([]))
+    this.store.dispatch(new UpdateHeropowerActivated(true));
+    this.store.dispatch(new UpdateHeropowerArray([]));
   }
 
   deactivateHeroPower() {
-
-    this.store.dispatch(new UpdateHeropowerActivated(false))
-    this.store.dispatch(new UpdateHeropowerArray([]))
+    this.store.dispatch(new UpdateHeropowerActivated(false));
+    this.store.dispatch(new UpdateHeropowerArray([]));
   }
 }

@@ -19,14 +19,10 @@ describe('SignupComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [ReactiveFormsModule, RouterTestingModule, SignupComponent],
-    schemas: [NO_ERRORS_SCHEMA],
-    providers: [
-        { provide: Auth, useValue: {} },
-        ...firestoreTestProviders(),
-    ],
-})
-    .compileComponents();
+      imports: [ReactiveFormsModule, RouterTestingModule, SignupComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [{ provide: Auth, useValue: {} }, ...firestoreTestProviders()],
+    }).compileComponents();
 
     ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(SignupComponent);

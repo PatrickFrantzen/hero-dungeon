@@ -5,13 +5,12 @@ import { Store } from '@ngxs/store';
 import { CurrentUserAction } from '../actions/currentUser-action';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CurrentUserService {
-
-  currentUser:string = '';
-  currentUserId: string = '';
-  currentUserHero: Object = {};
+  currentUser = '';
+  currentUserId = '';
+  currentUserHero: object = {};
   currentUserData: DocumentData | undefined;
 
   constructor(
@@ -20,7 +19,7 @@ export class CurrentUserService {
     private firestore: Firestore,
   ) {}
 
-  public getCurrentUser():Promise<DocumentData | undefined> {
+  public getCurrentUser(): Promise<DocumentData | undefined> {
     return new Promise((resolve) => {
       onAuthStateChanged(this.auth, async (user) => {
         if (user) {
@@ -32,12 +31,14 @@ export class CurrentUserService {
           // riskieren.
           this.currentUser = this.currentUserData?.['userNickname'] ?? 'Gast';
           this.currentUserId = this.currentUserData?.['userId'] ?? user.uid;
-          this.store.dispatch(new CurrentUserAction(this.currentUserId, this.currentUser))
+          this.store.dispatch(
+            new CurrentUserAction(this.currentUserId, this.currentUser),
+          );
         } else {
-          this.currentUser = 'Gast'
+          this.currentUser = 'Gast';
         }
-        resolve(this.currentUserData)
-      })
-    })
+        resolve(this.currentUserData);
+      });
+    });
   }
 }

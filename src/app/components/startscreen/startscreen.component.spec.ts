@@ -32,17 +32,21 @@ describe('StartscreenComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [RouterTestingModule, MatDialogModule, NgxsModule.forRoot([CurrentUserState, CurrentGameState]), StartscreenComponent],
-    schemas: [NO_ERRORS_SCHEMA],
-    providers: [
+      imports: [
+        RouterTestingModule,
+        MatDialogModule,
+        NgxsModule.forRoot([CurrentUserState, CurrentGameState]),
+        StartscreenComponent,
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
         // no-op statt {}: mehrere Tests hier erzeugen eine zweite Fixture, deren ngOnInit()
         // erneut CurrentUserService.getCurrentUser() -> onAuthStateChanged(this.auth, ...)
         // aufruft - ein leeres {} wirft dort "onAuthStateChanged is not a function".
         { provide: Auth, useValue: { onAuthStateChanged: () => () => {} } },
         ...firestoreTestProviders(),
-    ],
-})
-    .compileComponents();
+      ],
+    }).compileComponents();
 
     ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(StartscreenComponent);
@@ -56,7 +60,10 @@ describe('StartscreenComponent', () => {
 
   it('navigates a newly created singleplayer game to local-game/:id, not game/:id', async () => {
     spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () => of({ data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' } }),
+      afterClosed: () =>
+        of({
+          data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' },
+        }),
     } as MatDialogRef<unknown>);
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
@@ -79,7 +86,9 @@ describe('StartscreenComponent', () => {
     const localFixture = TestBed.createComponent(StartscreenComponent);
     localFixture.detectChanges();
 
-    expect(localFixture.componentInstance.localSaves().map((save) => save.saveId)).toEqual(['local-7']);
+    expect(
+      localFixture.componentInstance.localSaves().map((save) => save.saveId),
+    ).toEqual(['local-7']);
     localStorage.clear();
   });
 
@@ -89,15 +98,23 @@ describe('StartscreenComponent', () => {
 
     component.resumeLocalSave('local-7');
 
-    expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('local-7');
+    expect(
+      TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame),
+    ).toBe('local-7');
     expect(router.navigate).toHaveBeenCalledWith(['/local-game/local-7']);
   });
 
   it('newSingleplayerGame() does not sign in anonymously (Singleplayer needs no auth)', async () => {
     const authForm = TestBed.inject(AuthFormService);
-    const ensureAnonymousSession = spyOn(authForm, 'ensureAnonymousSession').and.resolveTo();
+    const ensureAnonymousSession = spyOn(
+      authForm,
+      'ensureAnonymousSession',
+    ).and.resolveTo();
     spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () => of({ data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' } }),
+      afterClosed: () =>
+        of({
+          data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' },
+        }),
     } as MatDialogRef<unknown>);
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
@@ -110,7 +127,10 @@ describe('StartscreenComponent', () => {
 
   it('newGame() signs in anonymously before the settings dialog opens', async () => {
     const authForm = TestBed.inject(AuthFormService);
-    const ensureAnonymousSession = spyOn(authForm, 'ensureAnonymousSession').and.resolveTo();
+    const ensureAnonymousSession = spyOn(
+      authForm,
+      'ensureAnonymousSession',
+    ).and.resolveTo();
     const dialogOpen = spyOn(component.dialog, 'open').and.returnValue({
       afterClosed: () => of(undefined),
     } as MatDialogRef<unknown>);
@@ -124,7 +144,10 @@ describe('StartscreenComponent', () => {
 
   it('joinGame() signs in anonymously before reading the game from Firestore', async () => {
     const authForm = TestBed.inject(AuthFormService);
-    const ensureAnonymousSession = spyOn(authForm, 'ensureAnonymousSession').and.resolveTo();
+    const ensureAnonymousSession = spyOn(
+      authForm,
+      'ensureAnonymousSession',
+    ).and.resolveTo();
     const gameRepo = TestBed.inject(GameRepositoryService);
     const getGame = spyOn(gameRepo, 'getGame').and.resolveTo(undefined);
     component.joinGameId = 'game-42';
@@ -139,12 +162,24 @@ describe('StartscreenComponent', () => {
     it('createGame() (multiplayer) records the joined game for the current account', async () => {
       const store = TestBed.inject(Store);
       store.dispatch(new CurrentUserAction('user-1', 'Alice'));
-      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
+      spyOn(
+        TestBed.inject(AuthFormService),
+        'ensureAnonymousSession',
+      ).and.resolveTo();
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of({ data: { numberOfPlayer: 2, difficulty: 'easy', gameId: 'game-99' } }),
+        afterClosed: () =>
+          of({
+            data: { numberOfPlayer: 2, difficulty: 'easy', gameId: 'game-99' },
+          }),
       } as MatDialogRef<unknown>);
-      spyOn(TestBed.inject(GameRepositoryService), 'createGame').and.resolveTo();
-      const addJoinedGame = spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      spyOn(
+        TestBed.inject(GameRepositoryService),
+        'createGame',
+      ).and.resolveTo();
+      const addJoinedGame = spyOn(
+        TestBed.inject(UserRepositoryService),
+        'addJoinedGame',
+      ).and.resolveTo();
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
 
@@ -156,9 +191,15 @@ describe('StartscreenComponent', () => {
 
     it('createGame() (local singleplayer) does NOT record a joined game - Singleplayer has no account concept', async () => {
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of({ data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' } }),
+        afterClosed: () =>
+          of({
+            data: { numberOfPlayer: 1, difficulty: 'easy', gameId: 'local-42' },
+          }),
       } as MatDialogRef<unknown>);
-      const addJoinedGame = spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      const addJoinedGame = spyOn(
+        TestBed.inject(UserRepositoryService),
+        'addJoinedGame',
+      ).and.resolveTo();
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
 
@@ -171,9 +212,18 @@ describe('StartscreenComponent', () => {
     it('joinGame() records the joined game for the current account after a successful join', async () => {
       const store = TestBed.inject(Store);
       store.dispatch(new CurrentUserAction('user-1', 'Alice'));
-      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
-      spyOn(TestBed.inject(GameRepositoryService), 'getGame').and.resolveTo({ currentEnemy: {}, Mob: [] });
-      const addJoinedGame = spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      spyOn(
+        TestBed.inject(AuthFormService),
+        'ensureAnonymousSession',
+      ).and.resolveTo();
+      spyOn(TestBed.inject(GameRepositoryService), 'getGame').and.resolveTo({
+        currentEnemy: {},
+        Mob: [],
+      });
+      const addJoinedGame = spyOn(
+        TestBed.inject(UserRepositoryService),
+        'addJoinedGame',
+      ).and.resolveTo();
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
       component.joinGameId = 'game-42';
@@ -187,9 +237,18 @@ describe('StartscreenComponent', () => {
     it('a "Meine Spiele" entry can be joined directly by gameId, without the manual input field', async () => {
       const store = TestBed.inject(Store);
       store.dispatch(new CurrentUserAction('user-1', 'Alice'));
-      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
-      const getGame = spyOn(TestBed.inject(GameRepositoryService), 'getGame').and.resolveTo({ currentEnemy: {}, Mob: [] });
-      spyOn(TestBed.inject(UserRepositoryService), 'addJoinedGame').and.resolveTo();
+      spyOn(
+        TestBed.inject(AuthFormService),
+        'ensureAnonymousSession',
+      ).and.resolveTo();
+      const getGame = spyOn(
+        TestBed.inject(GameRepositoryService),
+        'getGame',
+      ).and.resolveTo({ currentEnemy: {}, Mob: [] });
+      spyOn(
+        TestBed.inject(UserRepositoryService),
+        'addJoinedGame',
+      ).and.resolveTo();
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
 
@@ -197,7 +256,9 @@ describe('StartscreenComponent', () => {
       await fixture.whenStable();
 
       expect(getGame).toHaveBeenCalledWith('game-from-my-games');
-      expect(router.navigate).toHaveBeenCalledWith(['/game/game-from-my-games']);
+      expect(router.navigate).toHaveBeenCalledWith([
+        '/game/game-from-my-games',
+      ]);
     });
 
     it('loads the list of joined games once the account id becomes available', async () => {
@@ -225,7 +286,9 @@ describe('StartscreenComponent', () => {
         game: { gameId: 'local-7', numberOfPlayers: 1 } as unknown as Game,
         player: { choosenHero: { heroname: 'Barbar' } },
       });
-      component.localSaves.set(TestBed.inject(LocalSingleplayerSaveService).listSaves());
+      component.localSaves.set(
+        TestBed.inject(LocalSingleplayerSaveService).listSaves(),
+      );
     });
 
     afterEach(() => localStorage.clear());
@@ -247,17 +310,28 @@ describe('StartscreenComponent', () => {
         jasmine.objectContaining({
           data: {
             entries: [
-              { id: 'local-7', label: 'Barbar', mode: 'singleplayer', lastPlayedAt: 1234 },
-              { id: 'game-1', label: 'game-1', mode: 'multiplayer', lastPlayedAt: 5 },
+              {
+                id: 'local-7',
+                label: 'Barbar',
+                mode: 'singleplayer',
+                lastPlayedAt: 1234,
+              },
+              {
+                id: 'game-1',
+                label: 'game-1',
+                mode: 'multiplayer',
+                lastPlayedAt: 5,
+              },
             ],
           },
-        })
+        }),
       );
     });
 
     it('resumes the local save when the dialog closes with a singleplayer selection', () => {
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of({ data: { selectedId: 'local-7', mode: 'singleplayer' } }),
+        afterClosed: () =>
+          of({ data: { selectedId: 'local-7', mode: 'singleplayer' } }),
       } as MatDialogRef<unknown>);
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
@@ -268,10 +342,17 @@ describe('StartscreenComponent', () => {
     });
 
     it('joins the multiplayer game when the dialog closes with a multiplayer selection', async () => {
-      spyOn(TestBed.inject(AuthFormService), 'ensureAnonymousSession').and.resolveTo();
-      const getGame = spyOn(TestBed.inject(GameRepositoryService), 'getGame').and.resolveTo(undefined);
+      spyOn(
+        TestBed.inject(AuthFormService),
+        'ensureAnonymousSession',
+      ).and.resolveTo();
+      const getGame = spyOn(
+        TestBed.inject(GameRepositoryService),
+        'getGame',
+      ).and.resolveTo(undefined);
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of({ data: { selectedId: 'game-1', mode: 'multiplayer' } }),
+        afterClosed: () =>
+          of({ data: { selectedId: 'game-1', mode: 'multiplayer' } }),
       } as MatDialogRef<unknown>);
 
       component.openSaveDialog();

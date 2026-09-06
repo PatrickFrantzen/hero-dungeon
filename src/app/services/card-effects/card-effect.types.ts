@@ -21,5 +21,10 @@ export interface CardEffectContext {
  * Zielspieler-Karten, die weiterhin eigene öffentliche resolve*()-Methoden auf CardPlayService
  * bleiben - siehe To-Do.md). */
 export interface CardEffect {
-  apply(ctx: CardEffectContext, playerId: string, card: string, currHand: string[]): Promise<void>;
+  apply(
+    ctx: CardEffectContext,
+    playerId: string,
+    card: string,
+    currHand: string[],
+  ): Promise<void>;
 }

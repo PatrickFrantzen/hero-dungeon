@@ -10,7 +10,8 @@ import { MatDialogRef } from '@angular/material/dialog';
  * ohne Argumente statt `super(dialogRef)`.
  */
 export abstract class BaseDialogComponent<TResult> {
-  protected dialogRef = inject<MatDialogRef<unknown, { data: TResult }>>(MatDialogRef);
+  protected dialogRef =
+    inject<MatDialogRef<unknown, { data: TResult }>>(MatDialogRef);
 
   protected closeWith(result: TResult): void {
     this.dialogRef.close({ data: result });

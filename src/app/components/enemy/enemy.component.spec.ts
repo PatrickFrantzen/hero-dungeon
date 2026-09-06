@@ -9,14 +9,17 @@ describe('EnemyComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [EnemyComponent],
-    schemas: [NO_ERRORS_SCHEMA],
-})
-    .compileComponents();
+      imports: [EnemyComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(EnemyComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('currentEnemy', { name: '', token: [], type: '' });
+    fixture.componentRef.setInput('currentEnemy', {
+      name: '',
+      token: [],
+      type: '',
+    });
     fixture.detectChanges();
   });
 

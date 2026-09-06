@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogGameSettingsComponent } from '../dialog-game-settings/dialog-game-settings.component';
 import { Auth, signOut } from '@angular/fire/auth';
@@ -7,26 +14,41 @@ import { FormsModule } from '@angular/forms';
 import { Store } from '@ngxs/store';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { CurrentUserService } from 'src/app/services/current-user.service';
-import { CurrentGameAction, CurrentGameData } from 'src/app/actions/currentGame-action';
+import {
+  CurrentGameAction,
+  CurrentGameData,
+} from 'src/app/actions/currentGame-action';
 import { SetNewEnemy } from 'src/app/actions/encounter-action';
 import { ToJSONService } from 'src/app/services/to-json.service';
-import { CreateNewMobAction, UpdateMobAction } from 'src/app/actions/MonsterStack-action';
+import {
+  CreateNewMobAction,
+  UpdateMobAction,
+} from 'src/app/actions/MonsterStack-action';
 import { StartTutorial } from 'src/app/actions/tutorial-action';
 import { GameFactoryService } from 'src/app/services/game-factory.service';
 import { GameRepositoryService } from 'src/app/services/game-repository.service';
 import { GameSettingsDialogResult } from 'src/app/components/dialog-results';
 import { isLocalGameId } from 'src/app/services/local-game-id.util';
-import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
+import {
+  LocalSingleplayerSave,
+  LocalSingleplayerSaveService,
+} from 'src/app/services/local-singleplayer-save.service';
 import { AuthFormService } from 'src/app/services/auth-form.service';
-import { JoinedGame, UserRepositoryService } from 'src/app/services/user-repository.service';
-import { SaveListEntry, openSaveSelector } from '../dialog-select-save/dialog-select-save.component';
+import {
+  JoinedGame,
+  UserRepositoryService,
+} from 'src/app/services/user-repository.service';
+import {
+  SaveListEntry,
+  openSaveSelector,
+} from '../dialog-select-save/dialog-select-save.component';
 
 @Component({
-    selector: 'app-startscreen',
-    templateUrl: './startscreen.component.html',
-    styleUrls: ['./startscreen.component.scss'],
-    imports: [FormsModule],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-startscreen',
+  templateUrl: './startscreen.component.html',
+  styleUrls: ['./startscreen.component.scss'],
+  imports: [FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StartscreenComponent implements OnInit {
   public dialog = inject(MatDialog);
@@ -41,12 +63,14 @@ export class StartscreenComponent implements OnInit {
   private authForm = inject(AuthFormService);
   private userRepo = inject(UserRepositoryService);
 
-  currentGameId: string = '';
-  joinGameId: string = '';
+  currentGameId = '';
+  joinGameId = '';
   startscreenError: string | null = null;
 
   currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
-  currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
+  currentUserName = this.store.selectSignal(
+    CurrentUserSelectors.currentUserName,
+  );
 
   /** "Meine Spielstände" (Issue #73) - lokale Singleplayer-Saves, die ohne Anmeldung fortgesetzt
    * werden können. Einmal beim Betreten des Startscreens geladen; ein neu erstelltes Spiel legt
@@ -67,14 +91,15 @@ export class StartscreenComponent implements OnInit {
       if (!userId) {
         return;
       }
-      this.userRepo.getJoinedGames(userId).then((games) => this.myGames.set(games));
+      this.userRepo
+        .getJoinedGames(userId)
+        .then((games) => this.myGames.set(games));
     });
   }
 
-
   ngOnInit(): void {
     if (!this.currentUserName()) {
-      this.userService.getCurrentUser()
+      this.userService.getCurrentUser();
     }
     this.localSaves.set(this.localSaveService.listSaves());
   }
@@ -91,7 +116,8 @@ export class StartscreenComponent implements OnInit {
    * der Heldenauswahl (frisch erstelltes, noch nie betretenes Spiel) existiert `choosenHero`
    * noch nicht. */
   heroNameOf(save: LocalSingleplayerSave): string {
-    const choosenHero = save.player['choosenHero'] as { heroname?: string } | undefined;
+    const choosenHero = save.player['choosenHero'] as
+      { heroname?: string } | undefined;
     return choosenHero?.heroname ?? 'Fortsetzen';
   }
 
@@ -106,12 +132,18 @@ export class StartscreenComponent implements OnInit {
    * Dialog ein lokaler Spielstand gelöscht worden sein könnte. */
   openSaveDialog(): void {
     const entries: SaveListEntry[] = [
-      ...this.localSaves().map(
-        (save): SaveListEntry => ({ id: save.saveId, label: this.heroNameOf(save), mode: 'singleplayer', lastPlayedAt: save.updatedAt })
-      ),
-      ...this.myGames().map(
-        (game): SaveListEntry => ({ id: game.gameId, label: game.gameId, mode: 'multiplayer', lastPlayedAt: game.lastPlayedAt || null })
-      ),
+      ...this.localSaves().map((save): SaveListEntry => ({
+        id: save.saveId,
+        label: this.heroNameOf(save),
+        mode: 'singleplayer',
+        lastPlayedAt: save.updatedAt,
+      })),
+      ...this.myGames().map((game): SaveListEntry => ({
+        id: game.gameId,
+        label: game.gameId,
+        mode: 'multiplayer',
+        lastPlayedAt: game.lastPlayedAt || null,
+      })),
     ];
 
     openSaveSelector(this.dialog, entries).subscribe((result) => {
@@ -132,21 +164,25 @@ export class StartscreenComponent implements OnInit {
    * sichtbarer Signin-Screen mehr nötig. `newSingleplayerGame()` bleibt bewusst ohne diesen
    * Aufruf, Singleplayer läuft weiterhin komplett ohne Auth. */
   async newGame() {
-      await this.authForm.ensureAnonymousSession();
-      this.openDialog(false);
+    await this.authForm.ensureAnonymousSession();
+    this.openDialog(false);
   }
 
   newSingleplayerGame() {
-      this.openDialog(true);
+    this.openDialog(true);
   }
 
   openDialog(singleplayerMode = false) {
-    let dialogRef = this.dialog.open<DialogGameSettingsComponent, { singleplayerMode: boolean }, { data: GameSettingsDialogResult }>(
+    const dialogRef = this.dialog.open<
+      DialogGameSettingsComponent,
+      { singleplayerMode: boolean },
+      { data: GameSettingsDialogResult }
+    >(
       DialogGameSettingsComponent,
       // disableClose: ohne Auswahl (Schwierigkeit ist zwar vorbelegt, Spiele-ID/Spielerzahl
       // aber nicht) durfte der Dialog vorher per Backdrop-Klick/Escape verschwinden, ohne dass
       // ein Spiel erstellt wurde - wirkte wie ein Bug ("Klick geht ins Leere").
-      { data: { singleplayerMode }, disableClose: true }
+      { data: { singleplayerMode }, disableClose: true },
     );
 
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -158,8 +194,16 @@ export class StartscreenComponent implements OnInit {
     });
   }
 
-  private async createGame(numberOfPlayer: number, difficulty: string, gameId: string) {
-    const game = this.gameFactory.buildNewGame(numberOfPlayer, difficulty, gameId);
+  private async createGame(
+    numberOfPlayer: number,
+    difficulty: string,
+    gameId: string,
+  ) {
+    const game = this.gameFactory.buildNewGame(
+      numberOfPlayer,
+      difficulty,
+      gameId,
+    );
 
     this.currentGameId = gameId;
     this.store.dispatch(new CurrentGameAction(gameId));
@@ -173,9 +217,12 @@ export class StartscreenComponent implements OnInit {
       if (!isLocalGameId(gameId)) {
         await this.userRepo.addJoinedGame(this.currentUserId(), gameId);
       }
-      this.route.navigate([(isLocalGameId(gameId) ? '/local-game/' : '/game/') + gameId]);
+      this.route.navigate([
+        (isLocalGameId(gameId) ? '/local-game/' : '/game/') + gameId,
+      ]);
     } catch {
-      this.startscreenError = 'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
+      this.startscreenError =
+        'Das Spiel konnte nicht erstellt werden. Bitte erneut versuchen.';
     }
   }
 
@@ -184,10 +231,9 @@ export class StartscreenComponent implements OnInit {
   }
 
   logout() {
-    signOut(this.auth)
-    .then (()=> {
-      this.route.navigate(['signIn'])
-    })
+    signOut(this.auth).then(() => {
+      this.route.navigate(['signIn']);
+    });
   }
 
   /** `gameId`: explizit übergeben beim Fortsetzen aus "Meine Spiele" (Issue #78) - ohne Argument
@@ -198,21 +244,22 @@ export class StartscreenComponent implements OnInit {
       return;
     }
     await this.authForm.ensureAnonymousSession();
-    this.gameRepo.getGame(inputValue)
-    .then(async (results)=> {
-      if (!results) {
+    this.gameRepo
+      .getGame(inputValue)
+      .then(async (results) => {
+        if (!results) {
+          this.startscreenError = 'Kein Spiel mit dieser ID gefunden.';
+          return;
+        }
+        this.startscreenError = null;
+        this.store.dispatch(new SetNewEnemy(results['currentEnemy']));
+        this.store.dispatch(new UpdateMobAction(results['Mob']));
+        await this.userRepo.addJoinedGame(this.currentUserId(), inputValue);
+        this.route.navigate(['/game/' + inputValue]);
+        this.store.dispatch(new CurrentGameAction(inputValue));
+      })
+      .catch(() => {
         this.startscreenError = 'Kein Spiel mit dieser ID gefunden.';
-        return;
-      }
-      this.startscreenError = null;
-      this.store.dispatch(new SetNewEnemy(results['currentEnemy']));
-      this.store.dispatch(new UpdateMobAction(results['Mob']));
-      await this.userRepo.addJoinedGame(this.currentUserId(), inputValue);
-      this.route.navigate(['/game/'+ inputValue]);
-      this.store.dispatch(new CurrentGameAction(inputValue));
-    })
-    .catch(() => {
-      this.startscreenError = 'Kein Spiel mit dieser ID gefunden.';
-    })
+      });
   }
 }

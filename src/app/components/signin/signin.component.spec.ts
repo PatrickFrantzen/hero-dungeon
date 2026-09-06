@@ -20,14 +20,15 @@ describe('SigninComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [ReactiveFormsModule, RouterTestingModule, NgxsModule.forRoot([]), SigninComponent],
-    schemas: [NO_ERRORS_SCHEMA],
-    providers: [
-        { provide: Auth, useValue: {} },
-        ...firestoreTestProviders(),
-    ],
-})
-    .compileComponents();
+      imports: [
+        ReactiveFormsModule,
+        RouterTestingModule,
+        NgxsModule.forRoot([]),
+        SigninComponent,
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [{ provide: Auth, useValue: {} }, ...firestoreTestProviders()],
+    }).compileComponents();
 
     ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(SigninComponent);

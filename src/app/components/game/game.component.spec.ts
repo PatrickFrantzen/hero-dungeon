@@ -36,11 +36,28 @@ describe('GameComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, RouterTestingModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState, TutorialState]), GameComponent],
-    providers: [...firestoreTestProviders(), { provide: Auth, useValue: { currentUser: null } }],
-    schemas: [NO_ERRORS_SCHEMA],
-})
-    .compileComponents();
+      imports: [
+        MatDialogModule,
+        RouterTestingModule,
+        NgxsModule.forRoot([
+          CurrentGameState,
+          CurrentUserState,
+          heropowerState,
+          CardStackState,
+          cardsInHandState,
+          DeliveryStackState,
+          LobbyState,
+          EncounterState,
+          TutorialState,
+        ]),
+        GameComponent,
+      ],
+      providers: [
+        ...firestoreTestProviders(),
+        { provide: Auth, useValue: { currentUser: null } },
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
     ensureAngularFireSchedulersInitialized();
 
@@ -51,7 +68,10 @@ describe('GameComponent', () => {
     // lifecycle.
     store = TestBed.inject(Store);
     const snapshot = store.snapshot();
-    store.reset({ ...snapshot, currentGame: { ...snapshot['currentGame'], items: 'test-game-id' } });
+    store.reset({
+      ...snapshot,
+      currentGame: { ...snapshot['currentGame'], items: 'test-game-id' },
+    });
 
     fixture = TestBed.createComponent(GameComponent);
     component = fixture.componentInstance;
@@ -87,11 +107,18 @@ describe('GameComponent', () => {
   });
 
   describe('account offer at singleplayer game end (Issue #75)', () => {
-    function createLocalGameFixture(numberOfPlayers: number): ComponentFixture<GameComponent> {
+    function createLocalGameFixture(
+      numberOfPlayers: number,
+    ): ComponentFixture<GameComponent> {
       const snapshot = store.snapshot();
       store.reset({
         ...snapshot,
-        currentGame: { ...snapshot['currentGame'], items: 'local-1', numberOfPlayers, gameStatus: 'playing' },
+        currentGame: {
+          ...snapshot['currentGame'],
+          items: 'local-1',
+          numberOfPlayers,
+          gameStatus: 'playing',
+        },
       });
       const localFixture = TestBed.createComponent(GameComponent);
       localFixture.detectChanges();
@@ -101,23 +128,36 @@ describe('GameComponent', () => {
     it('opens the account-offer dialog when a singleplayer local game ends in "won"', () => {
       const localFixture = createLocalGameFixture(1);
       const dialog = TestBed.inject(MatDialog);
-      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => ({ subscribe: () => {} }) } as never);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => ({ subscribe: () => {} }),
+      } as never);
 
       const snapshot = store.snapshot();
-      store.reset({ ...snapshot, currentGame: { ...snapshot['currentGame'], gameStatus: 'won' } });
+      store.reset({
+        ...snapshot,
+        currentGame: { ...snapshot['currentGame'], gameStatus: 'won' },
+      });
       localFixture.detectChanges();
 
-      expect(dialog.open).toHaveBeenCalledWith(DialogAccountOfferComponent, jasmine.anything());
+      expect(dialog.open).toHaveBeenCalledWith(
+        DialogAccountOfferComponent,
+        jasmine.anything(),
+      );
       localFixture.destroy();
     });
 
     it('does not open the account-offer dialog for a multiplayer game', () => {
       const localFixture = createLocalGameFixture(2);
       const dialog = TestBed.inject(MatDialog);
-      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => ({ subscribe: () => {} }) } as never);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => ({ subscribe: () => {} }),
+      } as never);
 
       const snapshot = store.snapshot();
-      store.reset({ ...snapshot, currentGame: { ...snapshot['currentGame'], gameStatus: 'won' } });
+      store.reset({
+        ...snapshot,
+        currentGame: { ...snapshot['currentGame'], gameStatus: 'won' },
+      });
       localFixture.detectChanges();
 
       expect(dialog.open).not.toHaveBeenCalled();
@@ -133,22 +173,39 @@ describe('GameComponent', () => {
     it('loads the handstack normally when the own player document still exists', async () => {
       const gameRepo = TestBed.inject(GameRepositoryService);
       spyOn(gameRepo, 'getGame').and.resolveTo({
-        choosenHeros: [{ playerId: 'current-user-id', playerName: 'Alice', playerHero: 'Barbar' }],
+        choosenHeros: [
+          {
+            playerId: 'current-user-id',
+            playerName: 'Alice',
+            playerHero: 'Barbar',
+          },
+        ],
       });
       const playerRepo = TestBed.inject(PlayerRepositoryService);
-      spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], deliveryStack: ['blue'] });
+      spyOn(playerRepo, 'getPlayer').and.resolveTo({
+        handstack: ['red'],
+        deliveryStack: ['blue'],
+      });
       const createPlayer = spyOn(playerRepo, 'createPlayer').and.resolveTo();
 
       await component.checkIfPlayerIsAlreadyPartOfGame();
 
       expect(createPlayer).not.toHaveBeenCalled();
-      expect(store.selectSnapshot(CurrentHandSelector.currentHand)).toEqual(['red']);
+      expect(store.selectSnapshot(CurrentHandSelector.currentHand)).toEqual([
+        'red',
+      ]);
     });
 
     it('falls back to creating a new player when the own document is gone despite being listed in choosenHeros', async () => {
       const gameRepo = TestBed.inject(GameRepositoryService);
       spyOn(gameRepo, 'getGame').and.resolveTo({
-        choosenHeros: [{ playerId: 'current-user-id', playerName: 'Alice', playerHero: 'Barbar' }],
+        choosenHeros: [
+          {
+            playerId: 'current-user-id',
+            playerName: 'Alice',
+            playerHero: 'Barbar',
+          },
+        ],
       });
       const playerRepo = TestBed.inject(PlayerRepositoryService);
       // TTL hat das Spieler-Unterdokument gelöscht (games/{gameId}/player/{playerId}), obwohl
@@ -156,7 +213,9 @@ describe('GameComponent', () => {
       spyOn(playerRepo, 'getPlayer').and.resolveTo(undefined);
       const createPlayer = spyOn(playerRepo, 'createPlayer').and.resolveTo();
       const dialog = TestBed.inject(MatDialog);
-      const dialogOpen = spyOn(dialog, 'open').and.returnValue({ afterClosed: () => ({ subscribe: () => {} }) } as never);
+      const dialogOpen = spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => ({ subscribe: () => {} }),
+      } as never);
 
       await component.checkIfPlayerIsAlreadyPartOfGame();
 
@@ -169,22 +228,35 @@ describe('GameComponent', () => {
     beforeEach(() => {
       store.dispatch(new CurrentUserAction('current-user-id', 'Alice'));
       component.players = [
-        { playerId: 'current-user-id', playerName: 'Alice', playerHero: 'Barbar' },
+        {
+          playerId: 'current-user-id',
+          playerName: 'Alice',
+          playerHero: 'Barbar',
+        },
         { playerId: 'other-player-id', playerName: 'Bob', playerHero: 'Dieb' },
       ];
     });
 
     it('deletes the own player document and removes only the own entry from choosenHeros', async () => {
       const playerRepo = TestBed.inject(PlayerRepositoryService);
-      const deleteOwnPlayerDoc = spyOn(playerRepo, 'deleteOwnPlayerDoc').and.resolveTo();
+      const deleteOwnPlayerDoc = spyOn(
+        playerRepo,
+        'deleteOwnPlayerDoc',
+      ).and.resolveTo();
       const gameRepo = TestBed.inject(GameRepositoryService);
-      const addPlayerToGame = spyOn(gameRepo, 'addPlayerToGame').and.resolveTo();
+      const addPlayerToGame = spyOn(
+        gameRepo,
+        'addPlayerToGame',
+      ).and.resolveTo();
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
 
       await component.deleteOwnMultiplayerData();
 
-      expect(deleteOwnPlayerDoc).toHaveBeenCalledWith('test-game-id', 'current-user-id');
+      expect(deleteOwnPlayerDoc).toHaveBeenCalledWith(
+        'test-game-id',
+        'current-user-id',
+      );
       expect(addPlayerToGame).toHaveBeenCalledWith('test-game-id', [
         { playerId: 'other-player-id', playerName: 'Bob', playerHero: 'Dieb' },
       ]);
@@ -193,7 +265,9 @@ describe('GameComponent', () => {
 
     it('shows an error and does not navigate away when deletion fails', async () => {
       const playerRepo = TestBed.inject(PlayerRepositoryService);
-      spyOn(playerRepo, 'deleteOwnPlayerDoc').and.rejectWith(new Error('offline'));
+      spyOn(playerRepo, 'deleteOwnPlayerDoc').and.rejectWith(
+        new Error('offline'),
+      );
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
 

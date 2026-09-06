@@ -28,11 +28,20 @@ describe('PlayerRepositoryService', () => {
     const repo = TestBed.inject(FirestoreRepositoryService);
     const spy = spyOn(repo, 'setDoc').and.resolveTo();
 
-    await service.createPlayer('game-1', 'player-1', { userId: '', handstack: [] }, { userId: 'player-1' });
+    await service.createPlayer(
+      'game-1',
+      'player-1',
+      { userId: '', handstack: [] },
+      { userId: 'player-1' },
+    );
 
     expect(spy).toHaveBeenCalledWith(
       ['games', 'game-1', 'player', 'player-1'],
-      jasmine.objectContaining({ userId: 'player-1', handstack: [], lastActivityAt: jasmine.anything() })
+      jasmine.objectContaining({
+        userId: 'player-1',
+        handstack: [],
+        lastActivityAt: jasmine.anything(),
+      }),
     );
   });
 
@@ -40,7 +49,12 @@ describe('PlayerRepositoryService', () => {
     const repo = TestBed.inject(FirestoreRepositoryService);
     const spy = spyOn(repo, 'setDoc').and.resolveTo();
 
-    await service.createPlayer('local-1', 'solo', { userId: '', handstack: [] }, { userId: 'solo' });
+    await service.createPlayer(
+      'local-1',
+      'solo',
+      { userId: '', handstack: [] },
+      { userId: 'solo' },
+    );
 
     expect(spy).toHaveBeenCalledWith(['games', 'local-1', 'player', 'solo'], {
       userId: 'solo',

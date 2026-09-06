@@ -1,7 +1,10 @@
 import { EnvironmentProviders, Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ɵAngularFireSchedulers } from '@angular/fire';
-import { initializeApp as initializeAngularFireApp, provideFirebaseApp } from '@angular/fire/app';
+import {
+  initializeApp as initializeAngularFireApp,
+  provideFirebaseApp,
+} from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getApps, initializeApp } from 'firebase/app';
 import { environment } from 'src/environments/environment';

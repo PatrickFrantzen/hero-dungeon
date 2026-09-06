@@ -11,7 +11,7 @@ export interface CurrentUserModel {
     id: string;
     name: string;
   };
-  hero: Herointerface
+  hero: Herointerface;
 }
 
 @State<CurrentUserModel>({
@@ -52,7 +52,7 @@ export class CurrentUserState {
   @Action(CurrentUserHeroAction)
   getUserHero(
     ctx: StateContext<CurrentUserModel>,
-    action: CurrentUserHeroAction
+    action: CurrentUserHeroAction,
   ) {
     const { choosenHero, heroPower, description } = action;
     if (!choosenHero || !heroPower) {

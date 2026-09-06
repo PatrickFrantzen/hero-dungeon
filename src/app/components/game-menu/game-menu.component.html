@@ -1,36 +1,52 @@
 <div class="game-menu">
-    <button class="game-menu__toggle" (click)="toggle()">Menü</button>
+  <button class="game-menu__toggle" (click)="toggle()">Menü</button>
 
-    @if (isOpen()) {
-        <div class="game-menu__panel">
-            <button class="game-menu__action" (click)="toggle()">Fortsetzen</button>
+  @if (isOpen()) {
+    <div class="game-menu__panel">
+      <button class="game-menu__action" (click)="toggle()">Fortsetzen</button>
 
-            @if (isSingleplayer()) {
-                <button class="game-menu__action" (click)="onSave()">Speichern</button>
-                @if (saveConfirmed()) {
-                    <span class="game-menu__hint">Gespeichert!</span>
-                }
+      @if (isSingleplayer()) {
+        <button class="game-menu__action" (click)="onSave()">Speichern</button>
+        @if (saveConfirmed()) {
+          <span class="game-menu__hint">Gespeichert!</span>
+        }
 
-                @if (hasSaves()) {
-                    <button class="game-menu__action" (click)="openSaveDialog()">Spielstände laden</button>
-                }
+        @if (hasSaves()) {
+          <button class="game-menu__action" (click)="openSaveDialog()">
+            Spielstände laden
+          </button>
+        }
 
-                <button class="game-menu__action game-menu__action--danger" (click)="confirmDeleteSingleplayerSave()">Spielstand löschen</button>
-            } @else {
-                <span class="game-menu__hint">Automatisch gespeichert</span>
+        <button
+          class="game-menu__action game-menu__action--danger"
+          (click)="confirmDeleteSingleplayerSave()"
+        >
+          Spielstand löschen
+        </button>
+      } @else {
+        <span class="game-menu__hint">Automatisch gespeichert</span>
 
-                @if (hasSaves()) {
-                    <button class="game-menu__action" (click)="openSaveDialog()">Meine Spiele</button>
-                }
+        @if (hasSaves()) {
+          <button class="game-menu__action" (click)="openSaveDialog()">
+            Meine Spiele
+          </button>
+        }
 
-                @if (canLinkAccount()) {
-                    <button class="game-menu__action" (click)="openLinkAccountDialog()">Account verknüpfen</button>
-                }
+        @if (canLinkAccount()) {
+          <button class="game-menu__action" (click)="openLinkAccountDialog()">
+            Account verknüpfen
+          </button>
+        }
 
-                <button class="game-menu__action game-menu__action--danger" (click)="confirmDeleteMultiplayerGame()">Spielstand löschen</button>
-            }
+        <button
+          class="game-menu__action game-menu__action--danger"
+          (click)="confirmDeleteMultiplayerGame()"
+        >
+          Spielstand löschen
+        </button>
+      }
 
-            <button class="game-menu__action" (click)="onLeave()">Verlassen</button>
-        </div>
-    }
+      <button class="game-menu__action" (click)="onLeave()">Verlassen</button>
+    </div>
+  }
 </div>

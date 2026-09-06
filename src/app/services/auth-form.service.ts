@@ -16,17 +16,24 @@ type AuthFormKind = 'login' | 'register' | 'anonymous' | 'link';
 // Kind-Fallback-Meldung unten. Nicht jeder mögliche Auth-Error-Code ist hier aufgeführt -
 // nur die, die im Alltag tatsächlich auftreten (falsches Passwort, doppelte E-Mail, ...).
 const AUTH_ERROR_MESSAGES: Partial<Record<string, string>> = {
-  'auth/wrong-password': 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
-  'auth/user-not-found': 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
-  'auth/invalid-credential': 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
-  'auth/too-many-requests': 'Zu viele Versuche. Bitte kurz warten und erneut versuchen.',
-  'auth/email-already-in-use': 'Registrierung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.',
-  'auth/weak-password': 'Registrierung fehlgeschlagen: Das Passwort ist zu schwach (mindestens 6 Zeichen).',
+  'auth/wrong-password':
+    'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
+  'auth/user-not-found':
+    'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
+  'auth/invalid-credential':
+    'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
+  'auth/too-many-requests':
+    'Zu viele Versuche. Bitte kurz warten und erneut versuchen.',
+  'auth/email-already-in-use':
+    'Registrierung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.',
+  'auth/weak-password':
+    'Registrierung fehlgeschlagen: Das Passwort ist zu schwach (mindestens 6 Zeichen).',
 };
 
 const DEFAULT_MESSAGES: Record<AuthFormKind, string> = {
   login: 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.',
-  register: 'Registrierung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.',
+  register:
+    'Registrierung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.',
   anonymous: 'Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
   link: 'Verknüpfung fehlgeschlagen. Bitte prüfe deine Eingaben und versuche es erneut.',
 };
@@ -57,9 +64,17 @@ export class AuthFormService {
     }
   }
 
-  async register(email: string, password: string, nickname: string): Promise<void> {
+  async register(
+    email: string,
+    password: string,
+    nickname: string,
+  ): Promise<void> {
     try {
-      const credential = await createUserWithEmailAndPassword(this.auth, email, password);
+      const credential = await createUserWithEmailAndPassword(
+        this.auth,
+        email,
+        password,
+      );
       const user = new User();
       user.userEmail = email;
       user.userId = credential.user.uid;
@@ -95,11 +110,21 @@ export class AuthFormService {
    * NICHT - linkWithCredential() meldet den Nutzer bei einem Fehler nicht ab, und dieser Code
    * ruft im catch-Zweig bewusst kein signOut() o.ä. auf.
    */
-  async linkAnonymousAccount(email: string, password: string, nickname: string): Promise<void> {
+  async linkAnonymousAccount(
+    email: string,
+    password: string,
+    nickname: string,
+  ): Promise<void> {
     try {
       const credential = EmailAuthProvider.credential(email, password);
-      const linked = await linkWithCredential(this.auth.currentUser!, credential);
-      await this.repo.setDocMerge(['users', linked.user.uid], { userEmail: email, userNickname: nickname });
+      const linked = await linkWithCredential(
+        this.auth.currentUser!,
+        credential,
+      );
+      await this.repo.setDocMerge(['users', linked.user.uid], {
+        userEmail: email,
+        userNickname: nickname,
+      });
     } catch (error) {
       throw new Error(mapAuthError(error, 'link'));
     }

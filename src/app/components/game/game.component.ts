@@ -1,10 +1,22 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DialogChooseHeroComponent } from 'src/app/components/dialog-choose-hero/dialog-choose-hero.component';
 import { User } from 'src/models/user.class';
 import { Store } from '@ngxs/store';
-import { CreateNewCardStackAction, UpdateCardStackAction } from 'src/app/actions/CardStack-action';
+import {
+  CreateNewCardStackAction,
+  UpdateCardStackAction,
+} from 'src/app/actions/CardStack-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { EncounterSelectors } from 'src/app/selectors/encounter-selector';
@@ -36,11 +48,11 @@ interface ChoosenPlayer {
 // callbacks - it reads all state via store.selectSignal(), so the OnPush ancestor no longer
 // blocks change detection from reaching it.
 @Component({
-    selector: 'app-game',
-    templateUrl: './game.component.html',
-    styleUrls: ['./game.component.scss'],
-    imports: [EnemyContainerComponent, PlayerHandComponent, GameMenuComponent],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-game',
+  templateUrl: './game.component.html',
+  styleUrls: ['./game.component.scss'],
+  imports: [EnemyContainerComponent, PlayerHandComponent, GameMenuComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameComponent implements OnInit, OnDestroy {
   public dialog = inject(MatDialog);
@@ -51,16 +63,32 @@ export class GameComponent implements OnInit, OnDestroy {
   private cardPlayService = inject(CardPlayService);
 
   currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
-  currentUserName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
+  currentUserName = this.store.selectSignal(
+    CurrentUserSelectors.currentUserName,
+  );
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
-  currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
-  currentGameStatus = this.store.selectSignal(CurrentGameSelectors.currentGameStatus);
+  currentNumberOfPlayers = this.store.selectSignal(
+    CurrentGameSelectors.currentNumberOfPlayers,
+  );
+  currentGameStatus = this.store.selectSignal(
+    CurrentGameSelectors.currentGameStatus,
+  );
   currentBoss = this.store.selectSignal(EncounterSelectors.currentBoss);
-  timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
-  timerDurationSeconds = this.store.selectSignal(CurrentGameSelectors.currentTimerDurationSeconds);
-  timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
-  timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
-  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
+  timerStartedAt = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerStartedAt,
+  );
+  timerDurationSeconds = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerDurationSeconds,
+  );
+  timerPausedAt = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerPausedAt,
+  );
+  timerPausedSecondsTotal = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerPausedSecondsTotal,
+  );
+  currentUserHeroData = this.store.selectSignal(
+    CurrentUserSelectors.currentUserHeroData,
+  );
   currentStats = this.store.selectSignal(CurrentGameSelectors.currentStats);
   hasSeenTutorial = this.store.selectSignal(TutorialSelectors.hasSeenTutorial);
 
@@ -73,18 +101,22 @@ export class GameComponent implements OnInit, OnDestroy {
 
     const pausedAt = this.timerPausedAt();
     const clockAt = pausedAt ?? this.now();
-    const elapsedSeconds = Math.floor((clockAt - startedAt) / 1000) - Math.floor(this.timerPausedSecondsTotal());
+    const elapsedSeconds =
+      Math.floor((clockAt - startedAt) / 1000) -
+      Math.floor(this.timerPausedSecondsTotal());
     return Math.max(0, this.timerDurationSeconds() - elapsedSeconds);
   });
   formattedRemainingTime = computed(() => {
     const remaining = this.remainingSeconds();
-    const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const minutes = Math.floor(remaining / 60)
+      .toString()
+      .padStart(2, '0');
     const seconds = (remaining % 60).toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
   });
 
   user = new User();
-  currentHero: Object = {};
+  currentHero: object = {};
   players: ChoosenPlayer[] = [];
   private timerInterval?: ReturnType<typeof setInterval>;
   private timeoutReported = false;
@@ -109,9 +141,15 @@ export class GameComponent implements OnInit, OnDestroy {
 
     const isEndState = status === 'won' || status === 'lost';
     const isSingleplayerLocalWithoutAccount =
-      this.currentNumberOfPlayers() === 1 && isLocalGameId(this.currentGameId()) && !this.currentUserId();
+      this.currentNumberOfPlayers() === 1 &&
+      isLocalGameId(this.currentGameId()) &&
+      !this.currentUserId();
 
-    if (previousStatus !== status && isEndState && isSingleplayerLocalWithoutAccount) {
+    if (
+      previousStatus !== status &&
+      isEndState &&
+      isSingleplayerLocalWithoutAccount
+    ) {
       this.dialog.open(DialogAccountOfferComponent, { disableClose: false });
     }
   }
@@ -153,7 +191,9 @@ export class GameComponent implements OnInit, OnDestroy {
     this.timeoutReported = true;
     this.store.dispatch(new UpdateGameStatus('lost'));
     this.gameRepo.updateGameStatus(this.currentGameId(), 'lost').catch(() => {
-      this.loadError.set('Zeit abgelaufen, aber der Spielstand konnte nicht gespeichert werden.');
+      this.loadError.set(
+        'Zeit abgelaufen, aber der Spielstand konnte nicht gespeichert werden.',
+      );
     });
   }
 
@@ -161,7 +201,9 @@ export class GameComponent implements OnInit, OnDestroy {
     try {
       const data = await this.gameRepo.getGame(this.currentGameId());
       this.players = data?.['choosenHeros'] || [];
-      const foundCurrentPlayer = this.players.some((player) => player.playerId === this.currentUserId());
+      const foundCurrentPlayer = this.players.some(
+        (player) => player.playerId === this.currentUserId(),
+      );
 
       if (foundCurrentPlayer) {
         await this.loadHandstack(this.currentUserId());
@@ -170,16 +212,23 @@ export class GameComponent implements OnInit, OnDestroy {
         this.openDialog();
       }
     } catch {
-      this.loadError.set('Das Spiel konnte nicht geladen werden. Bitte Seite neu laden oder später erneut versuchen.');
+      this.loadError.set(
+        'Das Spiel konnte nicht geladen werden. Bitte Seite neu laden oder später erneut versuchen.',
+      );
     }
   }
 
   async createNewPlayer() {
-    await this.playerRepo.createPlayer(this.currentGameId(), this.currentUserId(), this.user.toJSON(), {
-      userId: this.currentUserId(),
-      userNickname: this.currentUserName(),
-      gameId: this.currentGameId(),
-    });
+    await this.playerRepo.createPlayer(
+      this.currentGameId(),
+      this.currentUserId(),
+      this.user.toJSON(),
+      {
+        userId: this.currentUserId(),
+        userNickname: this.currentUserName(),
+        gameId: this.currentGameId(),
+      },
+    );
     this.store.dispatch(new CurrentDeliveryStack(this.user.deliveryStack));
   }
 
@@ -195,7 +244,10 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   async loadHandstack(currentPlayerId: string) {
-    const data = await this.playerRepo.getPlayer(this.currentGameId(), currentPlayerId);
+    const data = await this.playerRepo.getPlayer(
+      this.currentGameId(),
+      currentPlayerId,
+    );
     if (!data) {
       // Eigenes Spieler-Unterdokument fehlt, obwohl der Spieler weiterhin im geteilten
       // games/{gameId}-Dokument gelistet ist (Issue #77, z.B. 7-Tage-TTL auf lastActivityAt
@@ -212,12 +264,15 @@ export class GameComponent implements OnInit, OnDestroy {
 
   openDialog() {
     const numberOfPlayers = this.currentNumberOfPlayers();
-    let dialogRef = this.dialog.open<
+    const dialogRef = this.dialog.open<
       DialogChooseHeroComponent,
       { singleplayerMode: boolean; useExtraDeck: boolean },
       { data: ChooseHeroDialogResult }
     >(DialogChooseHeroComponent, {
-      data: { singleplayerMode: numberOfPlayers === 1, useExtraDeck: numberOfPlayers === 1 || numberOfPlayers === 2 },
+      data: {
+        singleplayerMode: numberOfPlayers === 1,
+        useExtraDeck: numberOfPlayers === 1 || numberOfPlayers === 2,
+      },
       // disableClose: der Dialog liess sich vorher per Backdrop-Klick/Escape ohne Heldenwahl
       // schliessen - der Spieler stand danach ohne Held/Kartenstapel im Spiel fest.
       disableClose: true,
@@ -226,25 +281,45 @@ export class GameComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) return;
       try {
-        const { cardstack, heroname, heropower, description } = result.data.choosenHero;
+        const { cardstack, heroname, heropower, description } =
+          result.data.choosenHero;
         this.store.dispatch(new CreateNewCardStackAction(cardstack));
-        this.store.dispatch(new CurrentUserHeroAction(heroname, heropower, description));
-        await this.playerRepo.updatePlayerChoosenHero(this.currentGameId(), this.currentUserId(), result.data.choosenHero);
+        this.store.dispatch(
+          new CurrentUserHeroAction(heroname, heropower, description),
+        );
+        await this.playerRepo.updatePlayerChoosenHero(
+          this.currentGameId(),
+          this.currentUserId(),
+          result.data.choosenHero,
+        );
         await this.drawInitialHand();
         await this.updatePlayerOfGame();
       } catch {
-        this.loadError.set('Der gewählte Held konnte nicht gespeichert werden. Bitte erneut versuchen.');
+        this.loadError.set(
+          'Der gewählte Held konnte nicht gespeichert werden. Bitte erneut versuchen.',
+        );
       }
     });
   }
 
   async drawInitialHand() {
-    const data = await this.playerRepo.getPlayer(this.currentGameId(), this.currentUserId());
+    const data = await this.playerRepo.getPlayer(
+      this.currentGameId(),
+      this.currentUserId(),
+    );
     const cardStack: string[] = data?.['choosenHero'].cardstack || [];
-    const handstack: string[] = cardStack.splice(0, startHandSize(this.currentNumberOfPlayers()));
+    const handstack: string[] = cardStack.splice(
+      0,
+      startHandSize(this.currentNumberOfPlayers()),
+    );
     this.store.dispatch(new CurrentCardsInHand(handstack));
     this.store.dispatch(new UpdateCardStackAction(cardStack));
-    await this.playerRepo.updatePlayerCards(this.currentGameId(), this.currentUserId(), cardStack, handstack);
+    await this.playerRepo.updatePlayerCards(
+      this.currentGameId(),
+      this.currentUserId(),
+      cardStack,
+      handstack,
+    );
   }
 
   /** Bestätigung nach besiegtem Boss (gameStatus 'bossDefeated'): jeder Spieler kann den
@@ -253,7 +328,11 @@ export class GameComponent implements OnInit, OnDestroy {
     this.timeoutReported = false;
     this.cardPlayService
       .continueToNextDungeon(this.currentGameId(), this.currentUserId())
-      .catch(() => this.loadError.set('Der nächste Dungeon konnte nicht gestartet werden. Bitte erneut versuchen.'));
+      .catch(() =>
+        this.loadError.set(
+          'Der nächste Dungeon konnte nicht gestartet werden. Bitte erneut versuchen.',
+        ),
+      );
   }
 
   /** Bestätigung nach verlorenem Dungeon (gameStatus 'lost'): zurück zu Boss #1 mit frisch
@@ -262,7 +341,11 @@ export class GameComponent implements OnInit, OnDestroy {
     this.timeoutReported = false;
     this.cardPlayService
       .restartCampaign(this.currentGameId(), this.currentUserId())
-      .catch(() => this.loadError.set('Der Dungeon konnte nicht neu gestartet werden. Bitte erneut versuchen.'));
+      .catch(() =>
+        this.loadError.set(
+          'Der Dungeon konnte nicht neu gestartet werden. Bitte erneut versuchen.',
+        ),
+      );
   }
 
   backToStartscreen(): void {
@@ -281,12 +364,22 @@ export class GameComponent implements OnInit, OnDestroy {
    * den TTL-"Account-Leichen" aus Issue #77 - siehe services/CLAUDE.md. */
   async deleteOwnMultiplayerData(): Promise<void> {
     try {
-      await this.playerRepo.deleteOwnPlayerDoc(this.currentGameId(), this.currentUserId());
-      const remainingPlayers = this.players.filter((player) => player.playerId !== this.currentUserId());
-      await this.gameRepo.addPlayerToGame(this.currentGameId(), remainingPlayers);
+      await this.playerRepo.deleteOwnPlayerDoc(
+        this.currentGameId(),
+        this.currentUserId(),
+      );
+      const remainingPlayers = this.players.filter(
+        (player) => player.playerId !== this.currentUserId(),
+      );
+      await this.gameRepo.addPlayerToGame(
+        this.currentGameId(),
+        remainingPlayers,
+      );
       this.router.navigate(['/startscreen']);
     } catch {
-      this.loadError.set('Der Spielstand konnte nicht gelöscht werden. Bitte erneut versuchen.');
+      this.loadError.set(
+        'Der Spielstand konnte nicht gelöscht werden. Bitte erneut versuchen.',
+      );
     }
   }
 }

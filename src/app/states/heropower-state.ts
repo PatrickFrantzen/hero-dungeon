@@ -1,44 +1,51 @@
-import { Injectable } from "@angular/core";
-import { Action, State, StateContext } from "@ngxs/store";
-import { UpdateHeropowerActivated, UpdateHeropowerArray } from "../actions/heropower-action";
+import { Injectable } from '@angular/core';
+import { Action, State, StateContext } from '@ngxs/store';
+import {
+  UpdateHeropowerActivated,
+  UpdateHeropowerArray,
+} from '../actions/heropower-action';
 
 export interface HeropowerStateModel {
-    heropowerActivated: boolean,
-    heropowerArray: string[]
+  heropowerActivated: boolean;
+  heropowerArray: string[];
 }
 
 @State<HeropowerStateModel>({
-    name: 'heropower',
-    defaults: {
-        heropowerActivated: false,
-        heropowerArray: []
-    }
+  name: 'heropower',
+  defaults: {
+    heropowerActivated: false,
+    heropowerArray: [],
+  },
 })
-
 @Injectable()
 export class heropowerState {
+  @Action(UpdateHeropowerActivated)
+  updateHeropower(
+    ctx: StateContext<HeropowerStateModel>,
+    action: UpdateHeropowerActivated,
+  ) {
+    const { heropower } = action;
 
-    @Action(UpdateHeropowerActivated)
-    updateHeropower(ctx: StateContext<HeropowerStateModel>, action: UpdateHeropowerActivated) {
-        const { heropower } = action;
+    const state = ctx.getState();
+    const heropowerStatus: boolean = heropower;
+    ctx.patchState({
+      ...state,
+      heropowerActivated: heropowerStatus,
+    });
+  }
 
-        const state = ctx.getState();
-        const heropowerStatus: boolean = heropower;
-        ctx.patchState({
-            ...state,
-            heropowerActivated: heropowerStatus
-        })
-    }
+  @Action(UpdateHeropowerArray)
+  updateHeropowerArray(
+    ctx: StateContext<HeropowerStateModel>,
+    action: UpdateHeropowerArray,
+  ) {
+    const { heropowerArray } = action;
 
-    @Action(UpdateHeropowerArray)
-    updateHeropowerArray(ctx: StateContext<HeropowerStateModel>, action: UpdateHeropowerArray) {
-        const { heropowerArray } = action;
-
-        const state = ctx.getState();
-        const heropowerArr: string[] = heropowerArray;
-        ctx.patchState({
-            ...state,
-            heropowerArray: heropowerArr
-        })
-    }
+    const state = ctx.getState();
+    const heropowerArr: string[] = heropowerArray;
+    ctx.patchState({
+      ...state,
+      heropowerArray: heropowerArr,
+    });
+  }
 }

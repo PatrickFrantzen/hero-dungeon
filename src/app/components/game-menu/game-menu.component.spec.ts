@@ -37,7 +37,10 @@ describe('GameMenuComponent', () => {
         NgxsModule.forRoot([CurrentGameState, CurrentUserState]),
         GameMenuComponent,
       ],
-      providers: [...firestoreTestProviders(), { provide: Auth, useValue: { currentUser: null } }],
+      providers: [
+        ...firestoreTestProviders(),
+        { provide: Auth, useValue: { currentUser: null } },
+      ],
     }).compileComponents();
 
     ensureAngularFireSchedulersInitialized();
@@ -83,7 +86,9 @@ describe('GameMenuComponent', () => {
       player: {},
     });
 
-    expect(component.listSaves().map((save) => save.saveId)).toEqual(['local-9']);
+    expect(component.listSaves().map((save) => save.saveId)).toEqual([
+      'local-9',
+    ]);
     localStorage.clear();
   });
 
@@ -105,21 +110,29 @@ describe('GameMenuComponent', () => {
   it('openSaveDialog resumes the selected local save and navigates to it', () => {
     const dialog = TestBed.inject(MatDialog);
     const dialogOpen = spyOn(dialog, 'open').and.returnValue({
-      afterClosed: () => of({ data: { selectedId: 'local-7', mode: 'singleplayer' } }),
+      afterClosed: () =>
+        of({ data: { selectedId: 'local-7', mode: 'singleplayer' } }),
     } as never);
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
 
     component.openSaveDialog();
 
-    expect(dialogOpen).toHaveBeenCalledWith(DialogSelectSaveComponent, jasmine.anything());
-    expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('local-7');
+    expect(dialogOpen).toHaveBeenCalledWith(
+      DialogSelectSaveComponent,
+      jasmine.anything(),
+    );
+    expect(
+      TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame),
+    ).toBe('local-7');
     expect(router.navigate).toHaveBeenCalledWith(['/local-game/local-7']);
   });
 
   it('openSaveDialog does nothing when the dialog is cancelled', () => {
     const dialog = TestBed.inject(MatDialog);
-    spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+    spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of(undefined),
+    } as never);
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
 
@@ -159,32 +172,44 @@ describe('GameMenuComponent', () => {
       spyOn(router, 'navigate');
       const dialog = TestBed.inject(MatDialog);
       spyOn(dialog, 'open').and.returnValue({
-        afterClosed: () => of({ data: { selectedId: 'game-7', mode: 'multiplayer' } }),
+        afterClosed: () =>
+          of({ data: { selectedId: 'game-7', mode: 'multiplayer' } }),
       } as never);
       const mpFixture = createMultiplayerFixture();
 
       mpFixture.componentInstance.openSaveDialog();
 
-      expect(TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame)).toBe('game-7');
+      expect(
+        TestBed.inject(Store).selectSnapshot(CurrentGameSelectors.currentGame),
+      ).toBe('game-7');
       expect(router.navigate).toHaveBeenCalledWith(['/game/game-7']);
       mpFixture.destroy();
     });
 
     it('openLinkAccountDialog opens the DialogLinkAccountComponent', () => {
-      const auth = TestBed.inject(Auth) as unknown as { currentUser: { isAnonymous: boolean } | null };
+      const auth = TestBed.inject(Auth) as unknown as {
+        currentUser: { isAnonymous: boolean } | null;
+      };
       auth.currentUser = { isAnonymous: true };
       const mpFixture = createMultiplayerFixture();
       const dialog = TestBed.inject(MatDialog);
-      const dialogOpen = spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+      const dialogOpen = spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of(undefined),
+      } as never);
 
       mpFixture.componentInstance.openLinkAccountDialog();
 
-      expect(dialogOpen).toHaveBeenCalledWith(DialogLinkAccountComponent, jasmine.anything());
+      expect(dialogOpen).toHaveBeenCalledWith(
+        DialogLinkAccountComponent,
+        jasmine.anything(),
+      );
       mpFixture.destroy();
     });
 
     it('canLinkAccount is true only for an anonymous account in a multiplayer game', () => {
-      const auth = TestBed.inject(Auth) as unknown as { currentUser: { isAnonymous: boolean } | null };
+      const auth = TestBed.inject(Auth) as unknown as {
+        currentUser: { isAnonymous: boolean } | null;
+      };
 
       auth.currentUser = { isAnonymous: true };
       const anonymousMpFixture = createMultiplayerFixture();
@@ -204,19 +229,26 @@ describe('GameMenuComponent', () => {
   describe('"Spielstand löschen" (Issue #85)', () => {
     it('confirmDeleteSingleplayerSave asks for confirmation before deleting anything', () => {
       const dialog = TestBed.inject(MatDialog);
-      const dialogOpen = spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+      const dialogOpen = spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of(undefined),
+      } as never);
       const localSaves = TestBed.inject(LocalSingleplayerSaveService);
       const deleteSave = spyOn(localSaves, 'deleteSave');
 
       component.confirmDeleteSingleplayerSave();
 
-      expect(dialogOpen).toHaveBeenCalledWith(DialogConfirmComponent, jasmine.anything());
+      expect(dialogOpen).toHaveBeenCalledWith(
+        DialogConfirmComponent,
+        jasmine.anything(),
+      );
       expect(deleteSave).not.toHaveBeenCalled();
     });
 
     it('confirmDeleteSingleplayerSave deletes the save and navigates to /startscreen once confirmed', () => {
       const dialog = TestBed.inject(MatDialog);
-      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of({ data: { confirmed: true } }) } as never);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of({ data: { confirmed: true } }),
+      } as never);
       const localSaves = TestBed.inject(LocalSingleplayerSaveService);
       const deleteSave = spyOn(localSaves, 'deleteSave');
       const router = TestBed.inject(Router);
@@ -230,7 +262,9 @@ describe('GameMenuComponent', () => {
 
     it('confirmDeleteSingleplayerSave does nothing when the dialog is cancelled', () => {
       const dialog = TestBed.inject(MatDialog);
-      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of(undefined),
+      } as never);
       const localSaves = TestBed.inject(LocalSingleplayerSaveService);
       const deleteSave = spyOn(localSaves, 'deleteSave');
 
@@ -241,7 +275,9 @@ describe('GameMenuComponent', () => {
 
     it('confirmDeleteMultiplayerGame emits deleteGame only once confirmed', () => {
       const dialog = TestBed.inject(MatDialog);
-      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of({ data: { confirmed: true } }) } as never);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of({ data: { confirmed: true } }),
+      } as never);
       const deleteGameEmitted = jasmine.createSpy('deleteGame');
       component.deleteGame.subscribe(deleteGameEmitted);
 
@@ -252,7 +288,9 @@ describe('GameMenuComponent', () => {
 
     it('confirmDeleteMultiplayerGame does not emit deleteGame when cancelled', () => {
       const dialog = TestBed.inject(MatDialog);
-      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as never);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of(undefined),
+      } as never);
       const deleteGameEmitted = jasmine.createSpy('deleteGame');
       component.deleteGame.subscribe(deleteGameEmitted);
 

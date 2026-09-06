@@ -17,7 +17,9 @@ describe('DialogAccountOfferComponent', () => {
   beforeEach(async () => {
     dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
     authForm = jasmine.createSpyObj('AuthFormService', ['register']);
-    migration = jasmine.createSpyObj('LocalSaveMigrationService', ['migrateAll']);
+    migration = jasmine.createSpyObj('LocalSaveMigrationService', [
+      'migrateAll',
+    ]);
     migration.migrateAll.and.resolveTo([]);
 
     await TestBed.configureTestingModule({
@@ -48,22 +50,42 @@ describe('DialogAccountOfferComponent', () => {
 
   it('onAccept registers, migrates local saves and closes with accountCreated: true', async () => {
     authForm.register.and.resolveTo(undefined);
-    component.form.setValue({ email: 'a@b.de', password: 'geheim', nickname: 'Heldin' });
+    component.form.setValue({
+      email: 'a@b.de',
+      password: 'geheim',
+      nickname: 'Heldin',
+    });
 
     await component.onAccept();
 
-    expect(authForm.register).toHaveBeenCalledWith('a@b.de', 'geheim', 'Heldin');
+    expect(authForm.register).toHaveBeenCalledWith(
+      'a@b.de',
+      'geheim',
+      'Heldin',
+    );
     expect(migration.migrateAll).toHaveBeenCalledWith('new-uid', 'Heldin');
-    expect(dialogRef.close).toHaveBeenCalledWith({ data: { accountCreated: true } });
+    expect(dialogRef.close).toHaveBeenCalledWith({
+      data: { accountCreated: true },
+    });
   });
 
   it('onAccept shows an error and keeps the dialog open when registration fails', async () => {
-    authForm.register.and.rejectWith(new Error('Registrierung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.'));
-    component.form.setValue({ email: 'a@b.de', password: 'geheim', nickname: 'Heldin' });
+    authForm.register.and.rejectWith(
+      new Error(
+        'Registrierung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.',
+      ),
+    );
+    component.form.setValue({
+      email: 'a@b.de',
+      password: 'geheim',
+      nickname: 'Heldin',
+    });
 
     await component.onAccept();
 
-    expect(component.errorMessage).toBe('Registrierung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.');
+    expect(component.errorMessage).toBe(
+      'Registrierung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.',
+    );
     expect(dialogRef.close).not.toHaveBeenCalled();
     expect(migration.migrateAll).not.toHaveBeenCalled();
   });

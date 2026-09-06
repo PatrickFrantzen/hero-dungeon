@@ -18,7 +18,11 @@ function normalizeJoinedGames(raw: unknown): JoinedGame[] {
   if (!Array.isArray(raw)) {
     return [];
   }
-  return raw.map((entry) => (typeof entry === 'string' ? { gameId: entry, lastPlayedAt: 0 } : (entry as JoinedGame)));
+  return raw.map((entry) =>
+    typeof entry === 'string'
+      ? { gameId: entry, lastPlayedAt: 0 }
+      : (entry as JoinedGame),
+  );
 }
 
 /**
@@ -56,7 +60,10 @@ export class UserRepositoryService {
    */
   async addJoinedGame(uid: string, gameId: string): Promise<void> {
     const games = await this.getJoinedGames(uid);
-    const updatedGames = [...games.filter((game) => game.gameId !== gameId), { gameId, lastPlayedAt: Date.now() }];
+    const updatedGames = [
+      ...games.filter((game) => game.gameId !== gameId),
+      { gameId, lastPlayedAt: Date.now() },
+    ];
 
     return this.repo.setDocMerge(['users', uid], {
       games: updatedGames,

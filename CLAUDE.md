@@ -97,8 +97,21 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
 - **TypeScript**: `strict: true` plus verschärfte Compiler-Optionen (`noImplicitOverride`,
   `noPropertyAccessFromIndexSignature`, `noImplicitReturns`, `noFallthroughCasesInSwitch`,
   `strictTemplates`), Target/Module `ES2022`, `typescript: ~5.9.3`.
-- **Lint/Format**: keine ESLint/Prettier-Konfiguration im Projekt — vor deren Einführung kurz
-  abstimmen (Scope, Regelset).
+- **Lint/Format**: seit 2026-09-06 **ESLint** (`@angular-eslint` v21, `eslint.config.js`) +
+  **Prettier** (`.prettierrc.json`, Single Quotes, `printWidth: 80`) eingerichtet — `npm run
+  lint` (= `ng lint`), `npm run format` (schreibt), `npm run format:check` (nur prüfen). Der
+  gesamte Codebestand wurde einmalig mit `prettier --write` formatiert. `eslint.config.js`
+  bindet `eslint-config-prettier` zuletzt ein, damit Stilregeln nicht mit Prettier kollidieren;
+  `@typescript-eslint/no-empty-function` ist für `*.spec.ts` deaktiviert (Jasmine-Testdoubles wie
+  `{ close: () => {} }` sind dort idiomatisch leer). **Noch nicht in CI verankert** — `ng lint`
+  ist aktuell nicht Teil von `.github/workflows/ci.yml`. **24 verbleibende Lint-Fehler** (nicht
+  automatisch fixbar, siehe `To-Do.md`): `@angular-eslint/prefer-inject` (Issue #94, mehr
+  Fundstellen als bisher dokumentiert), zwei `preserve-caught-error`-Stellen in
+  `auth-form.service.ts`, zwei Accessibility-Befunde (`click-events-have-key-events`/
+  `interactive-supports-focus`) in `heropower.component.html`/`hand-cards.component.html` — vor
+  Umsetzung von Vorschlag der ESLint-Regel abweichen können, wenn ein einfacher `<button>` das UX
+  ehrlicher abbildet, statt Tastatur-Handler auf ein `<img>`/`<div>` nachzurüsten; keine
+  automatischen Massenänderungen ohne Rücksprache.
 - **Agent-Skills**: `.claude/skills/` enthält seit 2026-09-04 zusätzlich zu den eingebauten
   Claude-Code-Skills eine editierbare Kopie der `engineering`-/`productivity`-/`in-progress`-
   Skills aus [mattpocock/skills](https://github.com/mattpocock/skills) (MIT) — Details/Update-
