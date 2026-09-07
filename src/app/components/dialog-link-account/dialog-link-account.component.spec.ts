@@ -13,7 +13,9 @@ describe('DialogLinkAccountComponent', () => {
 
   beforeEach(async () => {
     dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
-    authForm = jasmine.createSpyObj('AuthFormService', ['linkAnonymousAccount']);
+    authForm = jasmine.createSpyObj('AuthFormService', [
+      'linkAnonymousAccount',
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [DialogLinkAccountComponent],
@@ -42,23 +44,39 @@ describe('DialogLinkAccountComponent', () => {
 
   it('onAccept links the account and closes with linked: true', async () => {
     authForm.linkAnonymousAccount.and.resolveTo(undefined);
-    component.form.setValue({ email: 'a@b.de', password: 'geheim', nickname: 'Heldin' });
+    component.form.setValue({
+      email: 'a@b.de',
+      password: 'geheim',
+      nickname: 'Heldin',
+    });
 
     await component.onAccept();
 
-    expect(authForm.linkAnonymousAccount).toHaveBeenCalledWith('a@b.de', 'geheim', 'Heldin');
+    expect(authForm.linkAnonymousAccount).toHaveBeenCalledWith(
+      'a@b.de',
+      'geheim',
+      'Heldin',
+    );
     expect(dialogRef.close).toHaveBeenCalledWith({ data: { linked: true } });
   });
 
   it('onAccept shows an error and keeps the dialog open when linking fails (e.g. email already in use) - Gast-Session bleibt nutzbar', async () => {
     authForm.linkAnonymousAccount.and.rejectWith(
-      new Error('Verknüpfung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.')
+      new Error(
+        'Verknüpfung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.',
+      ),
     );
-    component.form.setValue({ email: 'a@b.de', password: 'geheim', nickname: 'Heldin' });
+    component.form.setValue({
+      email: 'a@b.de',
+      password: 'geheim',
+      nickname: 'Heldin',
+    });
 
     await component.onAccept();
 
-    expect(component.errorMessage).toBe('Verknüpfung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.');
+    expect(component.errorMessage).toBe(
+      'Verknüpfung fehlgeschlagen: Diese E-Mail-Adresse wird bereits verwendet.',
+    );
     expect(dialogRef.close).not.toHaveBeenCalled();
   });
 });

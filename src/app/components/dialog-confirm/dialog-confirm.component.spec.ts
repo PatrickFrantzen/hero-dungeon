@@ -2,14 +2,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { DialogConfirmComponent, DialogConfirmData } from './dialog-confirm.component';
+import {
+  DialogConfirmComponent,
+  DialogConfirmData,
+} from './dialog-confirm.component';
 
 describe('DialogConfirmComponent', () => {
   let component: DialogConfirmComponent;
   let fixture: ComponentFixture<DialogConfirmComponent>;
   let dialogRef: jasmine.SpyObj<MatDialogRef<unknown>>;
 
-  const data: DialogConfirmData = { title: 'Spielstand löschen?', message: 'Das kann nicht rückgängig gemacht werden.' };
+  const data: DialogConfirmData = {
+    title: 'Spielstand löschen?',
+    message: 'Das kann nicht rückgängig gemacht werden.',
+  };
 
   beforeEach(async () => {
     dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);

@@ -3,70 +3,75 @@
 // sichtbar, unabhängig davon, wie viel Content (Statistik/Boss-Bestätigung) darüber gerendert
 // wird. `.mainfield` (game.component.scss) reserviert dafür `padding-bottom`.
 .card-area {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 18px 10px calc(14px + env(safe-area-inset-bottom));
-    background: linear-gradient(0deg, rgba(6, 6, 10, 0.94) 0%, rgba(20, 14, 26, 0.88) 70%, rgba(20, 14, 26, 0) 100%);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 18px 10px calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(
+    0deg,
+    rgba(6, 6, 10, 0.94) 0%,
+    rgba(20, 14, 26, 0.88) 70%,
+    rgba(20, 14, 26, 0) 100%
+  );
 }
 
 .player-hand-error {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    background-color: #b00020;
-    color: white;
-    padding: 8px 16px;
-    text-align: center;
-    z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #b00020;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
+  z-index: 1;
 }
 
 .event-button {
-    position: absolute;
-    bottom: calc(100% + clamp(8px, 2vh, 16px));
-    right: 14px;
-    z-index: 2;
+  position: absolute;
+  bottom: calc(100% + clamp(8px, 2vh, 16px));
+  right: 14px;
+  z-index: 2;
 }
 
 .card-stack {
-    position: absolute;
-    left: clamp(8px, 5vw, 50px);
-    bottom: clamp(14px, 2vh, 20px);
+  position: absolute;
+  left: clamp(8px, 5vw, 50px);
+  bottom: clamp(14px, 2vh, 20px);
 
-    img {
-        display: block;
-        width: clamp(48px, 10vw, 90px);
-        user-select: none;
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
-    }
+  img {
+    display: block;
+    width: clamp(48px, 10vw, 90px);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
 }
 
 .card-stack-badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    background: #6a1b9a;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #6a1b9a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 // Querformat-Kompaktlayout (Issue #47, TODO 8 Option a) - engere Leiste, kleinere Handkarten,
@@ -74,11 +79,11 @@
 // enemy.component.scss) bleibt. Die Handkarten-eigene Skalierung steht in
 // hand-cards/hand-cards.component.scss.
 @media (orientation: landscape) and (max-height: 500px) {
-    .card-area {
-        padding: 8px 6px calc(6px + env(safe-area-inset-bottom));
-    }
+  .card-area {
+    padding: 8px 6px calc(6px + env(safe-area-inset-bottom));
+  }
 
-    .card-stack img {
-        width: clamp(36px, 7vw, 60px);
-    }
+  .card-stack img {
+    width: clamp(36px, 7vw, 60px);
+  }
 }

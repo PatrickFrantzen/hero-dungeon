@@ -25,7 +25,16 @@ describe('CardPlayService', () => {
   beforeEach(() => {
     ensureFirebaseTestAppInitialized();
     TestBed.configureTestingModule({
-      imports: [NgxsModule.forRoot([EncounterState, CardStackState, cardsInHandState, DeliveryStackState, heropowerState, CurrentGameState])],
+      imports: [
+        NgxsModule.forRoot([
+          EncounterState,
+          CardStackState,
+          cardsInHandState,
+          DeliveryStackState,
+          heropowerState,
+          CurrentGameState,
+        ]),
+      ],
       providers: firestoreTestProviders(),
     });
     ensureAngularFireSchedulersInitialized();
@@ -37,24 +46,46 @@ describe('CardPlayService', () => {
     expect(service).toBeTruthy();
   });
 
-  function seedGameState(overrides: { hand?: string[]; cardStack?: string[]; enemy?: object; mob?: object[] }) {
+  function seedGameState(overrides: {
+    hand?: string[];
+    cardStack?: string[];
+    enemy?: object;
+    mob?: object[];
+  }) {
     const snapshot = store.snapshot();
     store.reset({
       ...snapshot,
       encounter: {
         ...snapshot['encounter'],
-        currentEnemy: overrides.enemy ?? { name: 'Goblin', type: 'Monster', token: ['red'] },
+        currentEnemy: overrides.enemy ?? {
+          name: 'Goblin',
+          type: 'Monster',
+          token: ['red'],
+        },
         Mob: overrides.mob ?? [],
       },
-      cardsInHand: { ...snapshot['cardsInHand'], items: { cardstack: overrides.hand ?? [] } },
-      cardStack: { ...snapshot['cardStack'], items: { cardstack: overrides.cardStack ?? [] } },
+      cardsInHand: {
+        ...snapshot['cardsInHand'],
+        items: { cardstack: overrides.hand ?? [] },
+      },
+      cardStack: {
+        ...snapshot['cardStack'],
+        items: { cardstack: overrides.cardStack ?? [] },
+      },
     });
   }
 
   it('chooseCard adds the card to the heropower selection while a heropower is active', () => {
     seedGameState({ hand: ['red'] });
     const snapshot = store.snapshot();
-    store.reset({ ...snapshot, heropower: { ...snapshot['heropower'], heropowerActivated: true, heropowerArray: [] } });
+    store.reset({
+      ...snapshot,
+      heropower: {
+        ...snapshot['heropower'],
+        heropowerActivated: true,
+        heropowerArray: [],
+      },
+    });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const updateSpy = spyOn(gameRepo, 'updateCurrentEnemyToken');
@@ -83,17 +114,30 @@ describe('CardPlayService', () => {
 
     service.chooseCard('game-1', 'player-1', 'red');
 
-    expect(gameRepo.updateTimerStartedAt).toHaveBeenCalledWith('game-1', 123456);
-    expect(store.selectSnapshot((state) => state.currentGame.timerStartedAt)).toBe(123456);
+    expect(gameRepo.updateTimerStartedAt).toHaveBeenCalledWith(
+      'game-1',
+      123456,
+    );
+    expect(
+      store.selectSnapshot((state) => state.currentGame.timerStartedAt),
+    ).toBe(123456);
     expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith(
       'game-1',
-      jasmine.objectContaining({ token: [] })
+      jasmine.objectContaining({ token: [] }),
     );
-    expect(playerRepo.updateDeliveryStack).toHaveBeenCalledWith('game-1', 'player-1', ['red']);
+    expect(playerRepo.updateDeliveryStack).toHaveBeenCalledWith(
+      'game-1',
+      'player-1',
+      ['red'],
+    );
   });
 
   it('restCard discards the selected card and draws one replacement', () => {
-    seedGameState({ hand: ['red', 'blue'], cardStack: ['green'], enemy: { name: 'Goblin', type: 'Monster', token: ['yellow'] } });
+    seedGameState({
+      hand: ['red', 'blue'],
+      cardStack: ['green'],
+      enemy: { name: 'Goblin', type: 'Monster', token: ['yellow'] },
+    });
 
     const playerRepo = TestBed.inject(PlayerRepositoryService);
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
@@ -102,14 +146,28 @@ describe('CardPlayService', () => {
 
     service.restCard('game-1', 'player-1', 'red');
 
-    expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack)).toEqual(['blue', 'green']);
-    expect(store.selectSnapshot((state) => state.cardStack.items.cardstack)).toEqual([]);
-    expect(store.selectSnapshot((state) => state.deliveryStack.items)).toEqual(['red']);
-    expect(playerRepo.updateDeliveryStack).toHaveBeenCalledWith('game-1', 'player-1', ['red']);
+    expect(
+      store.selectSnapshot((state) => state.cardsInHand.items.cardstack),
+    ).toEqual(['blue', 'green']);
+    expect(
+      store.selectSnapshot((state) => state.cardStack.items.cardstack),
+    ).toEqual([]);
+    expect(store.selectSnapshot((state) => state.deliveryStack.items)).toEqual([
+      'red',
+    ]);
+    expect(playerRepo.updateDeliveryStack).toHaveBeenCalledWith(
+      'game-1',
+      'player-1',
+      ['red'],
+    );
   });
 
   it('restCard counts the rested card towards the cardsCycled statistic (Bug A)', () => {
-    seedGameState({ hand: ['red', 'blue'], cardStack: ['green'], enemy: { name: 'Goblin', type: 'Monster', token: ['yellow'] } });
+    seedGameState({
+      hand: ['red', 'blue'],
+      cardStack: ['green'],
+      enemy: { name: 'Goblin', type: 'Monster', token: ['yellow'] },
+    });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const playerRepo = TestBed.inject(PlayerRepositoryService);
@@ -120,15 +178,24 @@ describe('CardPlayService', () => {
 
     service.restCard('game-1', 'player-1', 'red');
 
-    expect(store.selectSnapshot((state) => state.currentGame.stats.cardsCycled)).toBe(1);
-    expect(statsSpy).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ cardsCycled: 1 }));
+    expect(
+      store.selectSnapshot((state) => state.currentGame.stats.cardsCycled),
+    ).toBe(1);
+    expect(statsSpy).toHaveBeenCalledWith(
+      'game-1',
+      jasmine.objectContaining({ cardsCycled: 1 }),
+    );
   });
 
   it('resolveEvent applies Plötzliche Krankheit by discarding the full hand and drawing back to five', () => {
     seedGameState({
       hand: ['red', 'blue'],
       cardStack: ['green', 'yellow', 'purple', 'red_purple', 'green_green'],
-      enemy: { name: 'Plötzliche Krankheit', type: 'Jeder legt alle Handkarten auf den eigenen Ablagestapel.', token: ['event'] },
+      enemy: {
+        name: 'Plötzliche Krankheit',
+        type: 'Jeder legt alle Handkarten auf den eigenen Ablagestapel.',
+        token: ['event'],
+      },
       mob: [{ name: 'Next', type: 'Monster', token: ['red'] }],
     });
 
@@ -142,15 +209,26 @@ describe('CardPlayService', () => {
 
     service.resolveEvent('game-1', 'player-1');
 
-    expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack).length).toBe(5);
-    expect(store.selectSnapshot((state) => state.deliveryStack.items)).toEqual(['red', 'blue']);
-    expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
+    expect(
+      store.selectSnapshot((state) => state.cardsInHand.items.cardstack).length,
+    ).toBe(5);
+    expect(store.selectSnapshot((state) => state.deliveryStack.items)).toEqual([
+      'red',
+      'blue',
+    ]);
+    expect(
+      store.selectSnapshot((state) => state.encounter.currentEnemy).name,
+    ).toBe('Next');
   });
 
   it('chooseCard does not clear an event when a non-Verhinderung double card is played (regression)', () => {
     seedGameState({
       hand: ['riesensprung_hindernis'],
-      enemy: { name: 'Chaos', type: 'Jeder gibt seine Handkarten einem Mitspieler.', token: ['event'] },
+      enemy: {
+        name: 'Chaos',
+        type: 'Jeder gibt seine Handkarten einem Mitspieler.',
+        token: ['event'],
+      },
     });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
@@ -159,14 +237,20 @@ describe('CardPlayService', () => {
     service.chooseCard('game-1', 'player-1', 'riesensprung_hindernis');
 
     expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
-    expect(store.selectSnapshot((state) => state.encounter.currentEnemy).token).toEqual(['event']);
+    expect(
+      store.selectSnapshot((state) => state.encounter.currentEnemy).token,
+    ).toEqual(['event']);
   });
 
   it('chooseCard clears an event when the Verhinderung card is played', () => {
     seedGameState({
       hand: ['verhinderung_event'],
       cardStack: ['blue'],
-      enemy: { name: 'Chaos', type: 'Jeder gibt seine Handkarten einem Mitspieler.', token: ['event'] },
+      enemy: {
+        name: 'Chaos',
+        type: 'Jeder gibt seine Handkarten einem Mitspieler.',
+        token: ['event'],
+      },
       mob: [{ name: 'Next', type: 'Monster', token: ['red'] }],
     });
 
@@ -180,7 +264,9 @@ describe('CardPlayService', () => {
 
     service.chooseCard('game-1', 'player-1', 'verhinderung_event');
 
-    expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
+    expect(
+      store.selectSnapshot((state) => state.encounter.currentEnemy).name,
+    ).toBe('Next');
   });
 
   it('chooseCard resolves a Joker card as any single symbol of the current threat', () => {
@@ -199,14 +285,23 @@ describe('CardPlayService', () => {
 
     service.chooseCard('game-1', 'player-1', 'joker');
 
-    expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['green']);
-    expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ token: ['green'] }));
+    expect(
+      store.selectSnapshot((state) => state.encounter.currentEnemy.token),
+    ).toEqual(['green']);
+    expect(gameRepo.updateCurrentEnemyToken).toHaveBeenCalledWith(
+      'game-1',
+      jasmine.objectContaining({ token: ['green'] }),
+    );
   });
 
   it('chooseCard does nothing for a Joker card against an event threat', () => {
     seedGameState({
       hand: ['joker'],
-      enemy: { name: 'Chaos', type: 'Jeder gibt seine Handkarten einem Mitspieler.', token: ['event'] },
+      enemy: {
+        name: 'Chaos',
+        type: 'Jeder gibt seine Handkarten einem Mitspieler.',
+        token: ['event'],
+      },
     });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
@@ -215,14 +310,20 @@ describe('CardPlayService', () => {
     service.chooseCard('game-1', 'player-1', 'joker');
 
     expect(gameRepo.updateCurrentEnemyToken).not.toHaveBeenCalled();
-    expect(store.selectSnapshot((state) => state.cardsInHand.items.cardstack)).toEqual(['joker']);
+    expect(
+      store.selectSnapshot((state) => state.cardsInHand.items.cardstack),
+    ).toEqual(['joker']);
   });
 
   it('chooseCard resolves a Magische Bombe by removing one occurrence of each present symbol', () => {
     seedGameState({
       hand: ['magischeBombe'],
       cardStack: ['blue'],
-      enemy: { name: 'Zola, die Gorgone', type: 'Boss', token: ['red', 'red', 'yellow', 'purple'] },
+      enemy: {
+        name: 'Zola, die Gorgone',
+        type: 'Boss',
+        token: ['red', 'red', 'yellow', 'purple'],
+      },
     });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
@@ -234,7 +335,9 @@ describe('CardPlayService', () => {
 
     service.chooseCard('game-1', 'player-1', 'magischeBombe');
 
-    expect(store.selectSnapshot((state) => state.encounter.currentEnemy.token)).toEqual(['red']);
+    expect(
+      store.selectSnapshot((state) => state.encounter.currentEnemy.token),
+    ).toEqual(['red']);
   });
 
   it('chooseCard loads the next enemy when a same-color double card clears the last remaining token (Issue #88)', () => {
@@ -256,11 +359,17 @@ describe('CardPlayService', () => {
 
     service.chooseCard('game-1', 'player-1', 'purple_purple');
 
-    expect(store.selectSnapshot((state) => state.encounter.currentEnemy).name).toBe('Next');
+    expect(
+      store.selectSnapshot((state) => state.encounter.currentEnemy).name,
+    ).toBe('Next');
   });
 
   it('chooseCard marks the game as won when Baby-Barbar is defeated after the mob stack is empty', () => {
-    seedGameState({ hand: ['red'], enemy: { name: 'Baby-Barbar', type: 'Boss', token: ['red'] }, mob: [] });
+    seedGameState({
+      hand: ['red'],
+      enemy: { name: 'Baby-Barbar', type: 'Boss', token: ['red'] },
+      mob: [],
+    });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const playerRepo = TestBed.inject(PlayerRepositoryService);
@@ -276,7 +385,11 @@ describe('CardPlayService', () => {
   });
 
   it('resolveStehlen marks the game as lost when the stolen-from player has no cards left anywhere (TODO 11)', async () => {
-    seedGameState({ hand: ['blue'], cardStack: ['green'], enemy: { name: 'Goblin', type: 'Monster', token: ['red'] } });
+    seedGameState({
+      hand: ['blue'],
+      cardStack: ['green'],
+      enemy: { name: 'Goblin', type: 'Monster', token: ['red'] },
+    });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const playerRepo = TestBed.inject(PlayerRepositoryService);
@@ -286,16 +399,26 @@ describe('CardPlayService', () => {
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateCardstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], cardstack: [], deliveryStack: [] });
+    spyOn(playerRepo, 'getPlayer').and.resolveTo({
+      handstack: ['red'],
+      cardstack: [],
+      deliveryStack: [],
+    });
 
     await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2');
 
     expect(gameRepo.updateGameStatus).toHaveBeenCalledWith('game-1', 'lost');
-    expect(store.selectSnapshot((state) => state.currentGame.gameStatus)).toBe('lost');
+    expect(store.selectSnapshot((state) => state.currentGame.gameStatus)).toBe(
+      'lost',
+    );
   });
 
   it('resolveStehlen does not mark the game as lost when the stolen-from player still has cards to draw', async () => {
-    seedGameState({ hand: ['blue'], cardStack: ['green'], enemy: { name: 'Goblin', type: 'Monster', token: ['red'] } });
+    seedGameState({
+      hand: ['blue'],
+      cardStack: ['green'],
+      enemy: { name: 'Goblin', type: 'Monster', token: ['red'] },
+    });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
     const playerRepo = TestBed.inject(PlayerRepositoryService);
@@ -305,7 +428,11 @@ describe('CardPlayService', () => {
     spyOn(playerRepo, 'updateHandstack').and.resolveTo();
     spyOn(playerRepo, 'updateCardstack').and.resolveTo();
     spyOn(playerRepo, 'updateDeliveryStack').and.resolveTo();
-    spyOn(playerRepo, 'getPlayer').and.resolveTo({ handstack: ['red'], cardstack: ['yellow'], deliveryStack: [] });
+    spyOn(playerRepo, 'getPlayer').and.resolveTo({
+      handstack: ['red'],
+      cardstack: ['yellow'],
+      deliveryStack: [],
+    });
 
     await service.resolveStehlen('game-1', 'player-1', 'blue', 'player-2');
 
@@ -320,8 +447,17 @@ describe('CardPlayService', () => {
       const snapshot = store.snapshot();
       store.reset({
         ...snapshot,
-        encounter: { ...snapshot['encounter'], allBosses: [{ name: 'Der Flecken-Schrecken', token: [], type: 'Boss' }] },
-        currentGame: { ...snapshot['currentGame'], numberOfPlayers: 1, difficulty: 'easy' },
+        encounter: {
+          ...snapshot['encounter'],
+          allBosses: [
+            { name: 'Der Flecken-Schrecken', token: [], type: 'Boss' },
+          ],
+        },
+        currentGame: {
+          ...snapshot['currentGame'],
+          numberOfPlayers: 1,
+          difficulty: 'easy',
+        },
       });
       TestBed.inject(LocalSingleplayerSaveService).createSave({
         saveId: 'local-1',
@@ -343,7 +479,9 @@ describe('CardPlayService', () => {
       await Promise.resolve();
       await Promise.resolve();
 
-      const handAfter = TestBed.inject(LocalSingleplayerSaveService).getSave('local-1')?.player['handstack'];
+      const handAfter = TestBed.inject(LocalSingleplayerSaveService).getSave(
+        'local-1',
+      )?.player['handstack'];
       expect(handAfter).not.toEqual(['unchanged-1', 'unchanged-2']);
       expect((handAfter as string[]).length).toBe(5);
     });

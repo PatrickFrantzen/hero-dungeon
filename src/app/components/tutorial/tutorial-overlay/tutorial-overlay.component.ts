@@ -4,7 +4,7 @@ import {
   effect,
   input,
   output,
-  signal
+  signal,
 } from '@angular/core';
 import { NgStyle } from '@angular/common';
 import { TutorialStep } from '../tutorial-steps.data';
@@ -14,7 +14,7 @@ import { TutorialStep } from '../tutorial-steps.data';
   templateUrl: './tutorial-overlay.component.html',
   styleUrls: ['./tutorial-overlay.component.scss'],
   imports: [NgStyle],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TutorialOverlayComponent {
   readonly active = input.required<boolean>();

@@ -1,11 +1,17 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { DocumentData, where } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { SetGameStats, SetGameTimerPauseState } from 'src/app/actions/currentGame-action';
+import {
+  SetGameStats,
+  SetGameTimerPauseState,
+} from 'src/app/actions/currentGame-action';
 import { UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
-import { UpdateHeropowerActivated, UpdateHeropowerArray } from 'src/app/actions/heropower-action';
+import {
+  UpdateHeropowerActivated,
+  UpdateHeropowerArray,
+} from 'src/app/actions/heropower-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
 import { CurrentHandSelector } from 'src/app/selectors/currentHand-selector';
@@ -42,28 +48,49 @@ import { PlayerRepositoryService } from './player-repository.service';
   providedIn: 'root',
 })
 export class HeropowerService {
-  private currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
-  private currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
-  private currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
-  private heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
-  private timerStartedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerStartedAt);
-  private timerPausedAt = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedAt);
-  private timerPausedSecondsTotal = this.store.selectSignal(CurrentGameSelectors.currentTimerPausedSecondsTotal);
-  private currentStats = this.store.selectSignal(CurrentGameSelectors.currentStats);
+  private store = inject(Store);
+  private gameRepo = inject(GameRepositoryService);
+  private playerRepo = inject(PlayerRepositoryService);
+  private repo = inject(FirestoreRepositoryService);
 
-  constructor(
-    private store: Store,
-    private gameRepo: GameRepositoryService,
-    private playerRepo: PlayerRepositoryService,
-    private repo: FirestoreRepositoryService
-  ) {}
+  private currentHand = this.store.selectSignal(
+    CurrentHandSelector.currentHand,
+  );
+  private currentCardStack = this.store.selectSignal(
+    CurrentCardStackSelector.currentCardStack,
+  );
+  private currentEnemy = this.store.selectSignal(
+    EncounterSelectors.currentEnemy,
+  );
+  private heropowerArray = this.store.selectSignal(
+    HeropowerSelectors.currentHeropowerArray,
+  );
+  private timerStartedAt = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerStartedAt,
+  );
+  private timerPausedAt = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerPausedAt,
+  );
+  private timerPausedSecondsTotal = this.store.selectSignal(
+    CurrentGameSelectors.currentTimerPausedSecondsTotal,
+  );
+  private currentStats = this.store.selectSignal(
+    CurrentGameSelectors.currentStats,
+  );
 
   /** Statistik-Zähler "genutzte Heldenfähigkeiten" (`src/models/game.ts` GameStats) - schreibt
    * den neuen absoluten Wert lokal + nach Firestore, analog zu CardPlayService.bumpStat()
    * (bewusst nicht geteilt, siehe Klassenkommentar oben zur Nicht-Vereinheitlichung). */
-  private bumpStat(gameId: string, key: keyof GameStats, amount: number): Promise<void> {
+  private bumpStat(
+    gameId: string,
+    key: keyof GameStats,
+    amount: number,
+  ): Promise<void> {
     if (amount <= 0) return Promise.resolve();
-    const stats = { ...this.currentStats(), [key]: this.currentStats()[key] + amount };
+    const stats = {
+      ...this.currentStats(),
+      [key]: this.currentStats()[key] + amount,
+    };
     this.store.dispatch(new SetGameStats(stats));
     return this.gameRepo.updateStats(gameId, stats);
   }
@@ -73,19 +100,23 @@ export class HeropowerService {
     const writes = [this.bumpStat(gameId, 'heropowersUsed', 1)];
 
     this.heropowerArray().forEach((card) => {
-      let currHand = [...this.currentHand()];
-      let currCardStack = [...this.currentCardStack()];
-      let indexOfHandCard = this.currentHand().indexOf(card);
+      const currHand = [...this.currentHand()];
+      const currCardStack = [...this.currentCardStack()];
+      const indexOfHandCard = this.currentHand().indexOf(card);
       currHand.splice(indexOfHandCard, 1);
       this.store.dispatch(new UpdateCurrentHandAction(currHand));
 
       if (currHand.length < 5 && currCardStack.length > 0) {
-        let currCardStack = [...this.currentCardStack()];
-        let currHand = [...this.currentHand()];
+        const currCardStack = [...this.currentCardStack()];
+        const currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
-        writes.push(this.playerRepo.updateHandstack(gameId, playerId, currHand));
-        writes.push(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
+        writes.push(
+          this.playerRepo.updateHandstack(gameId, playerId, currHand),
+        );
+        writes.push(
+          this.playerRepo.updateCardstack(gameId, playerId, currCardStack),
+        );
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));
       }
@@ -99,30 +130,40 @@ export class HeropowerService {
     return Promise.all(writes).then(() => undefined);
   }
 
-  private async giveOtherPlayersCards(gameId: string, playerId: string): Promise<void> {
+  private async giveOtherPlayersCards(
+    gameId: string,
+    playerId: string,
+  ): Promise<void> {
     const otherPlayers = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
-      [where('gameId', '==', gameId), where('userId', '!=', playerId)]
+      [where('gameId', '==', gameId), where('userId', '!=', playerId)],
     );
-    await Promise.all(otherPlayers.map((data) => this.drawTwoCardsForOtherPlayer(gameId, data)));
+    await Promise.all(
+      otherPlayers.map((data) => this.drawTwoCardsForOtherPlayer(gameId, data)),
+    );
   }
 
-  private drawTwoCardsForOtherPlayer(gameId: string, data: DocumentData): Promise<void> {
+  private drawTwoCardsForOtherPlayer(
+    gameId: string,
+    data: DocumentData,
+  ): Promise<void> {
     const userId = data['userId'];
     let currentCardStack = data['cardstack'];
     let currentHand = data['handstack'];
     const writes: Promise<void>[] = [];
 
     for (let i = 0; i < 2; i++) {
-      let currHand = [...currentHand];
-      let currCardStack = [...currentCardStack];
+      const currHand = [...currentHand];
+      const currCardStack = [...currentCardStack];
 
       if (currCardStack.length > 0) {
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
 
         writes.push(this.playerRepo.updateHandstack(gameId, userId, currHand));
-        writes.push(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
+        writes.push(
+          this.playerRepo.updateCardstack(gameId, userId, currCardStack),
+        );
 
         currentCardStack = currCardStack;
         currentHand = currHand;
@@ -132,24 +173,32 @@ export class HeropowerService {
     return Promise.all(writes).then(() => undefined);
   }
 
-  resolveJaegerinHeropower(gameId: string, playerId: string, openFollowUpDialog: () => void): Promise<void> {
+  resolveJaegerinHeropower(
+    gameId: string,
+    playerId: string,
+    openFollowUpDialog: () => void,
+  ): Promise<void> {
     if (this.heropowerArray().length !== 3) return Promise.resolve();
     const writes = [this.bumpStat(gameId, 'heropowersUsed', 1)];
 
     this.heropowerArray().forEach((card) => {
-      let currHand = [...this.currentHand()];
-      let currCardStack = [...this.currentCardStack()];
-      let indexOfHandCard = this.currentHand().indexOf(card);
+      const currHand = [...this.currentHand()];
+      const currCardStack = [...this.currentCardStack()];
+      const indexOfHandCard = this.currentHand().indexOf(card);
       currHand.splice(indexOfHandCard, 1);
       this.store.dispatch(new UpdateCurrentHandAction(currHand));
 
       if (currHand.length < 5 && currCardStack.length > 0) {
-        let currCardStack = [...this.currentCardStack()];
-        let currHand = [...this.currentHand()];
+        const currCardStack = [...this.currentCardStack()];
+        const currHand = [...this.currentHand()];
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
-        writes.push(this.playerRepo.updateHandstack(gameId, playerId, currHand));
-        writes.push(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
+        writes.push(
+          this.playerRepo.updateHandstack(gameId, playerId, currHand),
+        );
+        writes.push(
+          this.playerRepo.updateCardstack(gameId, playerId, currCardStack),
+        );
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));
       }
@@ -165,15 +214,27 @@ export class HeropowerService {
   /** Wird aufgerufen, nachdem der Spieler im "Heropower auswählen"-Dialog einen Zielspieler
    * gewählt hat (vorher: getOtherPlayerDataTogivePlayerCards() + playerIdForHeropowerAction-Feld
    * in PlayerHandComponent - der gewählte Spieler wird jetzt direkt als Parameter durchgereicht). */
-  async resolveJaegerinHeropowerForPlayer(gameId: string, currentPlayerId: string, targetPlayerId: string): Promise<void> {
+  async resolveJaegerinHeropowerForPlayer(
+    gameId: string,
+    currentPlayerId: string,
+    targetPlayerId: string,
+  ): Promise<void> {
     const targetPlayerDocs = await this.repo.queryAll<DocumentData>(
       ['games', gameId, 'player'],
-      [where('userId', '==', targetPlayerId)]
+      [where('userId', '==', targetPlayerId)],
     );
-    await Promise.all(targetPlayerDocs.map((data) => this.drawFourCardsForJaegerinTarget(gameId, currentPlayerId, data)));
+    await Promise.all(
+      targetPlayerDocs.map((data) =>
+        this.drawFourCardsForJaegerinTarget(gameId, currentPlayerId, data),
+      ),
+    );
   }
 
-  private drawFourCardsForJaegerinTarget(gameId: string, currentPlayerId: string, data: DocumentData): Promise<void> {
+  private drawFourCardsForJaegerinTarget(
+    gameId: string,
+    currentPlayerId: string,
+    data: DocumentData,
+  ): Promise<void> {
     const userId = data['userId'];
     let currentCardStack = data['cardstack'];
     let currentHand = data['handstack'];
@@ -181,15 +242,19 @@ export class HeropowerService {
 
     if (currentPlayerId === userId) {
       for (let i = 0; i < 4; i++) {
-        let currCardStack = [...this.currentCardStack()];
-        let currHand = [...this.currentHand()];
+        const currCardStack = [...this.currentCardStack()];
+        const currHand = [...this.currentHand()];
 
         if (currCardStack.length > 0) {
           const getCardForHand = currCardStack.shift()!;
           currHand.push(getCardForHand);
 
-          writes.push(this.playerRepo.updateHandstack(gameId, userId, currHand));
-          writes.push(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
+          writes.push(
+            this.playerRepo.updateHandstack(gameId, userId, currHand),
+          );
+          writes.push(
+            this.playerRepo.updateCardstack(gameId, userId, currCardStack),
+          );
 
           this.store.dispatch(new UpdateCardStackAction(currCardStack));
           this.store.dispatch(new UpdateCurrentHandAction(currHand));
@@ -197,15 +262,19 @@ export class HeropowerService {
       }
     } else {
       for (let i = 0; i < 4; i++) {
-        let currHand = [...currentHand];
-        let currCardStack = [...currentCardStack];
+        const currHand = [...currentHand];
+        const currCardStack = [...currentCardStack];
 
         if (currCardStack.length > 0) {
           const getCardForHand = currCardStack.shift()!;
           currHand.push(getCardForHand);
 
-          writes.push(this.playerRepo.updateHandstack(gameId, userId, currHand));
-          writes.push(this.playerRepo.updateCardstack(gameId, userId, currCardStack));
+          writes.push(
+            this.playerRepo.updateHandstack(gameId, userId, currHand),
+          );
+          writes.push(
+            this.playerRepo.updateCardstack(gameId, userId, currCardStack),
+          );
 
           currentCardStack = currCardStack;
           currentHand = currHand;
@@ -231,40 +300,60 @@ export class HeropowerService {
 
     if (this.timerStartedAt() !== null && this.timerPausedAt() === null) {
       const pausedAt = Date.now();
-      this.store.dispatch(new SetGameTimerPauseState(pausedAt, this.timerPausedSecondsTotal()));
-      writes.push(this.gameRepo.updateTimerPauseState(gameId, pausedAt, this.timerPausedSecondsTotal()));
+      this.store.dispatch(
+        new SetGameTimerPauseState(pausedAt, this.timerPausedSecondsTotal()),
+      );
+      writes.push(
+        this.gameRepo.updateTimerPauseState(
+          gameId,
+          pausedAt,
+          this.timerPausedSecondsTotal(),
+        ),
+      );
     }
 
-    writes.push(this.playerRepo.updateHandstack(gameId, playerId, this.currentHand()));
+    writes.push(
+      this.playerRepo.updateHandstack(gameId, playerId, this.currentHand()),
+    );
     this.store.dispatch(new UpdateHeropowerActivated(false));
     this.store.dispatch(new UpdateHeropowerArray([]));
 
     return Promise.all(writes).then(() => undefined);
   }
 
-  resolveArrayHeropower(gameId: string, playerId: string, onEnemyTokenCleared: (enemy: Mob) => void): Promise<void> {
+  resolveArrayHeropower(
+    gameId: string,
+    playerId: string,
+    onEnemyTokenCleared: (enemy: Mob) => void,
+  ): Promise<void> {
     if (this.heropowerArray().length !== 3) return Promise.resolve();
     const writes = [this.bumpStat(gameId, 'heropowersUsed', 1)];
 
-    let currEnemyToken = [...this.currentEnemy().token];
+    const currEnemyToken = [...this.currentEnemy().token];
     currEnemyToken.length = 0;
 
     this.store.dispatch(new UpdateMonsterTokenArray(currEnemyToken));
-    writes.push(this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()));
+    writes.push(
+      this.gameRepo.updateCurrentEnemyToken(gameId, this.currentEnemy()),
+    );
     onEnemyTokenCleared(this.currentEnemy());
 
     this.heropowerArray().forEach((card) => {
-      let indexOfHandCard = this.currentHand().indexOf(card);
-      let currHand = [...this.currentHand()];
-      let currCardStack = [...this.currentCardStack()];
+      const indexOfHandCard = this.currentHand().indexOf(card);
+      const currHand = [...this.currentHand()];
+      const currCardStack = [...this.currentCardStack()];
       currHand.splice(indexOfHandCard, 1);
 
       if (currHand.length < 5 && currCardStack.length > 0) {
         const getCardForHand = currCardStack.shift()!;
         currHand.push(getCardForHand);
 
-        writes.push(this.playerRepo.updateHandstack(gameId, playerId, currHand));
-        writes.push(this.playerRepo.updateCardstack(gameId, playerId, currCardStack));
+        writes.push(
+          this.playerRepo.updateHandstack(gameId, playerId, currHand),
+        );
+        writes.push(
+          this.playerRepo.updateCardstack(gameId, playerId, currCardStack),
+        );
 
         this.store.dispatch(new UpdateCardStackAction(currCardStack));
         this.store.dispatch(new UpdateCurrentHandAction(currHand));

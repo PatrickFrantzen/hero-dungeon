@@ -3,99 +3,122 @@
 // 2026-08-29 in docs/done/responsive-design-plan.md), erscheint aber nur bei geöffnetem FAB
 // statt permanent.
 .heropower-sheet {
-    position: absolute;
-    right: 25%;
-    left: 25%;
-    bottom: calc(100% + clamp(8px, 2vh, 24px));
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
+  position: absolute;
+  right: 25%;
+  left: 25%;
+  bottom: calc(100% + clamp(8px, 2vh, 24px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
 
-    img {
-        // heldenfaehigkeit_icon.png ist wie die Enemy-Kategorie-Icons (enemy/CLAUDE.md) auf
-        // 160x160px zugeschnitten - ohne explizite Größe würde es in natürlicher Pixelgröße
-        // deutlich größer als die vorherigen ~90-100px-Icons rendern.
-        width: clamp(72px, 20vw, 110px);
-        height: clamp(72px, 20vw, 110px);
-        user-select: none;
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
-        transition: transform 0.1s ease-out;
+  // Button statt klickbarem <img> (Issue #114, Accessibility) - per Tastatur fokussierbar,
+  // Klick-Optik/-Größe bleibt unverändert am img selbst.
+  .heropower-activate-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
 
-        &:hover {
-            cursor: pointer;
-        }
+  img {
+    // heldenfaehigkeit_icon.png ist wie die Enemy-Kategorie-Icons (enemy/CLAUDE.md) auf
+    // 160x160px zugeschnitten - ohne explizite Größe würde es in natürlicher Pixelgröße
+    // deutlich größer als die vorherigen ~90-100px-Icons rendern.
+    width: clamp(72px, 20vw, 110px);
+    height: clamp(72px, 20vw, 110px);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    transition: transform 0.1s ease-out;
 
-        &:active {
-            transform: scale(0.94);
-        }
+    &:hover {
+      cursor: pointer;
     }
+  }
+
+  .heropower-activate-button:active img {
+    transform: scale(0.94);
+  }
 }
 
 // Immer sichtbarer, kleiner Einstiegspunkt statt permanentem Overlay - unten rechts, außerhalb
 // der zentrierten Handkarten-Fächerreihe (player-hand.component.ts handCardStyles()).
 .heropower-fab {
-    position: absolute;
-    right: 12px;
-    bottom: calc(100% + clamp(8px, 2vh, 16px));
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.7);
-    background: rgba(0, 0, 0, 0.72);
-    color: white;
-    font-size: 20px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 2;
-    transition: transform 0.1s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+  position: absolute;
+  right: 12px;
+  bottom: calc(100% + clamp(8px, 2vh, 16px));
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.72);
+  color: white;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition:
+    transform 0.1s ease-out,
+    border-color 0.2s ease-out,
+    box-shadow 0.2s ease-out;
 
-    &:active {
-        transform: scale(0.94);
-    }
+  &:active {
+    transform: scale(0.94);
+  }
 }
 
 .heropower-fab--active {
-    border-color: #ffe066;
-    box-shadow: 0 0 12px rgba(255, 224, 102, 0.6);
+  border-color: #ffe066;
+  box-shadow: 0 0 12px rgba(255, 224, 102, 0.6);
 }
 
 .color-effect {
-    background: linear-gradient(0deg, #000, #272727);
-
+  background: linear-gradient(0deg, #000, #272727);
 }
 
-.color-effect:before, .color-effect:after {
-    content: '';
-    position: absolute;
-    left: -2px;
-    top: -2px;
-    background: linear-gradient(45deg, #fb0094, #0000ff, #00ff00,#ffff00, #ff0000, #fb0094, 
-      #0000ff, #00ff00,#ffff00, #ff0000);
-    background-size: 400%;
-    width: calc(100% + 4px);
-    height: calc(100% + 4px);
-    z-index: -1;
-    animation: steam 20s linear infinite;
+.color-effect:before,
+.color-effect:after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  background: linear-gradient(
+    45deg,
+    #fb0094,
+    #0000ff,
+    #00ff00,
+    #ffff00,
+    #ff0000,
+    #fb0094,
+    #0000ff,
+    #00ff00,
+    #ffff00,
+    #ff0000
+  );
+  background-size: 400%;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  z-index: -1;
+  animation: steam 20s linear infinite;
+}
+
+@keyframes steam {
+  0% {
+    background-position: 0 0;
   }
-  
-  @keyframes steam {
-    0% {
-      background-position: 0 0;
-    }
-    50% {
-      background-position: 400% 0;
-    }
-    100% {
-      background-position: 0 0;
-    }
+  50% {
+    background-position: 400% 0;
   }
-  
-  .color-effect:after {
-    filter: blur(50px);
+  100% {
+    background-position: 0 0;
   }
+}
+
+.color-effect:after {
+  filter: blur(50px);
+}

@@ -1,10 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { Store } from '@ngxs/store';
 import {
   CompleteTutorial,
   NextTutorialStep,
   PreviousTutorialStep,
-  SkipTutorial
+  SkipTutorial,
 } from 'src/app/actions/tutorial-action';
 import { TutorialSelectors } from 'src/app/selectors/tutorial-selector';
 import { tutorialSteps } from '../../tutorial-steps.data';
@@ -27,7 +32,7 @@ import { TutorialOverlayComponent } from '../tutorial-overlay.component';
   `,
   styles: [``],
   imports: [TutorialOverlayComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TutorialOverlayContainerComponent {
   private store = inject(Store);
@@ -36,12 +41,16 @@ export class TutorialOverlayContainerComponent {
   readonly totalSteps = this.steps.length;
 
   readonly active = this.store.selectSignal(TutorialSelectors.isTutorialActive);
-  readonly stepIndex = this.store.selectSignal(TutorialSelectors.currentStepIndex);
+  readonly stepIndex = this.store.selectSignal(
+    TutorialSelectors.currentStepIndex,
+  );
 
   readonly currentStep = computed(() => this.steps[this.stepIndex()] ?? null);
   readonly stepNumber = computed(() => this.stepIndex() + 1);
   readonly isFirstStep = computed(() => this.stepIndex() === 0);
-  readonly isLastStep = computed(() => this.stepIndex() === this.steps.length - 1);
+  readonly isLastStep = computed(
+    () => this.stepIndex() === this.steps.length - 1,
+  );
 
   onNext(): void {
     if (this.isLastStep()) {

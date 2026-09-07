@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { NgxsModule, Store } from '@ngxs/store';
@@ -31,11 +36,23 @@ describe('PlayerHandComponent', () => {
     ensureFirebaseTestAppInitialized();
 
     await TestBed.configureTestingModule({
-    imports: [MatDialogModule, NgxsModule.forRoot([CurrentGameState, CurrentUserState, heropowerState, CardStackState, cardsInHandState, DeliveryStackState, LobbyState, EncounterState]), PlayerHandComponent],
-    providers: firestoreTestProviders(),
-    schemas: [NO_ERRORS_SCHEMA],
-})
-    .compileComponents();
+      imports: [
+        MatDialogModule,
+        NgxsModule.forRoot([
+          CurrentGameState,
+          CurrentUserState,
+          heropowerState,
+          CardStackState,
+          cardsInHandState,
+          DeliveryStackState,
+          LobbyState,
+          EncounterState,
+        ]),
+        PlayerHandComponent,
+      ],
+      providers: firestoreTestProviders(),
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
     ensureAngularFireSchedulersInitialized();
     fixture = TestBed.createComponent(PlayerHandComponent);
@@ -66,8 +83,18 @@ describe('PlayerHandComponent', () => {
     TestBed.inject(LocalSingleplayerSaveService).createSave({
       saveId: 'local-2',
       updatedAt: Date.now(),
-      game: { currentEnemy, Mob: [], choosenHeros: [], gameStatus: 'playing' } as unknown as Game,
-      player: { userId: '', handstack: ['blue'], cardstack: [], deliveryStack: [] },
+      game: {
+        currentEnemy,
+        Mob: [],
+        choosenHeros: [],
+        gameStatus: 'playing',
+      } as unknown as Game,
+      player: {
+        userId: '',
+        handstack: ['blue'],
+        cardstack: [],
+        deliveryStack: [],
+      },
     });
     TestBed.inject(Store).dispatch(new CurrentGameAction('local-2'));
 
@@ -76,8 +103,12 @@ describe('PlayerHandComponent', () => {
     tick();
 
     const store = TestBed.inject(Store);
-    expect(store.selectSnapshot(EncounterSelectors.currentEnemy)).toEqual(currentEnemy);
-    expect(store.selectSnapshot(CurrentHandSelector.currentHand)).toEqual(['blue']);
+    expect(store.selectSnapshot(EncounterSelectors.currentEnemy)).toEqual(
+      currentEnemy,
+    );
+    expect(store.selectSnapshot(CurrentHandSelector.currentHand)).toEqual([
+      'blue',
+    ]);
     localStorage.clear();
   }));
 });

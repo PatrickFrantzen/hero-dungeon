@@ -1,22 +1,50 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthFormService } from 'src/app/services/auth-form.service';
 import { CurrentUserService } from 'src/app/services/current-user.service';
-import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/material/card';
+import {
+  MatCard,
+  MatCardHeader,
+  MatCardContent,
+  MatCardFooter,
+} from '@angular/material/card';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
 
 @Component({
-    selector: 'app-signin',
-    templateUrl: './signin.component.html',
-    styleUrls: ['./signin.component.scss'],
-    imports: [FormsModule, ReactiveFormsModule, RouterLink, MatCard, MatCardHeader, MatCardContent, MatFormField, MatLabel, MatInput, MatCardFooter, MatButton],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-signin',
+  templateUrl: './signin.component.html',
+  styleUrls: ['./signin.component.scss'],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    MatCard,
+    MatCardHeader,
+    MatCardContent,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    MatCardFooter,
+    MatButton,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SigninComponent implements OnInit{
-
+export class SigninComponent implements OnInit {
   private authForm = inject(AuthFormService);
   private fb = inject(FormBuilder);
   private route = inject(Router);
@@ -28,9 +56,9 @@ export class SigninComponent implements OnInit{
 
   ngOnInit(): void {
     this.logInForm = this.fb.group({
-      email : new FormControl('', Validators.required),
-      password: new FormControl('', Validators.required)
-    })
+      email: new FormControl('', Validators.required),
+      password: new FormControl('', Validators.required),
+    });
     this.currentUserService.getCurrentUser();
   }
 
@@ -38,11 +66,17 @@ export class SigninComponent implements OnInit{
     this.errorMessage = null;
     this.isSubmitting = true;
     try {
-      await this.authForm.login(this.logInForm.value.email, this.logInForm.value.password);
+      await this.authForm.login(
+        this.logInForm.value.email,
+        this.logInForm.value.password,
+      );
       this.route.navigate(['startscreen']);
       this.currentUserService.getCurrentUser();
     } catch (error) {
-      this.errorMessage = error instanceof Error ? error.message : 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.';
+      this.errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Login fehlgeschlagen: E-Mail oder Passwort ist falsch.';
     } finally {
       this.isSubmitting = false;
     }

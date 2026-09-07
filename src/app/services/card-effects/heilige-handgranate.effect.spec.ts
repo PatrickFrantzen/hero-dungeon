@@ -29,24 +29,44 @@ describe('HeiligeHandgranateEffect', () => {
   });
 
   it('clears every token of the current threat, even a Boss, and reports it as defeated', async () => {
-    ctx.currentEnemy.and.returnValue({ name: 'Zola, die Gorgone', type: 'Boss', token: ['red', 'red', 'yellow'] });
+    ctx.currentEnemy.and.returnValue({
+      name: 'Zola, die Gorgone',
+      type: 'Boss',
+      token: ['red', 'red', 'yellow'],
+    });
 
-    await effect.apply(ctx, 'player-1', 'heiligeHandgranate', ['heiligeHandgranate']);
+    await effect.apply(ctx, 'player-1', 'heiligeHandgranate', [
+      'heiligeHandgranate',
+    ]);
 
     expect(ctx.dispatchMonsterTokenUpdate).toHaveBeenCalledWith([]);
-    expect(ctx.updateCurrentEnemyToken).toHaveBeenCalledWith(jasmine.objectContaining({ token: [] }));
-    expect(ctx.checkForNextEnemy).toHaveBeenCalledWith(jasmine.objectContaining({ token: [] }));
-    expect(ctx.saveHand).toHaveBeenCalledWith('heiligeHandgranate', ['heiligeHandgranate']);
+    expect(ctx.updateCurrentEnemyToken).toHaveBeenCalledWith(
+      jasmine.objectContaining({ token: [] }),
+    );
+    expect(ctx.checkForNextEnemy).toHaveBeenCalledWith(
+      jasmine.objectContaining({ token: [] }),
+    );
+    expect(ctx.saveHand).toHaveBeenCalledWith('heiligeHandgranate', [
+      'heiligeHandgranate',
+    ]);
     expect(ctx.ensureGameTimerStarted).toHaveBeenCalled();
     expect(ctx.resumeGameTimerIfPaused).toHaveBeenCalled();
   });
 
   it('also clears an already-empty threat (jederzeit spielbar)', async () => {
-    ctx.currentEnemy.and.returnValue({ name: 'Goblin', type: 'Monster', token: [] });
+    ctx.currentEnemy.and.returnValue({
+      name: 'Goblin',
+      type: 'Monster',
+      token: [],
+    });
 
-    await effect.apply(ctx, 'player-1', 'heiligeHandgranate', ['heiligeHandgranate']);
+    await effect.apply(ctx, 'player-1', 'heiligeHandgranate', [
+      'heiligeHandgranate',
+    ]);
 
     expect(ctx.dispatchMonsterTokenUpdate).toHaveBeenCalledWith([]);
-    expect(ctx.saveHand).toHaveBeenCalledWith('heiligeHandgranate', ['heiligeHandgranate']);
+    expect(ctx.saveHand).toHaveBeenCalledWith('heiligeHandgranate', [
+      'heiligeHandgranate',
+    ]);
   });
 });

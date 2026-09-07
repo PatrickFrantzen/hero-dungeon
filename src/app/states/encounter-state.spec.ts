@@ -26,14 +26,21 @@ describe('EncounterState', () => {
 
     store.dispatch(new CurrentGameData(gameWithoutAllBosses));
 
-    expect(store.selectSnapshot(EncounterSelectors.currentAllBosses)).toEqual([]);
+    expect(store.selectSnapshot(EncounterSelectors.currentAllBosses)).toEqual(
+      [],
+    );
   });
 
   it('setGameData (CurrentGameData) keeps a provided allBosses array as-is', () => {
-    const game = { gameId: 'game-1', allBosses: [{ name: 'Boss', token: [], type: 'Boss' }] } as unknown as Game;
+    const game = {
+      gameId: 'game-1',
+      allBosses: [{ name: 'Boss', token: [], type: 'Boss' }],
+    } as unknown as Game;
 
     store.dispatch(new CurrentGameData(game));
 
-    expect(store.selectSnapshot(EncounterSelectors.currentAllBosses)).toEqual([{ name: 'Boss', token: [], type: 'Boss' }]);
+    expect(store.selectSnapshot(EncounterSelectors.currentAllBosses)).toEqual([
+      { name: 'Boss', token: [], type: 'Boss' },
+    ]);
   });
 });

@@ -41,7 +41,9 @@ export class LocalSingleplayerSaveService {
   }
 
   updateSave(saveId: string, save: LocalSingleplayerSave): void {
-    const saves = this.listSaves().map((existing) => (existing.saveId === saveId ? save : existing));
+    const saves = this.listSaves().map((existing) =>
+      existing.saveId === saveId ? save : existing,
+    );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saves));
   }
 
@@ -49,7 +51,9 @@ export class LocalSingleplayerSaveService {
    * Multiplayer, wo nur der löschende Spieler entfernt wird, siehe
    * PlayerRepositoryService.deleteOwnPlayerDoc()/GameRepositoryService.addPlayerToGame()). */
   deleteSave(saveId: string): void {
-    const saves = this.listSaves().filter((existing) => existing.saveId !== saveId);
+    const saves = this.listSaves().filter(
+      (existing) => existing.saveId !== saveId,
+    );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saves));
   }
 }

@@ -16,10 +16,15 @@ export class PlayerRepositoryService {
 
   /** Siehe GameRepositoryService.withActivity() - gleiche bewusste Ausnahme, gleicher Grund. */
   private withActivity<T extends object>(gameId: string, fields: T): T {
-    return isLocalGameId(gameId) ? fields : { ...fields, lastActivityAt: serverTimestamp() };
+    return isLocalGameId(gameId)
+      ? fields
+      : { ...fields, lastActivityAt: serverTimestamp() };
   }
 
-  getPlayer(gameId: string, playerId: string): Promise<DocumentData | undefined> {
+  getPlayer(
+    gameId: string,
+    playerId: string,
+  ): Promise<DocumentData | undefined> {
     return this.repo.getDoc(['games', gameId, 'player', playerId]);
   }
 
@@ -28,42 +33,71 @@ export class PlayerRepositoryService {
    * von updateData) statt setDoc gefolgt von updateDoc - vermeidet einen halb angelegten
    * Player-Zustand, falls der zweite Call fehlschlägt.
    */
-  createPlayer(gameId: string, playerId: string, playerJson: object, updateData: object): Promise<void> {
+  createPlayer(
+    gameId: string,
+    playerId: string,
+    playerJson: object,
+    updateData: object,
+  ): Promise<void> {
     return this.repo.setDoc(
       ['games', gameId, 'player', playerId],
-      this.withActivity(gameId, { ...playerJson, ...updateData })
+      this.withActivity(gameId, { ...playerJson, ...updateData }),
     );
   }
 
-  updatePlayerChoosenHero(gameId: string, playerId: string, choosenHero: unknown): Promise<void> {
-    return this.repo.updateFields(['games', gameId, 'player', playerId], this.withActivity(gameId, { choosenHero }));
-  }
-
-  updatePlayerCards(gameId: string, playerId: string, cardstack: string[], handstack: string[]): Promise<void> {
+  updatePlayerChoosenHero(
+    gameId: string,
+    playerId: string,
+    choosenHero: unknown,
+  ): Promise<void> {
     return this.repo.updateFields(
       ['games', gameId, 'player', playerId],
-      this.withActivity(gameId, { cardstack, handstack })
+      this.withActivity(gameId, { choosenHero }),
     );
   }
 
-  updateHandstack(gameId: string, playerId: string, update: string[]): Promise<void> {
+  updatePlayerCards(
+    gameId: string,
+    playerId: string,
+    cardstack: string[],
+    handstack: string[],
+  ): Promise<void> {
     return this.repo.updateFields(
       ['games', gameId, 'player', playerId],
-      this.withActivity(gameId, { handstack: update })
+      this.withActivity(gameId, { cardstack, handstack }),
     );
   }
 
-  updateCardstack(gameId: string, playerId: string, update: string[]): Promise<void> {
+  updateHandstack(
+    gameId: string,
+    playerId: string,
+    update: string[],
+  ): Promise<void> {
     return this.repo.updateFields(
       ['games', gameId, 'player', playerId],
-      this.withActivity(gameId, { cardstack: update })
+      this.withActivity(gameId, { handstack: update }),
     );
   }
 
-  updateDeliveryStack(gameId: string, playerId: string, update: string[]): Promise<void> {
+  updateCardstack(
+    gameId: string,
+    playerId: string,
+    update: string[],
+  ): Promise<void> {
     return this.repo.updateFields(
       ['games', gameId, 'player', playerId],
-      this.withActivity(gameId, { deliveryStack: update })
+      this.withActivity(gameId, { cardstack: update }),
+    );
+  }
+
+  updateDeliveryStack(
+    gameId: string,
+    playerId: string,
+    update: string[],
+  ): Promise<void> {
+    return this.repo.updateFields(
+      ['games', gameId, 'player', playerId],
+      this.withActivity(gameId, { deliveryStack: update }),
     );
   }
 

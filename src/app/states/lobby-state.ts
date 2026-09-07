@@ -41,7 +41,9 @@ export class LobbyState {
     const newHero: ChoosenHero = hero;
 
     const updatedChoosenHeros: ChoosenHero[] =
-      state.choosenHeros.length > 0 ? [...state.choosenHeros, newHero] : [newHero];
+      state.choosenHeros.length > 0
+        ? [...state.choosenHeros, newHero]
+        : [newHero];
 
     ctx.setState({
       ...state,

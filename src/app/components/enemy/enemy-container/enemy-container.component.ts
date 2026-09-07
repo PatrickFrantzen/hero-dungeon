@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  effect,
+  inject,
+} from '@angular/core';
 import { Store } from '@ngxs/store';
 import { updateQuestCardActivated } from 'src/app/actions/currentGame-action';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -8,22 +15,28 @@ import { Mob } from 'src/models/monster/monster.class';
 import { EnemyComponent } from '../enemy.component';
 
 @Component({
-    selector: 'app-enemy-container',
-    template: `
+  selector: 'app-enemy-container',
+  template: `
     <app-enemy
       [gameId]="gameId()"
       [currentEnemy]="currentEnemy()"
       [questCardStatus]="currentQuestStatus()"
     ></app-enemy>
   `,
-    // display: contents, weil dieses Host-Element selbst kein CSS bekommt (nur Weiterreichen an
-    // <app-enemy>) - ohne das ist der Host default "inline" und die auf .current-Enemy gesetzte
-    // align-self: center (enemy.component.scss) wirkungslos, weil sie nicht mehr direkter
-    // Flex-Item von .mainfield (game.component.scss) ist. Siehe enemy.component.ts fürs
-    // gleiche Problem eine Ebene tiefer.
-    styles: [`:host { display: contents; }`],
-    imports: [EnemyComponent],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  // display: contents, weil dieses Host-Element selbst kein CSS bekommt (nur Weiterreichen an
+  // <app-enemy>) - ohne das ist der Host default "inline" und die auf .current-Enemy gesetzte
+  // align-self: center (enemy.component.scss) wirkungslos, weil sie nicht mehr direkter
+  // Flex-Item von .mainfield (game.component.scss) ist. Siehe enemy.component.ts fürs
+  // gleiche Problem eine Ebene tiefer.
+  styles: [
+    `
+      :host {
+        display: contents;
+      }
+    `,
+  ],
+  imports: [EnemyComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnemyContainerComponent implements OnInit {
   private store = inject(Store);
@@ -31,7 +44,9 @@ export class EnemyContainerComponent implements OnInit {
 
   gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
   encounterEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
-  currentQuestStatus = this.store.selectSignal(CurrentGameSelectors.currentQuestCardStatus);
+  currentQuestStatus = this.store.selectSignal(
+    CurrentGameSelectors.currentQuestCardStatus,
+  );
 
   public emptyMob: Mob = {
     name: '',
@@ -52,9 +67,9 @@ export class EnemyContainerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    let gameId = this.store.selectSnapshot(CurrentGameSelectors.currentGame);
-    let questCardStatus = this.store.selectSnapshot(
-      CurrentGameSelectors.currentQuestCardStatus
+    const gameId = this.store.selectSnapshot(CurrentGameSelectors.currentGame);
+    const questCardStatus = this.store.selectSnapshot(
+      CurrentGameSelectors.currentQuestCardStatus,
     );
     this.gameRepo.updateQuestStatus(gameId, questCardStatus);
   }

@@ -1,145 +1,146 @@
 .mainfield {
-    display: flex;
-    justify-content: space-between;
-    flex-direction: column;
-    background-image: url('^assets/img/backgroundimage/background.png');
-    background-size: cover;
-    min-height: 100vh;
-    min-height: 100dvh;
-    width: 100%;
-    background-repeat: no-repeat;
-    box-sizing: border-box;
-    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-        max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  background-image: url('^assets/img/backgroundimage/background.png');
+  background-size: cover;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  padding: max(8px, env(safe-area-inset-top))
+    max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom))
+    max(8px, env(safe-area-inset-left));
 
-    // app-player-hand's .card-area ist als fixe Leiste am unteren Bildschirmrand verankert
-    // (player-hand.component.scss) und liegt daher außerhalb des normalen Dokumentflusses hier -
-    // Reserve schafft Platz, damit der letzte Content (Statistik/Prompts) im Zustand "won" nicht
-    // dahinter verschwindet.
-    padding-bottom: clamp(160px, 32vh, 230px);
+  // app-player-hand's .card-area ist als fixe Leiste am unteren Bildschirmrand verankert
+  // (player-hand.component.scss) und liegt daher außerhalb des normalen Dokumentflusses hier -
+  // Reserve schafft Platz, damit der letzte Content (Statistik/Prompts) im Zustand "won" nicht
+  // dahinter verschwindet.
+  padding-bottom: clamp(160px, 32vh, 230px);
 }
 
 .game-error {
-    background-color: #b00020;
-    color: white;
-    padding: 8px 16px;
-    text-align: center;
+  background-color: #b00020;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
 }
 
 .game-success {
-    background-color: #0f7b2f;
-    color: white;
-    padding: 8px 16px;
-    text-align: center;
+  background-color: #0f7b2f;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
 }
 
 .game-prompt {
-    background-color: #1a1a2e;
-    color: white;
-    padding: 16px;
-    text-align: center;
+  background-color: #1a1a2e;
+  color: white;
+  padding: 16px;
+  text-align: center;
 }
 
 .game-prompt--error {
-    background-color: #b00020;
+  background-color: #b00020;
 }
 
 .game-prompt__actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .game-prompt__button {
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 8px;
-    background: transparent;
-    color: white;
-    padding: 8px 16px;
-    cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  background: transparent;
+  color: white;
+  padding: 8px 16px;
+  cursor: pointer;
 }
 
 .game-prompt__button--primary {
-    background-color: #0f7b2f;
-    border-color: #0f7b2f;
+  background-color: #0f7b2f;
+  border-color: #0f7b2f;
 }
 
 .game-timer {
-    align-self: center;
-    margin-top: 16px;
-    min-width: min(220px, 90vw);
-    box-sizing: border-box;
-    padding: 12px 20px;
-    border: 2px solid rgba(255, 255, 255, 0.7);
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.72);
-    color: white;
-    text-align: center;
-    box-shadow: 0 0 18px rgba(0, 0, 0, 0.5);
+  align-self: center;
+  margin-top: 16px;
+  min-width: min(220px, 90vw);
+  box-sizing: border-box;
+  padding: 12px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.72);
+  color: white;
+  text-align: center;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.5);
 }
 
 .game-timer--running {
-    border-color: #ffe066;
+  border-color: #ffe066;
 }
 
 .game-timer--danger {
-    border-color: #ff4d4f;
-    color: #ffb3b3;
+  border-color: #ff4d4f;
+  color: #ffb3b3;
 }
 
 .game-timer--paused {
-    border-color: #66d9ff;
-    color: #b3ecff;
+  border-color: #66d9ff;
+  color: #b3ecff;
 }
 
 .game-timer__label,
 .game-timer__hint {
-    display: block;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  display: block;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .game-timer__label {
-    font-family: var(--font-heading);
+  font-family: var(--font-heading);
 }
 
 .game-timer__time {
-    display: block;
-    font-family: var(--font-heading);
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1;
-    margin: 4px 0;
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 4px 0;
 }
 
 .game-stats {
-    align-self: center;
-    width: fit-content;
-    max-width: min(480px, 92vw);
-    margin-top: 16px;
-    box-sizing: border-box;
-    padding: clamp(8px, 2vw, 16px);
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.72);
-    color: white;
-    text-align: center;
+  align-self: center;
+  width: fit-content;
+  max-width: min(480px, 92vw);
+  margin-top: 16px;
+  box-sizing: border-box;
+  padding: clamp(8px, 2vw, 16px);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.72);
+  color: white;
+  text-align: center;
 }
 
 .game-stats__title {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .game-stats__grid {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: clamp(0.85rem, 2.3vw, 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: clamp(0.85rem, 2.3vw, 1rem);
 }
 
 // Querformat-Kompaktlayout (Issue #47, TODO 8 Option a): auf kurzen Viewports (Phone quer,
@@ -148,24 +149,23 @@
 // (nebeneinander) - .card-area (player-hand.component.scss) bleibt "position: fixed" und damit
 // von diesem Flex-Layout unberührt.
 @media (orientation: landscape) and (max-height: 500px) {
-    .mainfield {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: flex-start;
-        gap: clamp(8px, 2vw, 16px);
-        padding-bottom: clamp(90px, 20vh, 130px);
-    }
+  .mainfield {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: clamp(8px, 2vw, 16px);
+    padding-bottom: clamp(90px, 20vh, 130px);
+  }
 
-    .game-timer {
-        margin-top: 0;
-        min-width: min(180px, 40vw);
-        padding: 8px 14px;
-    }
+  .game-timer {
+    margin-top: 0;
+    min-width: min(180px, 40vw);
+    padding: 8px 14px;
+  }
 
-    .game-timer__time {
-        font-size: 1.8rem;
-        margin: 2px 0;
-    }
+  .game-timer__time {
+    font-size: 1.8rem;
+    margin: 2px 0;
+  }
 }
-

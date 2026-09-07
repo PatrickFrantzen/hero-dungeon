@@ -1,21 +1,27 @@
 <div class="tw-flex tw-min-w-[260px] tw-flex-col tw-items-center">
   <h1 mat-dialog-title>Wähle einen Helden</h1>
   <div mat-dialog-content class="tw-flex tw-w-full tw-flex-col tw-gap-2">
-
     <mat-form-field appearance="fill">
       <mat-label>Helden</mat-label>
       <mat-select [(ngModel)]="selectedValue" name="hero">
         @for (hero of data; track hero) {
           <mat-option [value]="hero">
-            {{hero.playerName}} {{hero.playerId}} {{hero.playerHero}}
+            {{ hero.playerName }} {{ hero.playerId }} {{ hero.playerHero }}
           </mat-option>
         }
       </mat-select>
     </mat-form-field>
-
   </div>
 
   <div mat-dialog-actions class="tw-w-full tw-justify-end">
-    <button mat-flat-button color="primary" mat-dialog-close cdkFocusInitial (click)="getChoosenHero(selectedValue)">Ok</button>
+    <button
+      mat-flat-button
+      color="primary"
+      mat-dialog-close
+      cdkFocusInitial
+      (click)="getChoosenHero(selectedValue)"
+    >
+      Ok
+    </button>
   </div>
 </div>

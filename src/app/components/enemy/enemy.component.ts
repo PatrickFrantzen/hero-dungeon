@@ -3,11 +3,16 @@ import {
   Component,
   computed,
   input,
-  signal
+  signal,
 } from '@angular/core';
 import { NgStyle } from '@angular/common';
 import { Mob } from 'src/models/monster/monster.class';
-import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/material/card';
+import {
+  MatCard,
+  MatCardHeader,
+  MatCardContent,
+  MatCardFooter,
+} from '@angular/material/card';
 
 /** `Mob.type` trägt bei den drei Encounter-Kategorien exakt diese Werte (siehe
  * monster-collection.data.ts) - bei Boss/Mini-Boss und den freitextigen Ereigniskarten-
@@ -15,7 +20,7 @@ import { MatCard, MatCardHeader, MatCardContent, MatCardFooter } from '@angular/
 const typeIconByType: Record<string, string> = {
   Person: 'person',
   Hindernis: 'hindernis',
-  Monster: 'monster'
+  Monster: 'monster',
 };
 
 // Dynamische Token-Icon-Größe (Live-Test-Feedback: Icons wirkten auf dem Handy zu klein).
@@ -33,11 +38,11 @@ const TOKEN_ICON_MAX_PX = 76;
 const TOKEN_ICON_NO_SHRINK_COUNT = 6;
 
 @Component({
-    selector: 'app-enemy',
-    templateUrl: './enemy.component.html',
-    styleUrls: ['./enemy.component.scss'],
-    imports: [MatCard, MatCardHeader, MatCardContent, MatCardFooter, NgStyle],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-enemy',
+  templateUrl: './enemy.component.html',
+  styleUrls: ['./enemy.component.scss'],
+  imports: [MatCard, MatCardHeader, MatCardContent, MatCardFooter, NgStyle],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnemyComponent {
   readonly currentEnemy = input.required<Mob>();
@@ -56,7 +61,9 @@ export class EnemyComponent {
 
   /** Anzahl aller gleichzeitig gezeigten Icons (Kampf-Token + ggf. Kategorie-Icon) - Basis für
    * `tokenIconSizePx()`. */
-  readonly tokenIconCount = computed(() => this.currentEnemy().token.length + (this.typeIcon() ? 1 : 0));
+  readonly tokenIconCount = computed(
+    () => this.currentEnemy().token.length + (this.typeIcon() ? 1 : 0),
+  );
 
   /** Lineare Interpolation zwischen `TOKEN_ICON_MAX_PX` (wenige Icons, z.B. ein normales
    * Hindernis) und `TOKEN_ICON_MIN_PX` (Boss mit `TOKEN_ICON_MAX_COUNT` Icons) - als
@@ -70,9 +77,12 @@ export class EnemyComponent {
     }
     const ratio = Math.min(
       1,
-      (count - TOKEN_ICON_NO_SHRINK_COUNT) / (TOKEN_ICON_MAX_COUNT - TOKEN_ICON_NO_SHRINK_COUNT)
+      (count - TOKEN_ICON_NO_SHRINK_COUNT) /
+        (TOKEN_ICON_MAX_COUNT - TOKEN_ICON_NO_SHRINK_COUNT),
     );
-    return Math.round(TOKEN_ICON_MAX_PX - ratio * (TOKEN_ICON_MAX_PX - TOKEN_ICON_MIN_PX));
+    return Math.round(
+      TOKEN_ICON_MAX_PX - ratio * (TOKEN_ICON_MAX_PX - TOKEN_ICON_MIN_PX),
+    );
   });
 
   toggleDescription(): void {

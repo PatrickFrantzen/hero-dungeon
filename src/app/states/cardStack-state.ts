@@ -5,8 +5,6 @@ import {
   CreateNewCardStackAction,
   UpdateCardStackAction,
 } from '../actions/CardStack-action';
-import { Hero } from 'src/models/helden/hero.class';
-import { cardsInHandState } from './cardsInHand-state';
 import { patch } from '@ngxs/store/operators';
 
 export interface CardStackModel {
@@ -26,7 +24,7 @@ export class CardStackState {
   @Action(CreateNewCardStackAction)
   createNewCardStack(
     ctx: StateContext<CardStackModel>,
-    action: CreateNewCardStackAction
+    action: CreateNewCardStackAction,
   ) {
     const { cardstack } = action;
     if (!cardstack) {
@@ -46,7 +44,7 @@ export class CardStackState {
   @Action(UpdateCardStackAction)
   updateCardStack(
     ctx: StateContext<CardStackModel>,
-    action: UpdateCardStackAction
+    action: UpdateCardStackAction,
   ) {
     const { cardstack } = action;
     if (!cardstack) {
@@ -60,7 +58,7 @@ export class CardStackState {
     ctx.setState(
       patch<CardStackModel>({
         items: CardStack,
-      })
+      }),
     );
   }
 }

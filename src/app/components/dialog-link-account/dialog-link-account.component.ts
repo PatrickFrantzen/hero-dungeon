@@ -1,6 +1,21 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MatDialogTitle,
+  MatDialogContent,
+  MatDialogActions,
+} from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
@@ -40,7 +55,10 @@ export interface LinkAccountDialogResult {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DialogLinkAccountComponent extends BaseDialogComponent<LinkAccountDialogResult> implements OnInit {
+export class DialogLinkAccountComponent
+  extends BaseDialogComponent<LinkAccountDialogResult>
+  implements OnInit
+{
   private fb = inject(FormBuilder);
   private authForm = inject(AuthFormService);
 
@@ -65,7 +83,9 @@ export class DialogLinkAccountComponent extends BaseDialogComponent<LinkAccountD
       this.closeWith({ linked: true });
     } catch (error) {
       this.errorMessage =
-        error instanceof Error ? error.message : 'Verknüpfung fehlgeschlagen. Bitte erneut versuchen.';
+        error instanceof Error
+          ? error.message
+          : 'Verknüpfung fehlgeschlagen. Bitte erneut versuchen.';
     } finally {
       this.isSubmitting = false;
     }

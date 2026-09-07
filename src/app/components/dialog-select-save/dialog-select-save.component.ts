@@ -1,10 +1,24 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogTitle,
+  MatDialogContent,
+  MatDialogActions,
+} from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { Observable, map } from 'rxjs';
 import { BaseDialogComponent } from '../dialog-base.component';
-import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
+import {
+  DialogConfirmComponent,
+  DialogConfirmResult,
+} from '../dialog-confirm/dialog-confirm.component';
 import { LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
 
 export type SaveMode = 'singleplayer' | 'multiplayer';
@@ -30,7 +44,10 @@ export interface DialogSelectSaveResult {
   mode: SaveMode;
 }
 
-const dateFormatter = new Intl.DateTimeFormat('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+const dateFormatter = new Intl.DateTimeFormat('de-DE', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+});
 
 /** Kapselt das identische `dialog.open<...>(DialogSelectSaveComponent, { data: { entries } })
  * .afterClosed()`, das StartscreenComponent/GameMenuComponent vorher unabhängig voneinander
@@ -38,9 +55,16 @@ const dateFormatter = new Intl.DateTimeFormat('de-DE', { dateStyle: 'short', tim
  * seine eigene `entries`-Liste (kennt als einziger das passende Held-/Status-Label) und
  * behandelt das Ergebnis in seinem eigenen `.subscribe()` weiter, nur der `open()`/
  * `afterClosed()`-Teil samt Auspacken von `result?.data` ist hier gebündelt. */
-export function openSaveSelector(dialog: MatDialog, entries: SaveListEntry[]): Observable<DialogSelectSaveResult | undefined> {
+export function openSaveSelector(
+  dialog: MatDialog,
+  entries: SaveListEntry[],
+): Observable<DialogSelectSaveResult | undefined> {
   return dialog
-    .open<DialogSelectSaveComponent, DialogSelectSaveData, { data: DialogSelectSaveResult }>(DialogSelectSaveComponent, {
+    .open<
+      DialogSelectSaveComponent,
+      DialogSelectSaveData,
+      { data: DialogSelectSaveResult }
+    >(DialogSelectSaveComponent, {
       data: { entries },
     })
     .afterClosed()
@@ -56,7 +80,14 @@ export function openSaveSelector(dialog: MatDialog, entries: SaveListEntry[]): O
 @Component({
   selector: 'app-dialog-select-save',
   templateUrl: './dialog-select-save.component.html',
-  imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatDialogActions, MatButton, MatIconButton],
+  imports: [
+    MatDialogTitle,
+    CdkScrollable,
+    MatDialogContent,
+    MatDialogActions,
+    MatButton,
+    MatIconButton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogSelectSaveComponent extends BaseDialogComponent<DialogSelectSaveResult> {
@@ -65,11 +96,15 @@ export class DialogSelectSaveComponent extends BaseDialogComponent<DialogSelectS
   private localSaves = inject(LocalSingleplayerSaveService);
 
   entries = signal<SaveListEntry[]>(
-    [...this.data.entries].sort((a, b) => (b.lastPlayedAt ?? 0) - (a.lastPlayedAt ?? 0))
+    [...this.data.entries].sort(
+      (a, b) => (b.lastPlayedAt ?? 0) - (a.lastPlayedAt ?? 0),
+    ),
   );
 
   formatLastPlayed(lastPlayedAt: number | null): string {
-    return lastPlayedAt ? dateFormatter.format(new Date(lastPlayedAt)) : 'Unbekannt';
+    return lastPlayedAt
+      ? dateFormatter.format(new Date(lastPlayedAt))
+      : 'Unbekannt';
   }
 
   modeLabel(mode: SaveMode): string {
@@ -85,16 +120,24 @@ export class DialogSelectSaveComponent extends BaseDialogComponent<DialogSelectS
    * entfernt den Eintrag aus der lokalen Kopie der Liste, statt den Dialog zu schließen. */
   delete(entry: SaveListEntry): void {
     this.dialog
-      .open<DialogConfirmComponent, unknown, { data: DialogConfirmResult }>(DialogConfirmComponent, {
-        data: { title: 'Spielstand löschen?', message: 'Dieser lokale Spielstand wird unwiderruflich gelöscht.' },
-      })
+      .open<DialogConfirmComponent, unknown, { data: DialogConfirmResult }>(
+        DialogConfirmComponent,
+        {
+          data: {
+            title: 'Spielstand löschen?',
+            message: 'Dieser lokale Spielstand wird unwiderruflich gelöscht.',
+          },
+        },
+      )
       .afterClosed()
       .subscribe((result) => {
         if (!result?.data.confirmed) {
           return;
         }
         this.localSaves.deleteSave(entry.id);
-        this.entries.update((entries) => entries.filter((e) => e.id !== entry.id));
+        this.entries.update((entries) =>
+          entries.filter((e) => e.id !== entry.id),
+        );
       });
   }
 

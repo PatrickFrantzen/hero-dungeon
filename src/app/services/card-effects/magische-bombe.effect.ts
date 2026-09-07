@@ -6,11 +6,23 @@ const SYMBOLS = ['red', 'yellow', 'green', 'blue', 'purple'];
  * nutzen (Anleitung S. 8) - entfernt von der aktuellen Bedrohung je ein Vorkommen jeder der 5
  * Symbolfarben, falls vorhanden. Wirkt nicht gegen Ereigniskarten. */
 export class MagischeBombeEffect implements CardEffect {
-  apply(ctx: CardEffectContext, playerId: string, card: string, currHand: string[]): Promise<void> {
+  apply(
+    ctx: CardEffectContext,
+    playerId: string,
+    card: string,
+    currHand: string[],
+  ): Promise<void> {
     const currEne = [...ctx.currentEnemy().token];
-    if (currEne.length === 0 || currEne[0].toLocaleLowerCase().includes('event')) return Promise.resolve();
+    if (
+      currEne.length === 0 ||
+      currEne[0].toLocaleLowerCase().includes('event')
+    )
+      return Promise.resolve();
 
-    const writes = [ctx.ensureGameTimerStarted(), ctx.resumeGameTimerIfPaused()];
+    const writes = [
+      ctx.ensureGameTimerStarted(),
+      ctx.resumeGameTimerIfPaused(),
+    ];
 
     SYMBOLS.forEach((symbol) => {
       const index = currEne.indexOf(symbol);

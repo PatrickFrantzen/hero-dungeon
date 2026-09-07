@@ -1,5 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogTitle,
+  MatDialogContent,
+  MatDialogActions,
+} from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatButton } from '@angular/material/button';
 import { BaseDialogComponent } from '../dialog-base.component';
@@ -24,7 +29,13 @@ export interface DialogConfirmResult {
 @Component({
   selector: 'app-dialog-confirm',
   templateUrl: './dialog-confirm.component.html',
-  imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatDialogActions, MatButton],
+  imports: [
+    MatDialogTitle,
+    CdkScrollable,
+    MatDialogContent,
+    MatDialogActions,
+    MatButton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogConfirmComponent extends BaseDialogComponent<DialogConfirmResult> {

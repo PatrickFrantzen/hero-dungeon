@@ -20,7 +20,7 @@ export class DeliveryStackState {
   @Action(CurrentDeliveryStack)
   getCardsInDeliveryStack(
     ctx: StateContext<DeliveryStackModel>,
-    action: CurrentDeliveryStack
+    action: CurrentDeliveryStack,
   ) {
     const { deliveryStackCards } = action;
     if (!deliveryStackCards) {
@@ -38,7 +38,7 @@ export class DeliveryStackState {
   @Action(UpdateDeliveryStack)
   updateCardsInDeliveryStack(
     ctx: StateContext<DeliveryStackModel>,
-    action: UpdateDeliveryStack
+    action: UpdateDeliveryStack,
   ) {
     const { deliveryStackCards } = action;
     if (!deliveryStackCards) {

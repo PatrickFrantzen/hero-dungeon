@@ -13,9 +13,11 @@ describe('HeropowerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [NgxsModule.forRoot([CurrentUserState, heropowerState]), HeropowerComponent],
-})
-    .compileComponents();
+      imports: [
+        NgxsModule.forRoot([CurrentUserState, heropowerState]),
+        HeropowerComponent,
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(HeropowerComponent);
     component = fixture.componentInstance;
@@ -29,14 +31,28 @@ describe('HeropowerComponent', () => {
 
   describe('onActivateHeropower() (TODO 5 — datengetrieben über HeroDefinition.activatesOn)', () => {
     it('aktiviert die Fähigkeit für den Barbar nur, wenn der Gegnertyp "Monster" ist', () => {
-      store.dispatch(new CurrentUserHeroAction('Barbar', 'Schlagkräftige Argumente', 'Beschreibung'));
-      fixture.componentRef.setInput('currentEnemy', { name: 'Goblin', type: 'Person', token: [] });
+      store.dispatch(
+        new CurrentUserHeroAction(
+          'Barbar',
+          'Schlagkräftige Argumente',
+          'Beschreibung',
+        ),
+      );
+      fixture.componentRef.setInput('currentEnemy', {
+        name: 'Goblin',
+        type: 'Person',
+        token: [],
+      });
       fixture.detectChanges();
 
       component.onActivateHeropower();
       expect(component.heropowerActivated()).toBe(false);
 
-      fixture.componentRef.setInput('currentEnemy', { name: 'Goblin', type: 'Monster', token: [] });
+      fixture.componentRef.setInput('currentEnemy', {
+        name: 'Goblin',
+        type: 'Monster',
+        token: [],
+      });
       fixture.detectChanges();
       component.onActivateHeropower();
 
@@ -44,8 +60,14 @@ describe('HeropowerComponent', () => {
     });
 
     it('aktiviert die Fähigkeit für die Walküre unabhängig vom Gegnertyp ("always")', () => {
-      store.dispatch(new CurrentUserHeroAction('Walküre', 'Verleiht Flügel', 'Beschreibung'));
-      fixture.componentRef.setInput('currentEnemy', { name: '', type: '', token: [] });
+      store.dispatch(
+        new CurrentUserHeroAction('Walküre', 'Verleiht Flügel', 'Beschreibung'),
+      );
+      fixture.componentRef.setInput('currentEnemy', {
+        name: '',
+        type: '',
+        token: [],
+      });
       fixture.detectChanges();
 
       component.onActivateHeropower();
@@ -54,7 +76,9 @@ describe('HeropowerComponent', () => {
     });
 
     it('deaktiviert eine bereits aktive Fähigkeit erneut per Klick', () => {
-      store.dispatch(new CurrentUserHeroAction('Walküre', 'Verleiht Flügel', 'Beschreibung'));
+      store.dispatch(
+        new CurrentUserHeroAction('Walküre', 'Verleiht Flügel', 'Beschreibung'),
+      );
       fixture.detectChanges();
 
       component.onActivateHeropower();
@@ -76,21 +100,31 @@ describe('HeropowerComponent', () => {
 
   describe('Aktivierungs-Icon (Issue #93 — Pfad-Fix für GitHub Pages)', () => {
     it('rendert das Icon mit einem von der Route unabhängigen Pfad ("./assets/...")', () => {
-      store.dispatch(new CurrentUserHeroAction('Barbar', 'Wutausbruch', 'Beschreibung'));
+      store.dispatch(
+        new CurrentUserHeroAction('Barbar', 'Wutausbruch', 'Beschreibung'),
+      );
       component.sheetOpen.set(true);
       fixture.detectChanges();
 
-      const img: HTMLImageElement = fixture.nativeElement.querySelector('.heropower-sheet img');
+      const img: HTMLImageElement = fixture.nativeElement.querySelector(
+        '.heropower-sheet img',
+      );
 
-      expect(img.getAttribute('src')).toBe('./assets/img/icons/heldenfaehigkeit_icon.png');
+      expect(img.getAttribute('src')).toBe(
+        './assets/img/icons/heldenfaehigkeit_icon.png',
+      );
     });
 
     it('rendert genau ein Icon (kein pro-Held dupliziertes @if mehr)', () => {
-      store.dispatch(new CurrentUserHeroAction('Barbar', 'Wutausbruch', 'Beschreibung'));
+      store.dispatch(
+        new CurrentUserHeroAction('Barbar', 'Wutausbruch', 'Beschreibung'),
+      );
       component.sheetOpen.set(true);
       fixture.detectChanges();
 
-      const imgs = fixture.nativeElement.querySelectorAll('.heropower-sheet img');
+      const imgs = fixture.nativeElement.querySelectorAll(
+        '.heropower-sheet img',
+      );
 
       expect(imgs.length).toBe(1);
     });

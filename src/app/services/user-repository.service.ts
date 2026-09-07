@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { DocumentData, serverTimestamp } from '@angular/fire/firestore';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 
@@ -18,7 +18,11 @@ function normalizeJoinedGames(raw: unknown): JoinedGame[] {
   if (!Array.isArray(raw)) {
     return [];
   }
-  return raw.map((entry) => (typeof entry === 'string' ? { gameId: entry, lastPlayedAt: 0 } : (entry as JoinedGame)));
+  return raw.map((entry) =>
+    typeof entry === 'string'
+      ? { gameId: entry, lastPlayedAt: 0 }
+      : (entry as JoinedGame),
+  );
 }
 
 /**
@@ -30,7 +34,7 @@ function normalizeJoinedGames(raw: unknown): JoinedGame[] {
   providedIn: 'root',
 })
 export class UserRepositoryService {
-  constructor(private repo: FirestoreRepositoryService) {}
+  private repo = inject(FirestoreRepositoryService);
 
   getUser(uid: string): Promise<DocumentData | undefined> {
     return this.repo.getDoc(['users', uid]);
@@ -56,7 +60,10 @@ export class UserRepositoryService {
    */
   async addJoinedGame(uid: string, gameId: string): Promise<void> {
     const games = await this.getJoinedGames(uid);
-    const updatedGames = [...games.filter((game) => game.gameId !== gameId), { gameId, lastPlayedAt: Date.now() }];
+    const updatedGames = [
+      ...games.filter((game) => game.gameId !== gameId),
+      { gameId, lastPlayedAt: Date.now() },
+    ];
 
     return this.repo.setDocMerge(['users', uid], {
       games: updatedGames,

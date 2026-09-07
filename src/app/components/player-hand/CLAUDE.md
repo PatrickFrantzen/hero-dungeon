@@ -131,3 +131,13 @@ einem reinen Tap ohne nennenswerte Bewegung feuert `touchmove` gar nicht, dort b
 normale `click`-Pfad unverändert. `touch-action: pan-x` auf dem Bild überlässt vertikales
 Wischen komplett dieser JS-Logik (keine Konkurrenz mit nativem Scroll), horizontales Scrollen
 der Fächer-Reihe (`.currentHandStack`) bleibt möglich.
+
+## Accessibility: `<button>` statt klickbarem `<img>` (Issue #114, 2026-09-07)
+
+`(click)`/die vier `touch*`-Handler lagen bisher direkt auf dem Handkarten-`<img>` — nicht per
+Tastatur fokussierbar/auslösbar (`@angular-eslint/template/click-events-have-key-events` +
+`.../interactive-supports-focus`). Jetzt umschließt ein `<button type="button"
+class="hand-card-button">` das `<img>`, alle fünf Handler (`click` + `touchstart`/`touchmove`/
+`touchend`/`touchcancel`) sitzen am Button statt am Bild — Swipe-Geste/Tap-Verhalten unverändert.
+`.hand-card-button` in `hand-cards.component.scss` resettet nur `background`/`border`/`padding`,
+die Bildgröße/`touch-action: pan-x` bleiben auf `img`.

@@ -9,7 +9,11 @@ Repository-Services unten gebündelt.
 ihre Abhängigkeiten per Klassenfeld (`private repo = inject(FirestoreRepositoryService);`) statt
 über den Constructor, siehe Root-`CLAUDE.md`. `AuthFormService`/`PlayerRepositoryService`/
 `GameRepositoryService`/`LocalGameDocumentStoreService`/`DiebService` wurden dafür umgestellt;
-`FirestoreRepositoryService`/`FirestoreSyncService` nutzten bereits vorher `inject()`.
+`FirestoreRepositoryService`/`FirestoreSyncService` nutzten bereits vorher `inject()`. Issue #114
+(2026-09-07) hat die restlichen fünf Fundstellen (bis dahin einzige verbliebene
+`prefer-inject`-Lint-Fehler) nachgezogen: `CardPlayService`, `HeropowerService`,
+`CurrentUserService`, `LocalSaveMigrationService`, `UserRepositoryService` — damit nutzt
+ausnahmslos jeder Service in diesem Ordner `inject()`.
 
 ## Repository-Services (Firestore-Zugriff)
 

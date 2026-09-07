@@ -79,6 +79,25 @@ externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patri
    erledigt 2026-09-05. Noch offen: Screenshot(s)/GIF vom Spielbrett und von der
    Handkarten-Ansicht ins README einfügen (Platzhalter-Kommentar ist gesetzt).
 
+## Findings aus Recruiter-Review (2026-09-06)
+
+10. **`npm audit`: 32 Vulnerabilities (2 critical, 14 high)** — noch nicht aufgeschlüsselt, ob
+    Prod- oder Dev-Dependencies betroffen sind (Verdacht: größtenteils transitiv über die
+    `devDependency` `firebase-tools`). Vor einer Bewerbung/einem externen Review sollte das
+    mit `npm audit` durchgegangen und zumindest kommentiert werden, ob/warum die Prod-Bundle
+    davon unberührt bleibt.
+11. ~~**Kein Lint/Format-Setup**~~ — ESLint (`@angular-eslint`) + Prettier eingeführt
+    (2026-09-06), siehe unten.
+12. ~~**24 verbleibende `ng lint`-Fehler nach Einführung von ESLint**~~ — Tracking-Issue
+    [#114](https://github.com/PatrickFrantzen/hero-dungeon/issues/114), abgearbeitet
+    (2026-09-07): alle 14 `@angular-eslint/prefer-inject`-Stellen (`card-play.service.ts`,
+    `heropower.service.ts`, `current-user.service.ts`, `local-save-migration.service.ts`,
+    `user-repository.service.ts`) auf `inject()` umgestellt, die 4
+    `preserve-caught-error`-Stellen in `auth-form.service.ts` werfen jetzt mit `{ cause: error }`,
+    und die beiden Accessibility-Stellen (`heropower.component.html`,
+    `hand-cards.component.html`) nutzen jetzt `<button>` statt klickbarem `<img>`. `npm run lint`
+    ist fehlerfrei und als dritter Job in `.github/workflows/ci.yml` verankert.
+
 ## Erledigt (2026-09-05)
 
 Alle bei der ersten Prüfung offenen manuellen Smoke-Tests sind durchgeführt und bestätigt, die

@@ -5,7 +5,10 @@ import {
   firestoreTestProviders,
 } from 'src/testing/firebase-test-app';
 
-import { FirestoreOperationError, FirestoreRepositoryService } from './firestore-repository.service';
+import {
+  FirestoreOperationError,
+  FirestoreRepositoryService,
+} from './firestore-repository.service';
 
 describe('FirestoreRepositoryService', () => {
   let service: FirestoreRepositoryService;
@@ -31,7 +34,7 @@ describe('FirestoreRepositoryService', () => {
         name: 'FirestoreOperationError',
         operation: 'getDoc',
         path: [],
-      } as Partial<FirestoreOperationError>)
+      } as Partial<FirestoreOperationError>),
     );
   });
 
@@ -41,7 +44,7 @@ describe('FirestoreRepositoryService', () => {
         name: 'FirestoreOperationError',
         operation: 'queryAll',
         path: [],
-      } as Partial<FirestoreOperationError>)
+      } as Partial<FirestoreOperationError>),
     );
   });
 
@@ -51,7 +54,7 @@ describe('FirestoreRepositoryService', () => {
         name: 'FirestoreOperationError',
         operation: 'setDocMerge',
         path: [],
-      } as Partial<FirestoreOperationError>)
+      } as Partial<FirestoreOperationError>),
     );
   });
 
@@ -61,7 +64,7 @@ describe('FirestoreRepositoryService', () => {
         name: 'FirestoreOperationError',
         operation: 'deleteDoc',
         path: [],
-      } as Partial<FirestoreOperationError>)
+      } as Partial<FirestoreOperationError>),
     );
   });
 
@@ -69,7 +72,10 @@ describe('FirestoreRepositoryService', () => {
     afterEach(() => localStorage.clear());
 
     it('setDoc/getDoc round-trip through local storage instead of Firestore', async () => {
-      await service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
+      await service.setDoc(['games', 'local-1'], {
+        gameId: 'local-1',
+        numberOfPlayers: 1,
+      });
 
       await expectAsync(service.getDoc(['games', 'local-1'])).toBeResolvedTo({
         gameId: 'local-1',
@@ -78,20 +84,36 @@ describe('FirestoreRepositoryService', () => {
     });
 
     it('queryAll for the player subcollection reads from local storage instead of Firestore (Issue #87)', async () => {
-      await service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
-      await service.setDoc(['games', 'local-1', 'player', 'solo'], { userId: 'solo', handstack: [] });
+      await service.setDoc(['games', 'local-1'], {
+        gameId: 'local-1',
+        numberOfPlayers: 1,
+      });
+      await service.setDoc(['games', 'local-1', 'player', 'solo'], {
+        userId: 'solo',
+        handstack: [],
+      });
 
-      await expectAsync(service.queryAll(['games', 'local-1', 'player'], [])).toBeResolvedTo([
-        { userId: 'solo', handstack: [] },
-      ] as never);
+      await expectAsync(
+        service.queryAll(['games', 'local-1', 'player'], []),
+      ).toBeResolvedTo([{ userId: 'solo', handstack: [] }] as never);
     });
 
     it('queryLatest for the player subcollection reads from local storage instead of Firestore (Issue #87)', async () => {
-      await service.setDoc(['games', 'local-1'], { gameId: 'local-1', numberOfPlayers: 1 });
-      await service.setDoc(['games', 'local-1', 'player', 'solo'], { userId: 'solo', handstack: [] });
+      await service.setDoc(['games', 'local-1'], {
+        gameId: 'local-1',
+        numberOfPlayers: 1,
+      });
+      await service.setDoc(['games', 'local-1', 'player', 'solo'], {
+        userId: 'solo',
+        handstack: [],
+      });
 
       await expectAsync(
-        service.queryLatest(['games', 'local-1', 'player'], 'gameId', 'local-1')
+        service.queryLatest(
+          ['games', 'local-1', 'player'],
+          'gameId',
+          'local-1',
+        ),
       ).toBeResolvedTo({ userId: 'solo', handstack: [] } as never);
     });
   });

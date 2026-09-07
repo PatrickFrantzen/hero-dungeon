@@ -1,5 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { DocumentData, Firestore, collection, collectionData, onSnapshot, query, where } from '@angular/fire/firestore';
+import {
+  DocumentData,
+  Firestore,
+  collection,
+  collectionData,
+  onSnapshot,
+  query,
+  where,
+} from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { FirestoreOperationError } from './firestore-repository.service';
 
@@ -30,15 +38,20 @@ export class FirestoreSyncService {
   watchPlayerDoc(gameId: string, playerId: string): Observable<DocumentData> {
     const path = ['games', gameId, 'player'];
     return new Observable<DocumentData>((subscriber) => {
-      const playerQuery = query(collection(this.firestore, path.join('/')), where('userId', '==', playerId));
+      const playerQuery = query(
+        collection(this.firestore, path.join('/')),
+        where('userId', '==', playerId),
+      );
       const unsubscribe = onSnapshot(
         playerQuery,
         (snapshot) => {
           snapshot.forEach((docSnap) => subscriber.next(docSnap.data()));
         },
         (cause) => {
-          subscriber.error(new FirestoreOperationError('onSnapshot', path, cause));
-        }
+          subscriber.error(
+            new FirestoreOperationError('onSnapshot', path, cause),
+          );
+        },
       );
       return unsubscribe;
     });

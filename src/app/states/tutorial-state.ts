@@ -5,7 +5,7 @@ import {
   NextTutorialStep,
   PreviousTutorialStep,
   SkipTutorial,
-  StartTutorial
+  StartTutorial,
 } from '../actions/tutorial-action';
 
 export interface TutorialModel {
@@ -19,8 +19,8 @@ export interface TutorialModel {
   defaults: {
     hasSeenTutorial: false,
     active: false,
-    currentStepIndex: 0
-  }
+    currentStepIndex: 0,
+  },
 })
 @Injectable()
 export class TutorialState {
@@ -38,7 +38,9 @@ export class TutorialState {
   @Action(PreviousTutorialStep)
   previousTutorialStep(ctx: StateContext<TutorialModel>) {
     const state = ctx.getState();
-    ctx.patchState({ currentStepIndex: Math.max(0, state.currentStepIndex - 1) });
+    ctx.patchState({
+      currentStepIndex: Math.max(0, state.currentStepIndex - 1),
+    });
   }
 
   // Skip zaehlt wie ein abgeschlossenes Tutorial (hasSeenTutorial: true) - sonst wuerde der
@@ -46,11 +48,19 @@ export class TutorialState {
   // bereits bewusst "nein danke" gesagt hat.
   @Action(SkipTutorial)
   skipTutorial(ctx: StateContext<TutorialModel>) {
-    ctx.patchState({ active: false, hasSeenTutorial: true, currentStepIndex: 0 });
+    ctx.patchState({
+      active: false,
+      hasSeenTutorial: true,
+      currentStepIndex: 0,
+    });
   }
 
   @Action(CompleteTutorial)
   completeTutorial(ctx: StateContext<TutorialModel>) {
-    ctx.patchState({ active: false, hasSeenTutorial: true, currentStepIndex: 0 });
+    ctx.patchState({
+      active: false,
+      hasSeenTutorial: true,
+      currentStepIndex: 0,
+    });
   }
 }

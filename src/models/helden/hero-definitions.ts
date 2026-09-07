@@ -97,7 +97,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     id: 'barbar',
     heroName: 'Barbar',
     heroPower: 'Schlagkräftige Argumente',
-    description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Monster',
+    description:
+      'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Monster',
     cardCounts: barbarGladiatorCardCounts,
     activatesOn: 'Monster',
     resolutionKind: 'array',
@@ -115,7 +116,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     id: 'gladiator',
     heroName: 'Gladiator',
     heroPower: 'Furchteinflößend',
-    description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch eine Person',
+    description:
+      'Lege 3 Karten auf den Ablagestapel und besiege dadurch eine Person',
     cardCounts: barbarGladiatorCardCounts,
     activatesOn: 'Person',
     resolutionKind: 'array',
@@ -144,7 +146,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     id: 'ninja',
     heroName: 'Ninja',
     heroPower: 'Supersprung',
-    description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Hindernis.',
+    description:
+      'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Hindernis.',
     cardCounts: diebNinjaCardCounts,
     activatesOn: 'Hindernis',
     resolutionKind: 'array',
@@ -153,7 +156,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     id: 'paladin',
     heroName: 'Paladin',
     heroPower: 'Blendend',
-    description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Monster',
+    description:
+      'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Monster',
     cardCounts: paladinWalküreCardCounts,
     activatesOn: 'Monster',
     resolutionKind: 'array',
@@ -162,7 +166,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     id: 'waldläufer',
     heroName: 'Waldläufer',
     heroPower: 'Kunstschuss',
-    description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch eine Person',
+    description:
+      'Lege 3 Karten auf den Ablagestapel und besiege dadurch eine Person',
     cardCounts: jägerinWaldläuferCardCounts,
     activatesOn: 'Person',
     resolutionKind: 'array',
@@ -171,7 +176,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     id: 'walküre',
     heroName: 'Walküre',
     heroPower: 'Verleiht Flügel',
-    description: 'Lege 3 Karten auf den Ablagestapel und dafür zieht jeder andere Mitspieler 2 Karten.',
+    description:
+      'Lege 3 Karten auf den Ablagestapel und dafür zieht jeder andere Mitspieler 2 Karten.',
     cardCounts: paladinWalküreCardCounts,
     activatesOn: 'always',
     resolutionKind: 'walkuere',
@@ -180,7 +186,8 @@ export const HERO_DEFINITIONS: HeroDefinition[] = [
     id: 'zauberin',
     heroName: 'Zauberin',
     heroPower: 'hindernis',
-    description: 'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Hindernis',
+    description:
+      'Lege 3 Karten auf den Ablagestapel und besiege dadurch ein Hindernis',
     cardCounts: magierZauberinCardCounts,
     activatesOn: 'Hindernis',
     resolutionKind: 'array',

@@ -14,7 +14,9 @@ describe('LocalSaveMigrationService', () => {
   beforeEach(() => {
     localStorage.clear();
     gameRepo = jasmine.createSpyObj('GameRepositoryService', ['createGame']);
-    playerRepo = jasmine.createSpyObj('PlayerRepositoryService', ['createPlayer']);
+    playerRepo = jasmine.createSpyObj('PlayerRepositoryService', [
+      'createPlayer',
+    ]);
     gameRepo.createGame.and.resolveTo(undefined);
     playerRepo.createPlayer.and.resolveTo(undefined);
 
@@ -41,7 +43,12 @@ describe('LocalSaveMigrationService', () => {
       saveId: 'local-1',
       updatedAt: Date.now(),
       game: { numberOfPlayers: 1, gameStatus: 'won' } as unknown as Game,
-      player: { handstack: ['red'], cardstack: [], deliveryStack: [], choosenHero: { heroname: 'Dieb' } },
+      player: {
+        handstack: ['red'],
+        cardstack: [],
+        deliveryStack: [],
+        choosenHero: { heroname: 'Dieb' },
+      },
     });
 
     const migratedGameIds = await service.migrateAll('new-uid', 'Gast');
@@ -53,14 +60,24 @@ describe('LocalSaveMigrationService', () => {
       migratedGameIds[0],
       'new-uid',
       jasmine.objectContaining({ handstack: ['red'] }),
-      jasmine.objectContaining({ userId: 'new-uid', userNickname: 'Gast' })
+      jasmine.objectContaining({ userId: 'new-uid', userNickname: 'Gast' }),
     );
   });
 
   it('migrateAll() migrates every local save, each under its own gameId', async () => {
     const localSaveService = TestBed.inject(LocalSingleplayerSaveService);
-    localSaveService.createSave({ saveId: 'local-1', updatedAt: 1, game: {} as Game, player: {} });
-    localSaveService.createSave({ saveId: 'local-2', updatedAt: 2, game: {} as Game, player: {} });
+    localSaveService.createSave({
+      saveId: 'local-1',
+      updatedAt: 1,
+      game: {} as Game,
+      player: {},
+    });
+    localSaveService.createSave({
+      saveId: 'local-2',
+      updatedAt: 2,
+      game: {} as Game,
+      player: {},
+    });
 
     const migratedGameIds = await service.migrateAll('new-uid', 'Gast');
 

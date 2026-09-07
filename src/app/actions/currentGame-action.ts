@@ -1,28 +1,29 @@
-import { Game, GameStats, GameStatus } from "src/models/game"
+import { Game, GameStats, GameStatus } from 'src/models/game';
 
 export class CurrentGameAction {
-    static readonly type = '[Startscreen page] Generating new Game ID'
-    constructor(public id: string) {}
+  static readonly type = '[Startscreen page] Generating new Game ID';
+  constructor(public id: string) {}
 }
 
 export class CurrentGameData {
-    static readonly type = '[Startscreen page] Setting the Data of Game'
-    constructor(public game: Game) {}
+  static readonly type = '[Startscreen page] Setting the Data of Game';
+  constructor(public game: Game) {}
 }
 
 export class updateQuestCardActivated {
-    static readonly type = "[Game page, Monster Page] updating quest card activation"
-    constructor(public questCardActivated: boolean){}
+  static readonly type =
+    '[Game page, Monster Page] updating quest card activation';
+  constructor(public questCardActivated: boolean) {}
 }
 
 export class UpdateGameStatus {
-    static readonly type = "[Game page] updating game status"
-    constructor(public gameStatus: GameStatus){}
+  static readonly type = '[Game page] updating game status';
+  constructor(public gameStatus: GameStatus) {}
 }
 
 export class StartGameTimer {
-    static readonly type = "[Game page] starting dungeon timer"
-    constructor(public timerStartedAt: number){}
+  static readonly type = '[Game page] starting dungeon timer';
+  constructor(public timerStartedAt: number) {}
 }
 
 /** Setzt Pause-Felder direkt und bedingungslos (statt eines guard-basierten Toggles), weil sie
@@ -30,16 +31,19 @@ export class StartGameTimer {
  * Firestore-Sync für alle anderen Clients verwendet werden - letztere muss den zuletzt in
  * Firestore gespeicherten Stand übernehmen können, unabhängig vom lokalen Vorzustand. */
 export class SetGameTimerPauseState {
-    static readonly type = "[Game page] setting dungeon timer pause state"
-    constructor(public timerPausedAt: number | null, public timerPausedSecondsTotal: number){}
+  static readonly type = '[Game page] setting dungeon timer pause state';
+  constructor(
+    public timerPausedAt: number | null,
+    public timerPausedSecondsTotal: number,
+  ) {}
 }
 
 /** Setzt den Timer bedingungslos zurück auf "noch nicht gestartet" (im Gegensatz zu
  * StartGameTimer, das per Guard nur einmal greift) - für den Übergang in den nächsten Dungeon
  * nach einem besiegten Boss (Anleitung S. 6: "Setzt den Timer wieder auf 5 Minuten"). */
 export class ResetGameTimer {
-    static readonly type = "[Game page] resetting dungeon timer for the next dungeon"
-    constructor(){}
+  static readonly type =
+    '[Game page] resetting dungeon timer for the next dungeon';
 }
 
 /** Setzt die vier Statistik-Zähler (besiegte Gegner/gespielte Karten/gecyclete Karten/genutzte
@@ -47,6 +51,6 @@ export class ResetGameTimer {
  * analog zu SetGameTimerPauseState: wird sowohl vom auslösenden Client (CardPlayService/
  * HeropowerService) als auch vom Firestore-Sync für alle anderen Clients dispatcht. */
 export class SetGameStats {
-    static readonly type = "[Game page] setting game statistics"
-    constructor(public stats: GameStats){}
+  static readonly type = '[Game page] setting game statistics';
+  constructor(public stats: GameStats) {}
 }

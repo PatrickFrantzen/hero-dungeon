@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  output,
+} from '@angular/core';
 import { Store } from '@ngxs/store';
 import { CurrentDeliveryStackSelector } from 'src/app/selectors/currentDeliveryStack-selector';
 import { CurrentGameSelectors } from 'src/app/selectors/currentGame-selector';
@@ -11,8 +18,8 @@ import { HERO_DEFINITIONS } from 'src/models/helden/hero-definitions';
 import { HeropowerComponent } from '../heropower.component';
 
 @Component({
-    selector: 'app-heropower-container',
-    template: `
+  selector: 'app-heropower-container',
+  template: `
     <app-heropower
       [currentGameId]="gameId()"
       [currentPlayerId]="playerId()"
@@ -20,9 +27,9 @@ import { HeropowerComponent } from '../heropower.component';
       [currentDeliveryStack]="deliveryStack()"
     ></app-heropower>
   `,
-    styles: [``],
-    imports: [HeropowerComponent],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  styles: [``],
+  imports: [HeropowerComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeropowerContainerComponent {
   private store = inject(Store);
@@ -31,10 +38,18 @@ export class HeropowerContainerComponent {
   gameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
   currentEnemy = this.store.selectSignal(EncounterSelectors.currentEnemy);
   user = this.store.selectSignal(CurrentUserSelectors.currentUser);
-  deliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
-  heropowerArray = this.store.selectSignal(HeropowerSelectors.currentHeropowerArray);
-  heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
-  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
+  deliveryStack = this.store.selectSignal(
+    CurrentDeliveryStackSelector.currentDeliveryStack,
+  );
+  heropowerArray = this.store.selectSignal(
+    HeropowerSelectors.currentHeropowerArray,
+  );
+  heropowerActivated = this.store.selectSignal(
+    HeropowerSelectors.currentHeropowerActivated,
+  );
+  currentUserHeroData = this.store.selectSignal(
+    CurrentUserSelectors.currentUserHeroData,
+  );
 
   public emptyMob: Mob = {
     name: '',
@@ -48,7 +63,9 @@ export class HeropowerContainerComponent {
   // PlayerHandComponent owns the actual card-/handstack logic for these heropowers (it holds
   // the hand/cardstack signals this container does not have) — this container only detects
   // *when* a heropower resolves and delegates the *how* back up to its parent.
-  readonly heropowerResolved = output<'array' | 'jaegerin' | 'walkuere' | 'magier'>();
+  readonly heropowerResolved = output<
+    'array' | 'jaegerin' | 'walkuere' | 'magier'
+  >();
 
   constructor() {
     // Aktion der Heropower hier durchführen, sobald sich Gegner oder Heropower-Auswahl ändern.
@@ -57,6 +74,9 @@ export class HeropowerContainerComponent {
     // switch(heroname)) — Dieb bleibt Sonderfall, da er nie über heropowerResolved läuft,
     // sondern DiebService direkt aufruft.
     effect(() => {
+      // Signal-Read hält die effect()-Abhängigkeit auf enemy() aufrecht (siehe Kommentar oben:
+      // "sobald sich Gegner ... ändert"), der Wert selbst wird hier nicht gebraucht.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const enemy = this.enemy();
       const heropowerArray = this.heropowerArray();
       const heroname = this.currentUserHeroData().choosenHero;
@@ -65,7 +85,9 @@ export class HeropowerContainerComponent {
         return;
       }
 
-      const definition = HERO_DEFINITIONS.find((def) => def.heroName === heroname);
+      const definition = HERO_DEFINITIONS.find(
+        (def) => def.heroName === heroname,
+      );
       if (!definition) {
         return;
       }

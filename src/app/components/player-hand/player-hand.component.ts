@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+} from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
@@ -6,8 +13,20 @@ import { Observable, Subscription, map } from 'rxjs';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
 import { UpdateMobAction } from 'src/app/actions/MonsterStack-action';
 import { UpdateCurrentHandAction } from 'src/app/actions/cardsInHand-action';
-import { ResetGameTimer, SetGameStats, SetGameTimerPauseState, StartGameTimer, updateQuestCardActivated, UpdateGameStatus } from 'src/app/actions/currentGame-action';
-import { SetCurrentBoss, SetNewEnemy, SetRemainingBosses, UpdateMonsterTokenArray } from 'src/app/actions/encounter-action';
+import {
+  ResetGameTimer,
+  SetGameStats,
+  SetGameTimerPauseState,
+  StartGameTimer,
+  updateQuestCardActivated,
+  UpdateGameStatus,
+} from 'src/app/actions/currentGame-action';
+import {
+  SetCurrentBoss,
+  SetNewEnemy,
+  SetRemainingBosses,
+  UpdateMonsterTokenArray,
+} from 'src/app/actions/encounter-action';
 import { UpdateDeliveryStack } from 'src/app/actions/deliveryStack-action';
 import { SetChoosenHeros } from 'src/app/actions/lobby-action';
 import { CurrentCardStackSelector } from 'src/app/selectors/currentCardStack-selector';
@@ -33,11 +52,11 @@ import { HandCardsComponent } from './hand-cards/hand-cards.component';
 // below now only dispatch NGXS actions instead of also mutating plain fields directly, so all
 // state read by the template flows through store.selectSignal() and is tracked correctly.
 @Component({
-    selector: 'app-player-hand',
-    templateUrl: './player-hand.component.html',
-    styleUrls: ['./player-hand.component.scss'],
-    imports: [HeropowerContainerComponent, HandCardsComponent],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-player-hand',
+  templateUrl: './player-hand.component.html',
+  styleUrls: ['./player-hand.component.scss'],
+  imports: [HeropowerContainerComponent, HandCardsComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerHandComponent implements OnInit, OnDestroy {
   private store = inject(Store);
@@ -49,25 +68,42 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
   public dialog = inject(MatDialog);
 
   currentPlayerId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
-  currentPlayerName = this.store.selectSignal(CurrentUserSelectors.currentUserName);
+  currentPlayerName = this.store.selectSignal(
+    CurrentUserSelectors.currentUserName,
+  );
   currentGameId = this.store.selectSignal(CurrentGameSelectors.currentGame);
-  currentNumberOfPlayers = this.store.selectSignal(CurrentGameSelectors.currentNumberOfPlayers);
+  currentNumberOfPlayers = this.store.selectSignal(
+    CurrentGameSelectors.currentNumberOfPlayers,
+  );
 
   currentPlayers = this.store.selectSignal(LobbySelectors.currentPlayers);
 
   currentHand = this.store.selectSignal(CurrentHandSelector.currentHand);
 
-  currentCardStack = this.store.selectSignal(CurrentCardStackSelector.currentCardStack);
+  currentCardStack = this.store.selectSignal(
+    CurrentCardStackSelector.currentCardStack,
+  );
 
-  currentDeliveryStack = this.store.selectSignal(CurrentDeliveryStackSelector.currentDeliveryStack);
+  currentDeliveryStack = this.store.selectSignal(
+    CurrentDeliveryStackSelector.currentDeliveryStack,
+  );
 
-  currentUserHeroData = this.store.selectSignal(CurrentUserSelectors.currentUserHeroData);
-  heropowerActivated = this.store.selectSignal(HeropowerSelectors.currentHeropowerActivated);
+  currentUserHeroData = this.store.selectSignal(
+    CurrentUserSelectors.currentUserHeroData,
+  );
+  heropowerActivated = this.store.selectSignal(
+    HeropowerSelectors.currentHeropowerActivated,
+  );
 
   /** Aktionskarten, die vor der Auflösung einen Zielspieler brauchen (Anleitung S. 9) - werden
    * in chooseCard() abgefangen statt an CardPlayService.chooseCard() weitergereicht, das diese
    * Kartennamen nicht kennt. "Wut" braucht zwei Zielspieler, siehe openWutDialog(). */
-  private readonly singleTargetActionCards = new Set(['spende', 'stehlen', 'heilkräuter', 'heile']);
+  private readonly singleTargetActionCards = new Set([
+    'spende',
+    'stehlen',
+    'heilkräuter',
+    'heile',
+  ]);
 
   loadError = signal<string | null>(null);
 
@@ -86,26 +122,32 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       this.loadLocalGameOnce();
       return;
     }
-    this.gameSubscr = this.firestoreSync.watchGamesCollection().subscribe(async () => {
-      let data: DocumentData | undefined;
-      try {
-        data = await this.gameRepo.getGame(this.currentGameId());
-      } catch {
-        this.loadError.set('Der Spielstand konnte nicht geladen werden. Bitte Seite neu laden.');
-        return;
-      }
-      this.updateFromDatabase(data!);
+    this.gameSubscr = this.firestoreSync
+      .watchGamesCollection()
+      .subscribe(async () => {
+        let data: DocumentData | undefined;
+        try {
+          data = await this.gameRepo.getGame(this.currentGameId());
+        } catch {
+          this.loadError.set(
+            'Der Spielstand konnte nicht geladen werden. Bitte Seite neu laden.',
+          );
+          return;
+        }
+        this.updateFromDatabase(data!);
 
-      this.playerSubsc?.unsubscribe();
-      this.playerSubsc = this.firestoreSync
-        .watchPlayerDoc(this.currentGameId(), this.currentPlayerId())
-        .subscribe({
-          next: (data) => this.updatePlayerFromDatabase(data),
-          error: () => {
-            this.loadError.set('Die Verbindung zum Spiel wurde unterbrochen. Bitte Seite neu laden.');
-          },
-        });
-    });
+        this.playerSubsc?.unsubscribe();
+        this.playerSubsc = this.firestoreSync
+          .watchPlayerDoc(this.currentGameId(), this.currentPlayerId())
+          .subscribe({
+            next: (data) => this.updatePlayerFromDatabase(data),
+            error: () => {
+              this.loadError.set(
+                'Die Verbindung zum Spiel wurde unterbrochen. Bitte Seite neu laden.',
+              );
+            },
+          });
+      });
   }
 
   /** Einmaliger Ersatz für die Firestore-Live-Sync-Kette oben, nur für lokale Singleplayer-
@@ -120,7 +162,9 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     try {
       data = await this.gameRepo.getGame(this.currentGameId());
     } catch {
-      this.loadError.set('Der Spielstand konnte nicht geladen werden. Bitte Seite neu laden.');
+      this.loadError.set(
+        'Der Spielstand konnte nicht geladen werden. Bitte Seite neu laden.',
+      );
       return;
     }
     if (data) {
@@ -129,9 +173,14 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
     let playerData: DocumentData | undefined;
     try {
-      playerData = await this.playerRepo.getPlayer(this.currentGameId(), this.currentPlayerId());
+      playerData = await this.playerRepo.getPlayer(
+        this.currentGameId(),
+        this.currentPlayerId(),
+      );
     } catch {
-      this.loadError.set('Die Verbindung zum Spiel wurde unterbrochen. Bitte Seite neu laden.');
+      this.loadError.set(
+        'Die Verbindung zum Spiel wurde unterbrochen. Bitte Seite neu laden.',
+      );
       return;
     }
     if (playerData) {
@@ -169,7 +218,11 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
    * `undefined`-Ergebnis bedeutet "Dialog ohne Auswahl geschlossen"). */
   private pickPlayer(): Observable<HeropowerDialogPlayer | undefined> {
     return this.dialog
-      .open<DialogHeropowerComponent, HeropowerDialogPlayer[], { data: HeropowerDialogPlayer }>(DialogHeropowerComponent, {
+      .open<
+        DialogHeropowerComponent,
+        HeropowerDialogPlayer[],
+        { data: HeropowerDialogPlayer }
+      >(DialogHeropowerComponent, {
         data: this.currentPlayers(),
       })
       .afterClosed()
@@ -190,8 +243,14 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.store.dispatch(new SetCurrentBoss(data['currentBoss']));
     this.store.dispatch(new SetRemainingBosses(data['allBosses']));
     this.store.dispatch(new SetChoosenHeros(data['choosenHeros']));
-    this.store.dispatch(new updateQuestCardActivated(data['questCardActivated']));
-    this.store.dispatch(new UpdateGameStatus(data['gameStatus'] ?? (data['isLost'] ? 'lost' : 'playing')));
+    this.store.dispatch(
+      new updateQuestCardActivated(data['questCardActivated']),
+    );
+    this.store.dispatch(
+      new UpdateGameStatus(
+        data['gameStatus'] ?? (data['isLost'] ? 'lost' : 'playing'),
+      ),
+    );
     if (typeof data['timerStartedAt'] === 'number') {
       this.store.dispatch(new StartGameTimer(data['timerStartedAt']));
     } else {
@@ -202,14 +261,23 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     }
     this.store.dispatch(
       new SetGameTimerPauseState(
-        typeof data['timerPausedAt'] === 'number' ? data['timerPausedAt'] : null,
-        typeof data['timerPausedSecondsTotal'] === 'number' ? data['timerPausedSecondsTotal'] : 0
-      )
+        typeof data['timerPausedAt'] === 'number'
+          ? data['timerPausedAt']
+          : null,
+        typeof data['timerPausedSecondsTotal'] === 'number'
+          ? data['timerPausedSecondsTotal']
+          : 0,
+      ),
     );
     this.store.dispatch(
       new SetGameStats(
-        data['stats'] ?? { enemiesDefeated: 0, cardsPlayed: 0, cardsCycled: 0, heropowersUsed: 0 }
-      )
+        data['stats'] ?? {
+          enemiesDefeated: 0,
+          cardsPlayed: 0,
+          cardsCycled: 0,
+          heropowersUsed: 0,
+        },
+      ),
     );
   }
 
@@ -217,22 +285,44 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.vibrate();
     switch (kind) {
       case 'magier':
-        this.reportWriteFailure(this.heropowerService.resolveMagierHeropower(this.currentGameId(), this.currentPlayerId()));
+        this.reportWriteFailure(
+          this.heropowerService.resolveMagierHeropower(
+            this.currentGameId(),
+            this.currentPlayerId(),
+          ),
+        );
         break;
       case 'array':
         this.reportWriteFailure(
-          this.heropowerService.resolveArrayHeropower(this.currentGameId(), this.currentPlayerId(), (enemy) =>
-            this.reportWriteFailure(this.cardPlayService.checkForNextEnemy(this.currentGameId(), enemy))
-          )
+          this.heropowerService.resolveArrayHeropower(
+            this.currentGameId(),
+            this.currentPlayerId(),
+            (enemy) =>
+              this.reportWriteFailure(
+                this.cardPlayService.checkForNextEnemy(
+                  this.currentGameId(),
+                  enemy,
+                ),
+              ),
+          ),
         );
         break;
       case 'jaegerin':
         this.reportWriteFailure(
-          this.heropowerService.resolveJaegerinHeropower(this.currentGameId(), this.currentPlayerId(), () => this.openDialog())
+          this.heropowerService.resolveJaegerinHeropower(
+            this.currentGameId(),
+            this.currentPlayerId(),
+            () => this.openDialog(),
+          ),
         );
         break;
       case 'walkuere':
-        this.reportWriteFailure(this.heropowerService.resolveWalkuereHeropower(this.currentGameId(), this.currentPlayerId()));
+        this.reportWriteFailure(
+          this.heropowerService.resolveWalkuereHeropower(
+            this.currentGameId(),
+            this.currentPlayerId(),
+          ),
+        );
         break;
     }
   }
@@ -250,7 +340,13 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.reportWriteFailure(this.cardPlayService.chooseCard(this.currentGameId(), this.currentPlayerId(), card));
+    this.reportWriteFailure(
+      this.cardPlayService.chooseCard(
+        this.currentGameId(),
+        this.currentPlayerId(),
+        card,
+      ),
+    );
   }
 
   /** Öffnet den Zielspieler-Dialog für Spende/Stehlen/Heilkräuter/Heilung (je ein Zielspieler)
@@ -262,16 +358,44 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
 
       switch (card) {
         case 'spende':
-          this.reportWriteFailure(this.cardPlayService.resolveSpende(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
+          this.reportWriteFailure(
+            this.cardPlayService.resolveSpende(
+              this.currentGameId(),
+              this.currentPlayerId(),
+              card,
+              targetPlayerId,
+            ),
+          );
           break;
         case 'stehlen':
-          this.reportWriteFailure(this.cardPlayService.resolveStehlen(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
+          this.reportWriteFailure(
+            this.cardPlayService.resolveStehlen(
+              this.currentGameId(),
+              this.currentPlayerId(),
+              card,
+              targetPlayerId,
+            ),
+          );
           break;
         case 'heilkräuter':
-          this.reportWriteFailure(this.cardPlayService.resolveHeilkraeuter(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
+          this.reportWriteFailure(
+            this.cardPlayService.resolveHeilkraeuter(
+              this.currentGameId(),
+              this.currentPlayerId(),
+              card,
+              targetPlayerId,
+            ),
+          );
           break;
         case 'heile':
-          this.reportWriteFailure(this.cardPlayService.resolveHeilung(this.currentGameId(), this.currentPlayerId(), card, targetPlayerId));
+          this.reportWriteFailure(
+            this.cardPlayService.resolveHeilung(
+              this.currentGameId(),
+              this.currentPlayerId(),
+              card,
+              targetPlayerId,
+            ),
+          );
           break;
       }
     });
@@ -286,22 +410,41 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
       this.pickPlayer().subscribe((resultTwo) => {
         if (!resultTwo) return;
         this.reportWriteFailure(
-          this.cardPlayService.resolveWut(this.currentGameId(), this.currentPlayerId(), 'wut', resultOne.playerId, resultTwo.playerId)
+          this.cardPlayService.resolveWut(
+            this.currentGameId(),
+            this.currentPlayerId(),
+            'wut',
+            resultOne.playerId,
+            resultTwo.playerId,
+          ),
         );
       });
     });
   }
 
   restCard(card: string) {
-    this.reportWriteFailure(this.cardPlayService.restCard(this.currentGameId(), this.currentPlayerId(), card));
+    this.reportWriteFailure(
+      this.cardPlayService.restCard(
+        this.currentGameId(),
+        this.currentPlayerId(),
+        card,
+      ),
+    );
   }
 
   resolveEvent() {
-    this.reportWriteFailure(this.cardPlayService.resolveEvent(this.currentGameId(), this.currentPlayerId()));
+    this.reportWriteFailure(
+      this.cardPlayService.resolveEvent(
+        this.currentGameId(),
+        this.currentPlayerId(),
+      ),
+    );
   }
 
   isEventActive(): boolean {
-    return this.store.selectSnapshot(CurrentGameSelectors.currentQuestCardStatus);
+    return this.store.selectSnapshot(
+      CurrentGameSelectors.currentQuestCardStatus,
+    );
   }
 
   isSingleplayer(): boolean {
@@ -312,7 +455,11 @@ export class PlayerHandComponent implements OnInit, OnDestroy {
     this.pickPlayer().subscribe((result) => {
       if (!result) return;
       this.reportWriteFailure(
-        this.heropowerService.resolveJaegerinHeropowerForPlayer(this.currentGameId(), this.currentPlayerId(), result.playerId)
+        this.heropowerService.resolveJaegerinHeropowerForPlayer(
+          this.currentGameId(),
+          this.currentPlayerId(),
+          result.playerId,
+        ),
       );
     });
   }

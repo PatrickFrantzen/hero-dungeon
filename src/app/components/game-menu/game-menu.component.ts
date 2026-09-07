@@ -1,15 +1,35 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngxs/store';
 import { CurrentGameAction } from 'src/app/actions/currentGame-action';
 import { CurrentUserSelectors } from 'src/app/selectors/currentUser-selectors';
-import { LocalSingleplayerSave, LocalSingleplayerSaveService } from 'src/app/services/local-singleplayer-save.service';
-import { JoinedGame, UserRepositoryService } from 'src/app/services/user-repository.service';
+import {
+  LocalSingleplayerSave,
+  LocalSingleplayerSaveService,
+} from 'src/app/services/local-singleplayer-save.service';
+import {
+  JoinedGame,
+  UserRepositoryService,
+} from 'src/app/services/user-repository.service';
 import { DialogLinkAccountComponent } from '../dialog-link-account/dialog-link-account.component';
-import { DialogConfirmComponent, DialogConfirmResult } from '../dialog-confirm/dialog-confirm.component';
-import { SaveListEntry, openSaveSelector } from '../dialog-select-save/dialog-select-save.component';
+import {
+  DialogConfirmComponent,
+  DialogConfirmResult,
+} from '../dialog-confirm/dialog-confirm.component';
+import {
+  SaveListEntry,
+  openSaveSelector,
+} from '../dialog-select-save/dialog-select-save.component';
 
 /**
  * In-Game-Menü (Issue #74, PR 2 aus docs/done/login-multiplayer-onboarding-plan.md) -
@@ -51,7 +71,9 @@ export class GameMenuComponent {
    * StartscreenComponent. Nur relevant, solange das Menü im Multiplayer-Modus ist - lädt
    * trotzdem unabhängig von isOpen(), damit die Liste beim ersten Öffnen bereits da ist. */
   myGames = signal<JoinedGame[]>([]);
-  private currentUserId = this.store.selectSignal(CurrentUserSelectors.currentUserId);
+  private currentUserId = this.store.selectSignal(
+    CurrentUserSelectors.currentUserId,
+  );
 
   constructor() {
     effect(() => {
@@ -62,7 +84,9 @@ export class GameMenuComponent {
       if (!userId) {
         return;
       }
-      this.userRepo.getJoinedGames(userId).then((games) => this.myGames.set(games));
+      this.userRepo
+        .getJoinedGames(userId)
+        .then((games) => this.myGames.set(games));
     });
   }
 
@@ -83,7 +107,9 @@ export class GameMenuComponent {
   }
 
   hasSaves(): boolean {
-    return this.isSingleplayer() ? this.listSaves().length > 0 : this.myGames().length > 0;
+    return this.isSingleplayer()
+      ? this.listSaves().length > 0
+      : this.myGames().length > 0;
   }
 
   /** "Spielstände laden" (Singleplayer) bzw. "Meine Spiele" (Multiplayer) - ersetzt die
@@ -93,15 +119,28 @@ export class GameMenuComponent {
    * beide Modi gleichzeitig. */
   openSaveDialog(): void {
     const entries: SaveListEntry[] = this.isSingleplayer()
-      ? this.listSaves().map((save): SaveListEntry => ({ id: save.saveId, label: this.saveLabel(save), mode: 'singleplayer', lastPlayedAt: save.updatedAt }))
-      : this.myGames().map((game): SaveListEntry => ({ id: game.gameId, label: game.gameId, mode: 'multiplayer', lastPlayedAt: game.lastPlayedAt || null }));
+      ? this.listSaves().map((save): SaveListEntry => ({
+          id: save.saveId,
+          label: this.saveLabel(save),
+          mode: 'singleplayer',
+          lastPlayedAt: save.updatedAt,
+        }))
+      : this.myGames().map((game): SaveListEntry => ({
+          id: game.gameId,
+          label: game.gameId,
+          mode: 'multiplayer',
+          lastPlayedAt: game.lastPlayedAt || null,
+        }));
 
     openSaveSelector(this.dialog, entries).subscribe((result) => {
       if (!result) {
         return;
       }
       this.store.dispatch(new CurrentGameAction(result.selectedId));
-      this.router.navigate([(result.mode === 'singleplayer' ? '/local-game/' : '/game/') + result.selectedId]);
+      this.router.navigate([
+        (result.mode === 'singleplayer' ? '/local-game/' : '/game/') +
+          result.selectedId,
+      ]);
     });
   }
 
@@ -120,15 +159,23 @@ export class GameMenuComponent {
   /** Analog zu StartscreenComponent.heroNameOf() - `player` ist ein loses Feld-Bag, vor der
    * Heldenauswahl existiert `choosenHero` noch nicht. */
   saveLabel(save: LocalSingleplayerSave): string {
-    const choosenHero = save.player['choosenHero'] as { heroname?: string } | undefined;
+    const choosenHero = save.player['choosenHero'] as
+      { heroname?: string } | undefined;
     return choosenHero?.heroname ?? save.saveId;
   }
 
-  private openConfirmDialog(title: string, message: string, onConfirmed: () => void): void {
+  private openConfirmDialog(
+    title: string,
+    message: string,
+    onConfirmed: () => void,
+  ): void {
     this.dialog
-      .open<DialogConfirmComponent, unknown, { data: DialogConfirmResult }>(DialogConfirmComponent, {
-        data: { title, message },
-      })
+      .open<DialogConfirmComponent, unknown, { data: DialogConfirmResult }>(
+        DialogConfirmComponent,
+        {
+          data: { title, message },
+        },
+      )
       .afterClosed()
       .subscribe((result) => {
         if (result?.data.confirmed) {
@@ -148,7 +195,7 @@ export class GameMenuComponent {
       () => {
         this.localSaves.deleteSave(this.gameId());
         this.router.navigate(['/startscreen']);
-      }
+      },
     );
   }
 
@@ -158,7 +205,7 @@ export class GameMenuComponent {
     this.openConfirmDialog(
       'Spielstand löschen?',
       'Du wirst aus diesem Spiel entfernt. Die übrigen Mitspieler können ohne dich weiterspielen.',
-      () => this.deleteGame.emit()
+      () => this.deleteGame.emit(),
     );
   }
 }

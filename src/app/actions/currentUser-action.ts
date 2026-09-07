@@ -1,6 +1,9 @@
 export class CurrentUserAction {
   static readonly type = '[Startscreen Page] Fetching current User Data';
-  constructor(public id: string, public name: string) {}
+  constructor(
+    public id: string,
+    public name: string,
+  ) {}
 }
 
 export class CurrentUserHeroAction {
@@ -8,6 +11,6 @@ export class CurrentUserHeroAction {
   constructor(
     public choosenHero: string,
     public heroPower: string,
-    public description: string
+    public description: string,
   ) {}
 }

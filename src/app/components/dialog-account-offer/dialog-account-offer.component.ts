@@ -1,7 +1,22 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Auth } from '@angular/fire/auth';
-import { MatDialogTitle, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import {
+  MatDialogTitle,
+  MatDialogContent,
+  MatDialogActions,
+} from '@angular/material/dialog';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
@@ -39,7 +54,10 @@ export interface AccountOfferDialogResult {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DialogAccountOfferComponent extends BaseDialogComponent<AccountOfferDialogResult> implements OnInit {
+export class DialogAccountOfferComponent
+  extends BaseDialogComponent<AccountOfferDialogResult>
+  implements OnInit
+{
   private fb = inject(FormBuilder);
   private authForm = inject(AuthFormService);
   private auth = inject(Auth);
@@ -63,11 +81,16 @@ export class DialogAccountOfferComponent extends BaseDialogComponent<AccountOffe
     try {
       const { email, password, nickname } = this.form.value;
       await this.authForm.register(email, password, nickname);
-      await this.migration.migrateAll(this.auth.currentUser?.uid ?? '', nickname);
+      await this.migration.migrateAll(
+        this.auth.currentUser?.uid ?? '',
+        nickname,
+      );
       this.closeWith({ accountCreated: true });
     } catch (error) {
       this.errorMessage =
-        error instanceof Error ? error.message : 'Account konnte nicht erstellt werden. Bitte erneut versuchen.';
+        error instanceof Error
+          ? error.message
+          : 'Account konnte nicht erstellt werden. Bitte erneut versuchen.';
     } finally {
       this.isSubmitting = false;
     }

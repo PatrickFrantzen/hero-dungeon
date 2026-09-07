@@ -42,7 +42,10 @@ describe('GameRepositoryService', () => {
 
     expect(spy).toHaveBeenCalledWith(
       ['games', 'game-1'],
-      jasmine.objectContaining({ choosenHeros: [{ playerId: 'p1' }], lastActivityAt: jasmine.anything() })
+      jasmine.objectContaining({
+        choosenHeros: [{ playerId: 'p1' }],
+        lastActivityAt: jasmine.anything(),
+      }),
     );
   });
 
@@ -55,7 +58,7 @@ describe('GameRepositoryService', () => {
 
     expect(spy).toHaveBeenCalledWith(
       ['games', 'game-1'],
-      jasmine.objectContaining({ ...game, lastActivityAt: jasmine.anything() })
+      jasmine.objectContaining({ ...game, lastActivityAt: jasmine.anything() }),
     );
   });
 

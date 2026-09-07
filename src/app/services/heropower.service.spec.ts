@@ -22,7 +22,15 @@ describe('HeropowerService', () => {
   beforeEach(() => {
     ensureFirebaseTestAppInitialized();
     TestBed.configureTestingModule({
-      imports: [NgxsModule.forRoot([EncounterState, CardStackState, cardsInHandState, heropowerState, CurrentGameState])],
+      imports: [
+        NgxsModule.forRoot([
+          EncounterState,
+          CardStackState,
+          cardsInHandState,
+          heropowerState,
+          CurrentGameState,
+        ]),
+      ],
       providers: firestoreTestProviders(),
     });
     ensureAngularFireSchedulersInitialized();
@@ -51,17 +59,33 @@ describe('HeropowerService', () => {
         ...snapshot['encounter'],
         currentEnemy: { name: 'Goblin', type: 'Monster', token: ['red'] },
       },
-      heropower: { ...snapshot['heropower'], heropowerArray: ['red', 'yellow', 'green'], heropowerActivated: true },
+      heropower: {
+        ...snapshot['heropower'],
+        heropowerArray: ['red', 'yellow', 'green'],
+        heropowerActivated: true,
+      },
     });
 
     const gameRepo = TestBed.inject(GameRepositoryService);
-    const updateSpy = spyOn(gameRepo, 'updateCurrentEnemyToken').and.resolveTo();
+    const updateSpy = spyOn(
+      gameRepo,
+      'updateCurrentEnemyToken',
+    ).and.resolveTo();
     spyOn(gameRepo, 'updateStats').and.resolveTo();
     const onEnemyTokenCleared = jasmine.createSpy('onEnemyTokenCleared');
 
-    await service.resolveArrayHeropower('game-1', 'player-1', onEnemyTokenCleared);
+    await service.resolveArrayHeropower(
+      'game-1',
+      'player-1',
+      onEnemyTokenCleared,
+    );
 
-    expect(updateSpy).toHaveBeenCalledWith('game-1', jasmine.objectContaining({ token: [] }));
-    expect(onEnemyTokenCleared).toHaveBeenCalledWith(jasmine.objectContaining({ token: [] }));
+    expect(updateSpy).toHaveBeenCalledWith(
+      'game-1',
+      jasmine.objectContaining({ token: [] }),
+    );
+    expect(onEnemyTokenCleared).toHaveBeenCalledWith(
+      jasmine.objectContaining({ token: [] }),
+    );
   });
 });

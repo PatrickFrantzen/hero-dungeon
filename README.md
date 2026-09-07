@@ -52,6 +52,14 @@ ng test --watch=false --browsers=ChromeHeadlessCI   # Unit-Tests
 npm run test:rules                                   # Firestore Security Rules (braucht Java)
 ```
 
+### Lint & Format
+
+```bash
+npm run lint           # ESLint (@angular-eslint)
+npm run format         # Prettier, schreibt
+npm run format:check   # Prettier, nur prüfen
+```
+
 ## Projektstruktur
 
 ```

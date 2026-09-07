@@ -1,40 +1,40 @@
 .logIn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    min-height: 100dvh;
-    background-image: url('^assets/img/backgroundimage/background.png');
-    background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-image: url('^assets/img/backgroundimage/background.png');
+  background-size: cover;
 }
 
 .logIn-area {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
 
 .input-area {
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    align-items: center;
-    flex-direction: column;
-    width: 150px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  flex-direction: column;
+  width: 150px;
 }
 
 .error-message {
-    color: #ff8a8a;
-    text-align: center;
-    margin: 0 16px;
+  color: #ff8a8a;
+  text-align: center;
+  margin: 0 16px;
 }
 
 .footer {
-    padding-bottom: 16px;
+  padding-bottom: 16px;
 
-    button {
-        margin-left: 8px;
-        margin-right: 8px;
-    }
+  button {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
 }

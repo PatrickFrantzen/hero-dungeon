@@ -11,10 +11,13 @@ import { UpdateDeliveryStack } from '../actions/deliveryStack-action';
 import { SetGameStats } from '../actions/currentGame-action';
 import { PlayerRepositoryService } from './player-repository.service';
 import { GameRepositoryService } from './game-repository.service';
-import { UpdateHeropowerActivated, UpdateHeropowerArray } from '../actions/heropower-action';
+import {
+  UpdateHeropowerActivated,
+  UpdateHeropowerArray,
+} from '../actions/heropower-action';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DiebService {
   private store = inject(Store);
@@ -22,28 +25,28 @@ export class DiebService {
   private gameRepo = inject(GameRepositoryService);
 
   heropower(heropowerArray: string[]) {
-    let currentHand = this.store.selectSnapshot(
-      CurrentHandSelector.currentHand
+    const currentHand = this.store.selectSnapshot(
+      CurrentHandSelector.currentHand,
     );
-    let currentCardStack = this.store.selectSnapshot(
-      CurrentCardStackSelector.currentCardStack
+    const currentCardStack = this.store.selectSnapshot(
+      CurrentCardStackSelector.currentCardStack,
     );
-    let currentDeliveryStack = this.store.selectSnapshot(
-      CurrentDeliveryStackSelector.currentDeliveryStack
+    const currentDeliveryStack = this.store.selectSnapshot(
+      CurrentDeliveryStackSelector.currentDeliveryStack,
     );
-    let gameId = this.store.selectSnapshot(CurrentGameSelectors.currentGame);
-    let playerId = this.store.selectSnapshot(
-      CurrentUserSelectors.currentUserId
+    const gameId = this.store.selectSnapshot(CurrentGameSelectors.currentGame);
+    const playerId = this.store.selectSnapshot(
+      CurrentUserSelectors.currentUserId,
     );
-    let currHand = [...currentHand];
-    let currCardStack = [...currentCardStack];
-    let currDeliveryStack = [...currentDeliveryStack];
+    const currHand = [...currentHand];
+    const currCardStack = [...currentCardStack];
+    const currDeliveryStack = [...currentDeliveryStack];
 
     // Lege die 3 gewählten Karten auf den Ablagestapel statt sie zu verwerfen - sonst
     // verschwinden sie dauerhaft aus dem Umlauf, statt beim nächsten Reshuffle
     // (CardPlayService.drawCards()) wieder verfügbar zu werden.
     heropowerArray.forEach((card) => {
-      let indexOfHandCard = currHand.indexOf(card);
+      const indexOfHandCard = currHand.indexOf(card);
       if (indexOfHandCard === -1) return;
 
       currDeliveryStack.push(...currHand.splice(indexOfHandCard, 1));
@@ -71,8 +74,13 @@ export class DiebService {
 
     // Statistik-Zähler "genutzte Heldenfähigkeiten" (GameStats) - der Dieb läuft nicht über
     // HeropowerService.bumpStat(), daher hier separat analog zum dortigen Muster.
-    const currentStats = this.store.selectSnapshot(CurrentGameSelectors.currentStats);
-    const stats = { ...currentStats, heropowersUsed: currentStats.heropowersUsed + 1 };
+    const currentStats = this.store.selectSnapshot(
+      CurrentGameSelectors.currentStats,
+    );
+    const stats = {
+      ...currentStats,
+      heropowersUsed: currentStats.heropowersUsed + 1,
+    };
     this.store.dispatch(new SetGameStats(stats));
     this.gameRepo.updateStats(gameId, stats);
   }

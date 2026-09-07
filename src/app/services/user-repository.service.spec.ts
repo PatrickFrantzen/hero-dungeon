@@ -26,7 +26,10 @@ describe('UserRepositoryService', () => {
 
   it('getUser reads the users/{uid} document via the repository', async () => {
     const repo = TestBed.inject(FirestoreRepositoryService);
-    const spy = spyOn(repo, 'getDoc').and.resolveTo({ userId: 'uid-1', games: ['game-1'] });
+    const spy = spyOn(repo, 'getDoc').and.resolveTo({
+      userId: 'uid-1',
+      games: ['game-1'],
+    });
 
     const result = await service.getUser('uid-1');
 
@@ -45,7 +48,9 @@ describe('UserRepositoryService', () => {
 
   it('getJoinedGames passes already-migrated entries through unchanged', async () => {
     const repo = TestBed.inject(FirestoreRepositoryService);
-    spyOn(repo, 'getDoc').and.resolveTo({ games: [{ gameId: 'game-1', lastPlayedAt: 12345 }] });
+    spyOn(repo, 'getDoc').and.resolveTo({
+      games: [{ gameId: 'game-1', lastPlayedAt: 12345 }],
+    });
 
     const result = await service.getJoinedGames('uid-1');
 
@@ -63,7 +68,9 @@ describe('UserRepositoryService', () => {
 
   it('addJoinedGame writes the new game with a fresh lastPlayedAt, keeping other games untouched', async () => {
     const repo = TestBed.inject(FirestoreRepositoryService);
-    spyOn(repo, 'getDoc').and.resolveTo({ games: [{ gameId: 'game-old', lastPlayedAt: 1 }] });
+    spyOn(repo, 'getDoc').and.resolveTo({
+      games: [{ gameId: 'game-old', lastPlayedAt: 1 }],
+    });
     const mergeSpy = spyOn(repo, 'setDocMerge').and.resolveTo();
     spyOn(Date, 'now').and.returnValue(999);
 
@@ -76,13 +83,15 @@ describe('UserRepositoryService', () => {
           { gameId: 'game-old', lastPlayedAt: 1 },
           { gameId: 'game-new', lastPlayedAt: 999 },
         ],
-      })
+      }),
     );
   });
 
   it('addJoinedGame refreshes lastPlayedAt instead of duplicating an already-joined game', async () => {
     const repo = TestBed.inject(FirestoreRepositoryService);
-    spyOn(repo, 'getDoc').and.resolveTo({ games: [{ gameId: 'game-1', lastPlayedAt: 1 }] });
+    spyOn(repo, 'getDoc').and.resolveTo({
+      games: [{ gameId: 'game-1', lastPlayedAt: 1 }],
+    });
     const mergeSpy = spyOn(repo, 'setDocMerge').and.resolveTo();
     spyOn(Date, 'now').and.returnValue(999);
 
@@ -90,7 +99,9 @@ describe('UserRepositoryService', () => {
 
     expect(mergeSpy).toHaveBeenCalledWith(
       ['users', 'uid-1'],
-      jasmine.objectContaining({ games: [{ gameId: 'game-1', lastPlayedAt: 999 }] })
+      jasmine.objectContaining({
+        games: [{ gameId: 'game-1', lastPlayedAt: 999 }],
+      }),
     );
   });
 });

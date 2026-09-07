@@ -1,7 +1,7 @@
 export interface Card {
-    token: string
+  token: string;
 }
 
 export interface CardStack {
-    cardstack: string[]
+  cardstack: string[];
 }

@@ -1,7 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { DocumentData } from '@angular/fire/firestore';
 import { Game } from 'src/models/game';
-import { LocalSingleplayerSavePlayer, LocalSingleplayerSaveService } from './local-singleplayer-save.service';
+import {
+  LocalSingleplayerSavePlayer,
+  LocalSingleplayerSaveService,
+} from './local-singleplayer-save.service';
 
 /**
  * Bildet dieselbe getDoc/setDoc/updateFields-Semantik wie FirestoreRepositoryService ab, aber
@@ -29,9 +32,15 @@ export class LocalGameDocumentStoreService {
       saveId: gameId,
       updatedAt: Date.now(),
       game: (path.length === 2 ? data : existing?.game) as Game,
-      player: (path.length === 2 ? existing?.player ?? {} : data) as LocalSingleplayerSavePlayer,
+      player: (path.length === 2
+        ? (existing?.player ?? {})
+        : data) as LocalSingleplayerSavePlayer,
     };
-    existing ? this.saves.updateSave(gameId, updated) : this.saves.createSave(updated);
+    if (existing) {
+      this.saves.updateSave(gameId, updated);
+    } else {
+      this.saves.createSave(updated);
+    }
   }
 
   updateFields<T extends object>(path: string[], patch: Partial<T>): void {
@@ -47,6 +56,8 @@ export class LocalGameDocumentStoreService {
    * LocalSingleplayerSaveService.createSave() - `player` startet als `{}`). */
   queryAll<T extends DocumentData>(path: string[]): T[] {
     const player = this.saves.getSave(path[1])?.player;
-    return player && Object.keys(player).length > 0 ? [player as unknown as T] : [];
+    return player && Object.keys(player).length > 0
+      ? [player as unknown as T]
+      : [];
   }
 }

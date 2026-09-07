@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { Game } from 'src/models/game';
 
-import { LocalSingleplayerSave, LocalSingleplayerSaveService } from './local-singleplayer-save.service';
+import {
+  LocalSingleplayerSave,
+  LocalSingleplayerSaveService,
+} from './local-singleplayer-save.service';
 
 function buildSave(saveId: string): LocalSingleplayerSave {
   return {

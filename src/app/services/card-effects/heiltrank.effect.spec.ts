@@ -35,7 +35,9 @@ describe('HeiltrankEffect', () => {
     expect(ctx.resumeGameTimerIfPaused).toHaveBeenCalled();
     expect(ctx.saveHand).toHaveBeenCalledWith('heiltrank', ['heiltrank']);
     expect(ctx.reclaimCardsFromDeliveryStack).toHaveBeenCalledWith(3);
-    expect(ctx.reclaimCardsFromDeliveryStackForOtherPlayers).toHaveBeenCalledWith(3);
+    expect(
+      ctx.reclaimCardsFromDeliveryStackForOtherPlayers,
+    ).toHaveBeenCalledWith(3);
   });
 
   it('does not touch the current threat', async () => {
