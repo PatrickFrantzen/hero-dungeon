@@ -74,11 +74,11 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
   (`@firebase/rules-unit-testing`, `npm run test:rules` startet den Firestore-Emulator via
   `firebase emulators:exec`). Bei Änderungen an der Firestore-Datenstruktur (neue
   Collections/Felder) die Rules und ihre Tests mitziehen.
-- **CI**: `.github/workflows/ci.yml` mit zwei Jobs: `build-and-test` (`npm ci
-  --legacy-peer-deps`, `ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI`) und
-  `firestore-rules` (`npm run test:rules`, braucht Java für den Emulator).
-  `--legacy-peer-deps` ist nötig, weil `@angular/fire`s Peer-Range nicht exakt zur installierten
-  Angular-Version passt.
+- **CI**: `.github/workflows/ci.yml` mit drei Jobs: `build-and-test` (`npm ci
+  --legacy-peer-deps`, `ng build`, `ng test --watch=false --browsers=ChromeHeadlessCI`), `lint`
+  (`npm run lint`, seit 2026-09-07, Issue #114) und `firestore-rules` (`npm run test:rules`,
+  braucht Java für den Emulator). `--legacy-peer-deps` ist nötig, weil `@angular/fire`s
+  Peer-Range nicht exakt zur installierten Angular-Version passt.
 - **Deployment: GitHub Pages** (`.github/workflows/deploy-pages.yml` + `deploy-pages-dev.yml`),
   Ziel-Branch für beide `gh-pages`. Push auf `main` deployt Prod nach
   `https://<owner>.github.io/hero-dungeon/` (Root der `gh-pages`-Branch), Push auf `dev` deployt
@@ -103,15 +103,18 @@ Logik) — mitbeschrieben in `src/app/states/CLAUDE.md`. `firestore.rules` +
   gesamte Codebestand wurde einmalig mit `prettier --write` formatiert. `eslint.config.js`
   bindet `eslint-config-prettier` zuletzt ein, damit Stilregeln nicht mit Prettier kollidieren;
   `@typescript-eslint/no-empty-function` ist für `*.spec.ts` deaktiviert (Jasmine-Testdoubles wie
-  `{ close: () => {} }` sind dort idiomatisch leer). **Noch nicht in CI verankert** — `ng lint`
-  ist aktuell nicht Teil von `.github/workflows/ci.yml`. **24 verbleibende Lint-Fehler** (nicht
-  automatisch fixbar, Tracking-Issue #114, siehe `To-Do.md`): `@angular-eslint/prefer-inject` (Issue #94, mehr
-  Fundstellen als bisher dokumentiert), zwei `preserve-caught-error`-Stellen in
-  `auth-form.service.ts`, zwei Accessibility-Befunde (`click-events-have-key-events`/
-  `interactive-supports-focus`) in `heropower.component.html`/`hand-cards.component.html` — vor
-  Umsetzung von Vorschlag der ESLint-Regel abweichen können, wenn ein einfacher `<button>` das UX
-  ehrlicher abbildet, statt Tastatur-Handler auf ein `<img>`/`<div>` nachzurüsten; keine
-  automatischen Massenänderungen ohne Rücksprache.
+  `{ close: () => {} }` sind dort idiomatisch leer). **Seit 2026-09-07 in CI verankert** (`lint`-
+  Job, siehe oben) — die 24 anfänglich offenen Fehler (Tracking-Issue #114) sind abgearbeitet:
+  alle 14 `@angular-eslint/prefer-inject`-Fundstellen (Issue #94-Erweiterung, betraf zusätzlich zu
+  `player-hand.component.ts`/`game.component.ts` auch `card-play.service.ts`,
+  `heropower.service.ts`, `current-user.service.ts`, `local-save-migration.service.ts`,
+  `user-repository.service.ts` — siehe `services/CLAUDE.md`) sind auf `inject()` umgestellt, die
+  vier `preserve-caught-error`-Stellen in `auth-form.service.ts` werfen jetzt mit
+  `{ cause: error }`, und die beiden Accessibility-Befunde
+  (`click-events-have-key-events`/`interactive-supports-focus`) in
+  `heropower.component.html`/`hand-cards.component.html` sind durch Umstellung des klickbaren
+  `<img>` auf ein umschließendes `<button>` behoben (ehrlichere UX als nachgerüstete
+  Tastatur-Handler auf `<img>`, siehe `components/CLAUDE.md`).
 - **Agent-Skills**: `.claude/skills/` enthält seit 2026-09-04 zusätzlich zu den eingebauten
   Claude-Code-Skills eine editierbare Kopie der `engineering`-/`productivity`-/`in-progress`-
   Skills aus [mattpocock/skills](https://github.com/mattpocock/skills) (MIT) — Details/Update-

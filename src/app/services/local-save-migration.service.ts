@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { GameRepositoryService } from './game-repository.service';
 import { PlayerRepositoryService } from './player-repository.service';
 import { LocalSingleplayerSaveService } from './local-singleplayer-save.service';
@@ -13,11 +13,9 @@ import { LocalSingleplayerSaveService } from './local-singleplayer-save.service'
   providedIn: 'root',
 })
 export class LocalSaveMigrationService {
-  constructor(
-    private localSaves: LocalSingleplayerSaveService,
-    private gameRepo: GameRepositoryService,
-    private playerRepo: PlayerRepositoryService,
-  ) {}
+  private localSaves = inject(LocalSingleplayerSaveService);
+  private gameRepo = inject(GameRepositoryService);
+  private playerRepo = inject(PlayerRepositoryService);
 
   async migrateAll(
     newUserId: string,

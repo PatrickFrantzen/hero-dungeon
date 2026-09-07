@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { DocumentData, serverTimestamp } from '@angular/fire/firestore';
 import { FirestoreRepositoryService } from './firestore-repository.service';
 
@@ -34,7 +34,7 @@ function normalizeJoinedGames(raw: unknown): JoinedGame[] {
   providedIn: 'root',
 })
 export class UserRepositoryService {
-  constructor(private repo: FirestoreRepositoryService) {}
+  private repo = inject(FirestoreRepositoryService);
 
   getUser(uid: string): Promise<DocumentData | undefined> {
     return this.repo.getDoc(['users', uid]);

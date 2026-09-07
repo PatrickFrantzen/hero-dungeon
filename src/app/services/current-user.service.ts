@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { doc, getDoc, Firestore, DocumentData } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
@@ -8,16 +8,14 @@ import { CurrentUserAction } from '../actions/currentUser-action';
   providedIn: 'root',
 })
 export class CurrentUserService {
+  private store = inject(Store);
+  private auth = inject(Auth);
+  private firestore = inject(Firestore);
+
   currentUser = '';
   currentUserId = '';
   currentUserHero: object = {};
   currentUserData: DocumentData | undefined;
-
-  constructor(
-    private store: Store,
-    private auth: Auth,
-    private firestore: Firestore,
-  ) {}
 
   public getCurrentUser(): Promise<DocumentData | undefined> {
     return new Promise((resolve) => {

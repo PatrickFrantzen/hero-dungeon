@@ -36,9 +36,21 @@ Client-Side-Routing löst der Browser das relativ zur aktuellen URL-Route auf, n
 `index.html`, was unter GitHub Pages (Unterordner-Deployment, siehe Root-`CLAUDE.md`) zu einem
 404 führte. Jetzt: **ein einziges** `<img src="./assets/img/icons/heldenfaehigkeit_icon.png">`
 (Pfad-Muster analog zu `player-hand/`/`enemy/`, die bereits `./assets/img/...` nutzen und
-nachweislich funktionieren) mit einem gemeinsamen `(click)="onActivateHeropower()"`.
-`heropower.component.scss` setzt weiterhin `img { width/height: clamp(...) }` auf
-`.heropower-sheet` für die 160px-Icon-Größe.
+nachweislich funktionieren) in einem `<button (click)="onActivateHeropower()">` (siehe
+Accessibility-Fix unten). `heropower.component.scss` setzt weiterhin `img { width/height:
+clamp(...) }` auf `.heropower-sheet` für die 160px-Icon-Größe.
+
+## Accessibility: `<button>` statt klickbarem `<img>` (Issue #114, 2026-09-07)
+
+Das Aktivierungs-Icon lag bisher direkt auf einem `(click)`-Handler auf dem `<img>` selbst —
+nicht per Tastatur fokussierbar/auslösbar (`@angular-eslint/template/click-events-have-key-events`
++ `.../interactive-supports-focus`). Jetzt umschließt ein `<button type="button"
+class="heropower-activate-button">` das `<img>`, der `(click)`-Handler sitzt am Button. Bewusst
+`<button>` statt nachgerüsteter `tabindex`/`(keydown.enter)`-Handler auf dem `<img>` (siehe
+Root-`CLAUDE.md`, Abschnitt Lint/Format) — ehrlichere UX für ein klickbares Icon. Styling
+unverändert: `.heropower-activate-button` resettet nur `background`/`border`/`padding`, die
+Icon-Größe/das `:active`-Press-Feedback (`transform: scale(0.94)`) bleiben auf `img` bzw. jetzt
+`.heropower-activate-button:active img`.
 
 ## Aktivierungs-/Auflösungsregeln datengetrieben statt zwei duplizierten Switches (TODO 5, 2026-09-05)
 

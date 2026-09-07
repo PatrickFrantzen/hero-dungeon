@@ -13,6 +13,15 @@
   align-items: center;
   z-index: 1;
 
+  // Button statt klickbarem <img> (Issue #114, Accessibility) - per Tastatur fokussierbar,
+  // Klick-Optik/-Größe bleibt unverändert am img selbst.
+  .heropower-activate-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
   img {
     // heldenfaehigkeit_icon.png ist wie die Enemy-Kategorie-Icons (enemy/CLAUDE.md) auf
     // 160x160px zugeschnitten - ohne explizite Größe würde es in natürlicher Pixelgröße
@@ -27,10 +36,10 @@
     &:hover {
       cursor: pointer;
     }
+  }
 
-    &:active {
-      transform: scale(0.94);
-    }
+  .heropower-activate-button:active img {
+    transform: scale(0.94);
   }
 }
 

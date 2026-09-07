@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { DocumentData, where } from '@angular/fire/firestore';
 import { Store } from '@ngxs/store';
 import { UpdateCardStackAction } from 'src/app/actions/CardStack-action';
@@ -48,6 +48,11 @@ import { PlayerRepositoryService } from './player-repository.service';
   providedIn: 'root',
 })
 export class HeropowerService {
+  private store = inject(Store);
+  private gameRepo = inject(GameRepositoryService);
+  private playerRepo = inject(PlayerRepositoryService);
+  private repo = inject(FirestoreRepositoryService);
+
   private currentHand = this.store.selectSignal(
     CurrentHandSelector.currentHand,
   );
@@ -72,13 +77,6 @@ export class HeropowerService {
   private currentStats = this.store.selectSignal(
     CurrentGameSelectors.currentStats,
   );
-
-  constructor(
-    private store: Store,
-    private gameRepo: GameRepositoryService,
-    private playerRepo: PlayerRepositoryService,
-    private repo: FirestoreRepositoryService,
-  ) {}
 
   /** Statistik-Zähler "genutzte Heldenfähigkeiten" (`src/models/game.ts` GameStats) - schreibt
    * den neuen absoluten Wert lokal + nach Firestore, analog zu CardPlayService.bumpStat()

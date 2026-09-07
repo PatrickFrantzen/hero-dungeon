@@ -60,7 +60,7 @@ export class AuthFormService {
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
     } catch (error) {
-      throw new Error(mapAuthError(error, 'login'));
+      throw new Error(mapAuthError(error, 'login'), { cause: error });
     }
   }
 
@@ -81,7 +81,7 @@ export class AuthFormService {
       user.userNickname = nickname;
       await this.repo.setDoc(['users', credential.user.uid], user.toJSON());
     } catch (error) {
-      throw new Error(mapAuthError(error, 'register'));
+      throw new Error(mapAuthError(error, 'register'), { cause: error });
     }
   }
 
@@ -98,7 +98,7 @@ export class AuthFormService {
     try {
       await signInAnonymously(this.auth);
     } catch (error) {
-      throw new Error(mapAuthError(error, 'anonymous'));
+      throw new Error(mapAuthError(error, 'anonymous'), { cause: error });
     }
   }
 
@@ -126,7 +126,7 @@ export class AuthFormService {
         userNickname: nickname,
       });
     } catch (error) {
-      throw new Error(mapAuthError(error, 'link'));
+      throw new Error(mapAuthError(error, 'link'), { cause: error });
     }
   }
 }

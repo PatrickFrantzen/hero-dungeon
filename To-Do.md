@@ -88,27 +88,15 @@ externen Code-Review-Perspektive. Bei Umsetzung von Punkt 6 vor Beginn mit Patri
     davon unberührt bleibt.
 11. ~~**Kein Lint/Format-Setup**~~ — ESLint (`@angular-eslint`) + Prettier eingeführt
     (2026-09-06), siehe unten.
-12. **24 verbleibende `ng lint`-Fehler nach Einführung von ESLint** (2026-09-06) — Tracking-Issue
-    [#114](https://github.com/PatrickFrantzen/hero-dungeon/issues/114). Mechanisch fixbare Fälle
-    (unused vars/imports, leere No-Op-Konstruktoren, Ternary-mit-Seiteneffekt) sind bereits
-    behoben, `--fix` ist ausgereizt. Übrig, nicht automatisch behebbar:
-    - `@angular-eslint/prefer-inject` (14×) — Issue #94 ist laut CLAUDE.md-Stand nur für
-      `player-hand.component.ts`/`game.component.ts` als offen vermerkt; tatsächlich betroffen
-      sind zusätzlich `card-play.service.ts` (5), `heropower.service.ts` (4),
-      `current-user.service.ts` (3), `local-save-migration.service.ts` (3),
-      `user-repository.service.ts` (1) — Issue #94/Root-CLAUDE.md-Eintrag entsprechend erweitern,
-      wenn das angegangen wird.
-    - `preserve-caught-error` (4×, `auth-form.service.ts:63,84,101,129`) — die dortigen
-      `catch`-Blöcke werfen einen neuen, für den Nutzer verständlichen deutschen Fehlertext, ohne
-      den ursprünglichen Firebase-Error als `cause` mitzugeben. Fix ist inhaltlich einfach
-      (`throw new Error(message, { cause: err })`), aber je vier Stellen einzeln anzusehen, ob
-      das Mapping/die Fehlermeldung dabei unverändert bleibt.
-    - `@angular-eslint/template/click-events-have-key-events` +
-      `.../interactive-supports-focus` (je 2×, `heropower.component.html:17`,
-      `hand-cards.component.html:8`) — beide Stellen haben einen `(click)`-Handler auf einem
-      nicht fokussierbaren Element (`<img>`/Karten-Div). Echter A11y-Fix bräuchte
-      `tabindex="0"` + `(keydown.enter)`/`(keydown.space)` oder eine Umstellung auf `<button>` —
-      UX-Entscheidung, nicht blind per Autofix lösen.
+12. ~~**24 verbleibende `ng lint`-Fehler nach Einführung von ESLint**~~ — Tracking-Issue
+    [#114](https://github.com/PatrickFrantzen/hero-dungeon/issues/114), abgearbeitet
+    (2026-09-07): alle 14 `@angular-eslint/prefer-inject`-Stellen (`card-play.service.ts`,
+    `heropower.service.ts`, `current-user.service.ts`, `local-save-migration.service.ts`,
+    `user-repository.service.ts`) auf `inject()` umgestellt, die 4
+    `preserve-caught-error`-Stellen in `auth-form.service.ts` werfen jetzt mit `{ cause: error }`,
+    und die beiden Accessibility-Stellen (`heropower.component.html`,
+    `hand-cards.component.html`) nutzen jetzt `<button>` statt klickbarem `<img>`. `npm run lint`
+    ist fehlerfrei und als dritter Job in `.github/workflows/ci.yml` verankert.
 
 ## Erledigt (2026-09-05)
 

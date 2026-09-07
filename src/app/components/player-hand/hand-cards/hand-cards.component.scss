@@ -39,6 +39,15 @@
     transform 0.18s ease-out,
     margin-left 0.18s ease-out;
 
+  // Button statt klickbarem <img> (Issue #114, Accessibility) - per Tastatur fokussierbar,
+  // Bild-Styling/Touch-Verhalten bleibt unverändert.
+  .hand-card-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
   img {
     width: clamp(70px, 15vw, 150px);
     user-select: none;
@@ -50,10 +59,6 @@
     // (falls bei sehr vielen Karten trotz des Fixes aus #47/Live-Test-Fixes nötig) bleibt
     // dadurch weiterhin möglich.
     touch-action: pan-x;
-
-    &:hover {
-      cursor: pointer;
-    }
   }
 
   &:active {

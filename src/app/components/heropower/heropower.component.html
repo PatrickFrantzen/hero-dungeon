@@ -14,11 +14,16 @@
     <mat-card [ngClass]="{ 'color-effect': this.heropowerActivated() }">
       <div class="tw-flex tw-flex-col tw-items-center">
         <span class="tw-text-white">{{ this.heropower() }}</span>
-        <img
+        <button
+          type="button"
+          class="heropower-activate-button"
           (click)="onActivateHeropower()"
-          src="./assets/img/icons/heldenfaehigkeit_icon.png"
-          alt="Heldenfähigkeit aktivieren"
-        />
+        >
+          <img
+            src="./assets/img/icons/heldenfaehigkeit_icon.png"
+            alt="Heldenfähigkeit aktivieren"
+          />
+        </button>
       </div>
       <span class="tw-text-white">{{ this.description() }}</span>
     </mat-card>
